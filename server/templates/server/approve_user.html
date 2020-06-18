@@ -1,0 +1,34 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}Admin - Approva Utente{% endblock %}
+
+{% block nav %}
+<nav>
+    <div class="nav-wrapper">
+        <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+        <a href="{% url 'server'%}" class="breadcrumb">Admin</a>
+        <a href="#!" class="breadcrumb">Approva Utente</a>
+        <ul class="right hide-on-med-and-down">
+            <li>{{ user.username}}</li>
+            <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<p>Inserire un codice per riga</p>
+<ul class="collection">
+{% for i in messages %}
+    <li class="collection-item">{{ i }}</li>
+{% endfor %}
+</ul>
+<form action="{% url 'uapprove'%}" method="post">
+    {% csrf_token %}
+    <textarea name="codes" class="materialize-textarea"></textarea>
+    <br><br>
+    <button type="submit" class="btn waves-effect waves-light">Invia
+    <i class="material-icons right">send</i>
+    </button>
+</form>
+{% endblock %}
