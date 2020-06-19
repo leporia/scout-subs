@@ -18,7 +18,7 @@ def index(request):
                 code = 'U' + str(UserCode.objects.filter(user=user)[0].code)
             status = ""
             if user.is_staff:
-                status = "Capo"
+                status = "Staff"
             elif user.has_perm("client.approved"):
                 status = "Attivo"
             else:
@@ -83,17 +83,55 @@ def ulist(request):
         out = []
         for user in users:
             code = ""
-            if len(UserCode.objects.filter(user=user)) > 0:
-                code = 'U' + str(UserCode.objects.filter(user=user)[0].code)
+            parent_name = ""
+            via = ""
+            cap = ""
+            country = ""
+            nationality = ""
+            born_date = ""
+            home_phone = ""
+            phone = ""
+            school = ""
+            year = ""
             status = ""
             if user.is_staff:
-                status = "Capo"
+                status = "Staff"
             elif user.has_perm("approved"):
                 status = "Attivo"
             else:
                 status = "In attesa"
-            out.append([user.username, user.first_name,
-                        user.last_name, code, status])
+            if len(UserCode.objects.filter(user=user)) > 0:
+                usercode = UserCode.objects.filter(user=user)[0]
+                code = 'U' + str(usercode.code)
+                parent_name = usercode.parent_name
+                via = usercode.via
+                cap = usercode.cap
+                country = usercode.country
+                nationality = usercode.nationality
+                born_date = usercode.born_date
+                home_phone = usercode.home_phone
+                phone = usercode.phone
+                school = usercode.school
+                year = usercode.year
+            else:
+                status = "Non registrato"
+            out.append([
+                status,
+                user.username,
+                user.first_name,
+                user.last_name,
+                born_date,
+                parent_name,
+                user.email,
+                phone,
+                home_phone,
+                via,
+                cap,
+                country,
+                nationality,
+                school,
+                year,
+                code])
         context = {'users': out}
         return render(request, 'server/user_list.html', context)
     else:

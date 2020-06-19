@@ -1,12 +1,20 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_simple.html' %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn waves-effect waves-light" type="submit">Login</button>
-</form>
+  <div class="row">
+    <div class="col l4 offset-l4 m8 offset-m2 s12">
+      <div class="card">
+        <div class="card-content">
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <br>
+            <button class="btn waves-effect waves-light" type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'registration/base_custom.html' %}
+
+{% block title %}Home{% endblock %}
+
+{%block nav%}
+  <nav class="nav-extended">
+    <div class="nav-wrapper red lighten-1">
+      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+      <a href="#!" class="breadcrumb hide-on-med-and-down">Account</a>
+      <ul class="right">
+          {% if user.is_staff %}
+            <li><a href="{% url 'server' %}">Pannello Admin</a></li>
+          {% endif %}
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
+          {% endif %}
+          {% if user.username != "" %}
+            <li>
+            <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
+            </li>
+          {% else %}
+            <li><a href="{% url 'signup' %}">Registrazione</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+          {% endif %}
+      </ul>
+    </div>
+    <div class="nav-content red lighten-1">
+      <ul class="tabs tabs-transparent">
+        <li class="tab"><a class="active" href="#personal">Info Personali</a></li>
+        <li class="tab"><a href="#medic">Info Mediche</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <ul class="sidenav" id="mobile-demo">
+    {% if user.is_staff %}
+      <li><a href="{% url 'server' %}">Pannello Admin</a></li>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
+    {% endif %}
+    {% if user.username != "" %}
+      <li>
+      <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
+      </li>
+    {% else %}
+      <li><a href="{% url 'signup' %}">Registrazione</a></li>
+      <li><a href="{% url 'login' %}">Login</a></li>
+    {% endif %}
+  </ul>
+{% endblock%}
+
+{% block content %}
+<div id="personal" class="row">
+  <div class="col l8 offset-l2 s12">
+    <div class="card-panel">
+      <div class="row">
+        <form action="{% url 'personal'%}" method="post" id="personal_form" class="col s12">
+          {% csrf_token %}
+          <div class="row">
+            <div class="input-field col s4">
+              <input name="first_name" value="{{first_name}}" id="first_name" type="text" class="validate">
+              <label for="first_name">First Name</label>
+            </div>
+            <div class="input-field col s4">
+              <input name="last_name" value="{{last_name}}" id="last_name" type="text" class="validate">
+              <label for="last_name">Last Name</label>
+            </div>
+            <div class="input-field col s4">
+              <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" class="datepicker">
+              <label for="birth_date">Data di nascita</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s4">
+              <select name="branca">
+                <option value="" disabled {{branca_default}}>Scegli</option>
+                <option value="colonia" {{branca_castorini}}>Castorini</option>
+                <option value="muta" {{branca_lupetti}}>Lupetti</option>
+                <option value="reparto" {{branca_esploratori}}>Esploratori</option>
+                <option value="posto" {{branca_pionieri}}>Pionieri</option>
+                <option value="clan" {{branca_rover}}>Rover</option>
+              </select>
+              <label>Branca</label>
+            </div>
+            <div class="input-field col s8">
+              <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" class="validate">
+              <label for="parent_name">Nome dei genitori</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <input value="{{via}}" name="via" id="via" type="text" class="validate">
+              <label for="via">Via e numero</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s4">
+              <input value="{{cap}}" name="cap" id="cap" type="text" class="validate">
+              <label for="cap">CAP</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{country}}" name="country" id="country" type="text" class="validate">
+              <label for="country">Paese</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{nationality}}" name="nationality" id="nationality" type="text" class="validate">
+              <label for="nationality">Nazionalita`</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s4">
+              <input value="{{phone}}" name="phone" id="phone" type="text" class="validate">
+              <label for="phone">Cellulare</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" class="validate">
+              <label for="home_phone">Telefono di casa</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{email}}" name="email" id="email" type="text" class="validate">
+              <label for="email">Email</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s8">
+              <input value="{{school}}" name="school" id="school" type="text" class="validate">
+              <label for="school">Scuola frequentata</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{year}}" name="year" id="year" type="text" class="validate">
+              <label for="year">Classe</label>
+            </div>
+          </div>
+            <div class="fixed-action-btn">
+              <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('personal_form').submit()">
+                <i class="large material-icons">save</i>
+              </a>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="medic" class="col s12">Tabella medica</div>
+{% endblock %}

@@ -3,17 +3,9 @@
 {% block title %}Admin - Approva Utente{% endblock %}
 
 {% block nav %}
-<nav>
-    <div class="nav-wrapper">
-        <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-        <a href="{% url 'server'%}" class="breadcrumb">Admin</a>
-        <a href="#!" class="breadcrumb">Approva Utente</a>
-        <ul class="right hide-on-med-and-down">
-            <li>{{ user.username}}</li>
-            <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
-        </ul>
-    </div>
-</nav>
+    <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+    <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+    <a href="#!" class="breadcrumb hide-on-med-and-down">Approva Utente</a>
 {% endblock %}
 
 {% block content %}

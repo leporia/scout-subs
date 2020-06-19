@@ -9,12 +9,7 @@ from .models import UserCode
 
 def index(request):
     context = {}
-    return render(request, 'client/index.html', context)
-
-
-def approve(request):
-    context = {}
-    if not (request.user.is_staff or request.user.has_perm('approved')):
+    if (request.user.is_authenticated):
         users = UserCode.objects.filter(user=request.user)
         code = None
         if (len(users) == 0):
@@ -24,9 +19,17 @@ def approve(request):
                     break
             userCode = UserCode(user=request.user, code=code)
             userCode.save()
-        else:
-            code = UserCode.objects.filter(user=request.user)[0].code
-        context = {'code': 'U' + str(code), }
+    return render(request, 'client/index.html', context)
+
+
+def approve(request):
+    context = {}
+    if not (request.user.is_staff or request.user.has_perm('approved')):
+        usercode = UserCode.objects.filter(user=request.user)[0]
+        okay = False
+        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and len(request.user.groups.values_list('name', flat=True)) != 0:
+            okay = True
+        context = {'code': 'U' + str(usercode.code), 'okay': okay}
         return render(request, 'client/approve.html', context)
     else:
         return render(request, 'client/index.html', context)

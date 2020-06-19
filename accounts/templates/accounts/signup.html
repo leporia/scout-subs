@@ -1,12 +1,21 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_simple.html' %}
 
 {% block title %}Iscriviti{% endblock %}
 
 {% block content %}
-  <h2>Iscriviti</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn waves-effect waves-light" type="submit">Invia</button>
-  </form>
+  <div class="row">
+    <div class="col l6 offset-l3 m8 offset-m2 s12">
+      <div class="card">
+        <div class="card-content">
+          <h2>Iscriviti</h2>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <br>
+            <button class="btn waves-effect waves-light" type="submit">Invia</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
