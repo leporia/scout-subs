@@ -1,0 +1,79 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}Admin - Modifica Tipo{% endblock %}
+
+{% block nav %}
+    <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+    <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+    <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
+    <a href="#!" class="breadcrumb hide-on-med-and-down">Modifica Doc</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col l8 offset-l2 s12">
+    <div class="card-panel">
+      <div class="row">
+        <form id="form" action="{% url 'docedit'%}" method="post" class="col s12">
+          {% csrf_token %}
+          <div class="row">
+            <div class="input-field col s12">
+              <input name="name" value="{{name}}" id="name" type="text" class="validate">
+              <label for="name">Nome</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="switch col s3">
+              <label>
+                Disabilitato
+                <input name="enabled" type="checkbox" {{enabled_check}}>
+                <span class="lever"></span>
+                Abilitato
+              </label>
+            </div>
+            <div class="switch col s3">
+              <label>
+                Publico
+                <input name="group_private" type="checkbox" {{private_check}}>
+                <span class="lever"></span>
+                Privato
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s3">
+              <label>
+                <input name="personal_data" type="checkbox" class="filled-in" {{personal_check}}/>
+                <span>Dati personali</span>
+              </label>
+            </div>
+            <div class="input-field col s3">
+              <label>
+                <input name="medical_data" type="checkbox" class="filled-in" {{medical_check}} />
+                <span>Dati medici</span>
+              </label>
+            </div>
+            <div class="input-field col s3">
+              <label>
+                <input name="custom_data" type="checkbox" class="filled-in" {{custom_check}}/>
+                <span>Parametri personalizzati</span>
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <textarea name="custom" id="textarea" class="materialize-textarea"></textarea>
+              <label for="textarea">Lista parametri personalizzati, uno per riga</label>
+            </div>
+          </div>
+          <div class="fixed-action-btn">
+            <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('form').submit()">
+              <i class="large material-icons">save</i>
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

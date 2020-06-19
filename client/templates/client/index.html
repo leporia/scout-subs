@@ -7,8 +7,45 @@
 {% endblock%}
 
 {% block content %}
+<div class="tap-target" data-target="add">
+  <div class="tap-target-content">
+    <h5>Aggiungi un documento</h5>
+    <p>Usa questo bottone per creare un nuovo documento</p>
+  </div>
+</div>
 {% if user.is_authenticated %}
   {% if user.is_staff or perms.client.approved %}
+    <form id="selection" action="{% url 'doctype' %}" method="post">
+    {% csrf_token %}
+    <ul class="collapsible">
+        {% for doc in docs %}
+            <li>
+            <div class="collapsible-header">
+                <label>
+                  <input name={{doc.id}} type="checkbox" class="filled-in"/>
+                  <span></span>
+                </label>
+                {% if doc.enabled %}
+                    <i class="material-icons">visibility_on</i>
+                {% else %}
+                    <i class="material-icons">visibility_off</i>
+                {% endif %}
+                {{doc.document_type.name}}
+            </div>
+            <div class="collapsible-body"><span>
+            {% for key in keys %}
+              {{key}}<br>
+            {% endfor %}
+            </span></div>
+            </li>
+        {% endfor %}
+    </ul>
+    </form>
+    <div class="fixed-action-btn">
+      <a id="add" class="btn-floating btn-large red lightend-1" href="{% url 'create'%}">
+        <i class="large material-icons">add</i>
+      </a>
+    </div>
   {% else %}
     <div class="row">
       <div class="col l4 offset-l4 m8 offset-m2 s12">
@@ -34,4 +71,18 @@
     </div>
   </div>
 {% endif %}
+{% endblock %}
+
+{% block script %}
+$(document).ready(function(){
+    $('.tap-target').tapTarget();
+    {% if empty %}
+      $('.tap-target').tapTarget('open');
+    {% endif %}
+});
+$('*').click(function(event) {
+    if (this === event.target) {
+      $('.tap-target').tapTarget('close');
+    }
+});
 {% endblock %}

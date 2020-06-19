@@ -20,36 +20,8 @@
 			  crossorigin="anonymous"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script type="text/javascript">
-    var elem = $('.tabs')
-    var options = {
-      yearRange:100,
-      format:'dd.mm.yyyy',
-      i18n: {
-        months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
-        monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
-        weekdays: [ 'domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato' ],
-        weekdaysShort: [ 'dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab' ],
-        weekdaysAbbrev: [ 'D', 'L', 'M', 'M', 'G', 'V', 'S' ],
-        today: 'Oggi',
-        clear: 'Cancella',
-        close: 'Chiudi',
-        firstDay: 1,
-        format: 'dddd d mmmm yyyy',
-        formatSubmit: 'yyyy/mm/dd',
-        labelMonthNext: 'Mese successivo',
-        labelMonthPrev: 'Mese precedente',
-        labelMonthSelect: 'Seleziona un mese',
-        labelYearSelect: 'Seleziona un anno'
-            }}
-    var instance = M.Tabs.init(elem, options);
-    document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.datepicker');
-    var instances = M.Datepicker.init(elems, options);
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems, options);
-    });
+  {% block script %}
+  {% endblock %}
   </script>
 </body>
 </html>

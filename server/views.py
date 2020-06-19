@@ -1,6 +1,8 @@
 from django.shortcuts import render
-from client.models import UserCode
+from client.models import UserCode, Keys, DocumentType, Document
 from django.contrib.auth.models import Group, Permission, User
+from django.db.models import Q
+from django.http import HttpResponseRedirect
 
 # Create your views here.
 
@@ -134,5 +136,97 @@ def ulist(request):
                 code])
         context = {'users': out}
         return render(request, 'server/user_list.html', context)
+    else:
+        return render(request, 'client/index.html', context)
+
+
+def doctype(request):
+    context = {}
+    if request.user.is_staff:
+        if request.method == "POST":
+            selected = []
+            for i in request.POST.keys():
+                if i == "csrfmiddlewaretoken":
+                    continue
+                selected.append(DocumentType.objects.get(id=i))
+
+            for i in selected:
+                i.delete()
+
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+        group = Group.objects.get(name=parent_group)
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=group))
+        out = []
+        for doc in public_types:
+            out.append(doc)
+
+        context = {'docs': out}
+        return render(request, 'server/doc_type.html', context)
+    else:
+        return render(request, 'client/index.html', context)
+
+
+def docedit(request):
+    context = {}
+    if request.user.is_staff:
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+        group = Group.objects.get(name=parent_group)
+        enabled = False
+        group_private = False
+        personal_data = False
+        medical_data = False
+        custom_data = False
+        name = ""
+
+        enabled_check = ""
+        private_check = 'checked="checked"'
+        personal_check = 'checked="checked"'
+        medical_check = ""
+        custom_check = ""
+        context = {
+            "enabled_check": enabled_check,
+            "private_check": private_check,
+            "personal_check": personal_check,
+            "medical_check": medical_check,
+            "custom_check": custom_check,
+        }
+        if request.method == "POST":
+            enabled = "enabled" in request.POST.keys()
+            group_private = "group_private" in request.POST.keys()
+            personal_data = "personal_data" in request.POST.keys()
+            medical_data = "medical_data" in request.POST.keys()
+            custom_data = "custom_data" in request.POST.keys()
+            name = request.POST["name"]
+            custom = request.POST["custom"]
+            custom += " "
+            custom = custom.split("\n")
+            doctype = DocumentType(
+                name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
+            doctype.save()
+            for i in custom:
+                key = Keys(key=i[:-1], container=doctype)
+                key.save()
+            return HttpResponseRedirect('doctype')
+
+        return render(request, 'server/doc_edit.html', context)
+    else:
+        return render(request, 'client/index.html', context)
+
+
+def doclist(request):
+    context = {}
+    if request.user.is_staff:
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+        group = Group.objects.get(name=parent_group)
+        documents = Document.objects.filter(group=group)
+        out = []
+        for i in documents:
+            out.append(i)
+        context = {"docs": out}
+        return render(request, 'server/doc_list.html', context)
     else:
         return render(request, 'client/index.html', context)
