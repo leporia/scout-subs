@@ -55,16 +55,16 @@
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-        <form action="{% url 'personal'%}" method="post" id="personal_form" class="col s12">
+        <form action="{% url 'personal'%}" method="post" id="form" class="col s12">
           {% csrf_token %}
           <div class="row">
             <div class="input-field col s4">
-              <input name="first_name" value="{{first_name}}" id="first_name" type="text" class="validate">
-              <label for="first_name">First Name</label>
+              <input name="first_name" value="{{first_name}}" id="first_name" type="text" >
+              <label for="first_name">Nome</label>
             </div>
             <div class="input-field col s4">
-              <input name="last_name" value="{{last_name}}" id="last_name" type="text" class="validate">
-              <label for="last_name">Last Name</label>
+              <input name="last_name" value="{{last_name}}" id="last_name" type="text" >
+              <label for="last_name">Cognome</label>
             </div>
             <div class="input-field col s4">
               <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" class="datepicker">
@@ -84,72 +84,242 @@
               <label>Branca</label>
             </div>
             <div class="input-field col s8">
-              <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" class="validate">
+              <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" >
               <label for="parent_name">Nome dei genitori</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s12">
-              <input value="{{via}}" name="via" id="via" type="text" class="validate">
+              <input value="{{via}}" name="via" id="via" type="text" >
               <label for="via">Via e numero</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s4">
-              <input value="{{cap}}" name="cap" id="cap" type="text" class="validate">
+              <input value="{{cap}}" name="cap" id="cap" type="text" >
               <label for="cap">CAP</label>
             </div>
             <div class="input-field col s4">
-              <input value="{{country}}" name="country" id="country" type="text" class="validate">
+              <input value="{{country}}" name="country" id="country" type="text" >
               <label for="country">Paese</label>
             </div>
             <div class="input-field col s4">
-              <input value="{{nationality}}" name="nationality" id="nationality" type="text" class="validate">
-              <label for="nationality">Nazionalita`</label>
+              <input value="{{nationality}}" name="nationality" id="nationality" type="text" >
+              <label for="nationality">Nazionalit&agrave;</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s4">
-              <input value="{{phone}}" name="phone" id="phone" type="text" class="validate">
+              <input value="{{phone}}" name="phone" id="phone" type="text" >
               <label for="phone">Cellulare</label>
             </div>
             <div class="input-field col s4">
-              <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" class="validate">
+              <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" >
               <label for="home_phone">Telefono di casa</label>
             </div>
             <div class="input-field col s4">
-              <input value="{{email}}" name="email" id="email" type="text" class="validate">
+              <input value="{{email}}" name="email" id="email" type="text" >
               <label for="email">Email</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s8">
-              <input value="{{school}}" name="school" id="school" type="text" class="validate">
+              <input value="{{school}}" name="school" id="school" type="text" >
               <label for="school">Scuola frequentata</label>
             </div>
             <div class="input-field col s4">
-              <input value="{{year}}" name="year" id="year" type="text" class="validate">
+              <input value="{{year}}" name="year" id="year" type="text" >
               <label for="year">Classe</label>
             </div>
           </div>
             <div class="fixed-action-btn">
-              <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('personal_form').submit()">
+              <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('form').submit()">
                 <i class="large material-icons">save</i>
               </a>
             </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="medic" class="row">
+  <div class="col l8 offset-l2 s12">
+    <div class="card-panel">
+      <div class="row">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col s12">
+              <h6>Persona di contatto in caso di necessit&agrave;</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s6">
+              <input name="emer_name" value="{{emer_name}}" id="emer_name" type="text" >
+              <label for="emer_name">Nome e cognome</label>
+            </div>
+            <div class="input-field col s3">
+              <input name="emer_relative" value="{{emer_relative}}" id="emer_relative" type="text" >
+              <label for="emer_releative">Parentela</label>
+            </div>
+            <div class="input-field col s3">
+              <input name="cell_phone" value="{{cell_phone}}" id="cellphone" type="text" >
+              <label for="cell_phone">Cellulare</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s9">
+              <input value="{{address}}" name="address" id="address" type="text" >
+              <label for="address">Indirizzo completo</label>
+            </div>
+            <div class="input-field col s3">
+              <input value="{{emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+              <label for="emer_phone">Telefono di casa</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <h6>Assicurazione</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s4">
+              <input value="{{health_care}}" name="health_care" id="health_care" type="text" >
+              <label for="health_care">Cassa Malati</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{injuries}}" name="injuries" id="injuries" type="text" >
+              <label for="injuries">Infortuni</label>
+            </div>
+            <div class="input-field col s4">
+              <input value="{{rc}}" name="rc" id="rc" type="text" >
+              <label for="rc">Responsabilit&agrave; civile</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="switch col s12">
+              &Egrave; sostenitore REGA&nbsp;&nbsp;
+              <label>
+                No
+                <input name="rega" type="checkbox" {{rega_check}}>
+                <span class="lever"></span>
+                Si
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <h6>Medico di famiglia</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s6">
+              <input value="{{medic_name}}" name="medic_name" id="medic_name" type="text" >
+              <label for="medic_name">Nome e cognome</label>
+            </div>
+            <div class="input-field col s6">
+              <input value="{{medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+              <label for="medic_phone">Telefono studio</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <input value="{{medic_address}}" name="medic_address" id="medic_address" type="text" >
+              <label for="medic_address">Indirizzo completo</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <h6>Scheda medica personale</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <input value="{{sickness}}" name="sickness" id="sickness" type="text" data-length="250">
+              <label for="sickness">Principali malattie avute</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s8">
+              <input value="{{vaccine}}" name="vaccine" id="vaccine" type="text" data-length="250">
+              <label for="vaccine">Vacinazioni fatte</label>
+            </div>
+            <div class="input-field col s4">
+              <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
+              <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <input value="{{allergy}}" name="allergy" id="allergy" type="text" data-length="250">
+              <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="switch col s12">
+              Deve assumere regolarmente medicamenti&nbsp;&nbsp;
+              <label>
+                No
+                <input name="drugs_bool" type="checkbox" {{drugs_check}}>
+                <span class="lever"></span>
+                Si
+              </label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <a style="pointer-events: none; cursor: default;" class="btn red lighten-1">
+                In caso dovesse assumere farmaci, avvisare comunque i capi
+              </a>
+            </div>
+            <div class="input-field col s12">
+              <input value="{{drugs}}" name="drugs" id="drugs" type="text" data-length="250">
+              <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="switch col s12">
+              Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
+              <label>
+                No
+                <input name="misc_bool" type="checkbox" {{misc_check}}>
+                <span class="lever"></span>
+                Si
+              </label>
+            </div>
+            <div class="input-field col s12">
+              <input value="{{misc}}" name="misc" id="misc" type="text" data-length="250">
+              <label for="misc">Se s&igrave; quali</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <h6>Allegati</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s6">
+              Certificato delle vacinazioni
+            </div>
+            <div class="col s6">
+              Tessera della cassa malati
+            </div>
+          </div>
+          <div class="fixed-action-btn">
+            <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('form').submit()">
+              <i class="large material-icons">save</i>
+            </a>
+          </div>
         </form>
       </div>
     </div>
   </div>
 </div>
-<div id="medic" class="col s12">Tabella medica</div>
 {% endblock %}
 
 {% block script %}
     var elem = $('.tabs')
     var options = {
       yearRange:100,
-      format:'dd.mm.yyyy',
+      format:'dd mmmm yyyy',
       i18n: {
         months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
         monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
@@ -175,5 +345,8 @@
     document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('select');
     var instances = M.FormSelect.init(elems, options);
+    });
+    $(document).ready(function() {
+    $('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
     });
 {% endblock %}

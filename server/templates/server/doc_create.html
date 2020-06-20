@@ -1,12 +1,12 @@
 {% extends 'registration/base.html' %}
 
-{% block title %}Admin - Modifica Tipo{% endblock %}
+{% block title %}Admin - Crea Tipo{% endblock %}
 
 {% block nav %}
     <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
     <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
     <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
-    <a href="#!" class="breadcrumb hide-on-med-and-down">Modifica Doc</a>
+    <a href="#!" class="breadcrumb hide-on-med-and-down">Crea Tipo</a>
 {% endblock %}
 
 {% block content %}
@@ -14,11 +14,11 @@
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-        <form id="form" action="{% url 'docedit'%}" method="post" class="col s12">
+        <form id="form" action="{% url 'doccreate'%}" method="post" class="col s12">
           {% csrf_token %}
           <div class="row">
             <div class="input-field col s12">
-              <input name="name" value="{{name}}" id="name" type="text" class="validate">
+              <input name="name" value="{{name}}" id="name" type="text">
               <label for="name">Nome</label>
             </div>
           </div>
@@ -37,6 +37,17 @@
                 <input name="group_private" type="checkbox" {{private_check}}>
                 <span class="lever"></span>
                 Privato
+              </label>
+            </div>
+            <div class="switch col s3">
+              <label>
+                Richiede firma
+              </label>
+              <label>
+                No
+                <input name="sign" type="checkbox" {{sign_check}}>
+                <span class="lever"></span>
+                Si
               </label>
             </div>
           </div>

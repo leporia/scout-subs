@@ -19,6 +19,7 @@ def personal(request):
     context = {}
     if request.user.is_authenticated:
         usercode = UserCode.objects.filter(user=request.user)[0]
+        medic = usercode.medic
         debug = ""
         branca_default = ""
         branca_castorini = ""
@@ -44,6 +45,28 @@ def personal(request):
             usercode.year = request.POST["year"]
             usercode.save()
 
+            medic.emer_name = request.POST["emer_name"]
+            medic.emer_relative = request.POST["emer_relative"]
+            medic.cell_phone = request.POST["cell_phone"]
+            medic.address = request.POST["address"]
+            medic.emer_phone = request.POST["emer_phone"]
+            medic.health_care = request.POST["health_care"]
+            medic.injuries = request.POST["injuries"]
+            medic.rc = request.POST["rc"]
+            medic.rega = "rega" in request.POST
+            medic.medic_name = request.POST["medic_name"]
+            medic.medic_phone = request.POST["medic_phone"]
+            medic.medic_address = request.POST["medic_address"]
+            medic.sickness = request.POST["sickness"]
+            medic.vaccine = request.POST["vaccine"]
+            medic.tetanus_date = dateparser.parse(request.POST["tetanus_date"])
+            medic.allergy = request.POST["allergy"]
+            medic.drugs_bool = "drugs_bool" in request.POST
+            medic.drugs = request.POST["drugs"]
+            medic.misc_bool = "misc_bool" in request.POST
+            medic.misc = request.POST["misc"]
+            medic.save()
+
             if request.POST["branca"] != "":
                 request.user.groups.clear()
                 request.user.groups.add(
@@ -60,6 +83,16 @@ def personal(request):
                 branca_esploratori = "selected"
             else:
                 branca_default = "selected"
+
+        rega = ""
+        if medic.rega:
+            rega = "checked='checked'"
+        drugs = ""
+        if medic.drugs_bool:
+            drugs = "checked='checked'"
+        misc = ""
+        if medic.misc_bool:
+            misc = "checked='checked'"
 
         context = {
             'first_name': request.user.first_name,
@@ -81,6 +114,26 @@ def personal(request):
             'branca_esploratori': branca_esploratori,
             'branca_pionieri': branca_pionieri,
             'branca_rover': branca_rover,
+            'emer_name': medic.emer_name,
+            'emer_relative': medic.emer_relative,
+            'cell_phone': medic.cell_phone,
+            'address': medic.address,
+            'emer_phone': medic.emer_phone,
+            'health_care': medic.health_care,
+            'injuries': medic.injuries,
+            'rc': medic.rc,
+            'rega_check': rega,
+            'medic_name': medic.medic_name,
+            'medic_phone': medic.medic_phone,
+            'medic_address': medic.medic_address,
+            'sickness': medic.sickness,
+            'vaccine': medic.vaccine,
+            'tetanus_date': medic.tetanus_date,
+            'allergy': medic.allergy,
+            'drugs_check': drugs,
+            'drugs': medic.drugs,
+            'misc_check': misc,
+            'misc': medic.misc,
         }
 
         return render(request, 'accounts/index.html', context)

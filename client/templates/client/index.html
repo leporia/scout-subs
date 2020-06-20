@@ -13,6 +13,12 @@
     <p>Usa questo bottone per creare un nuovo documento</p>
   </div>
 </div>
+
+<form id="form" method="post" action="{% url 'index'%}">
+  {% csrf_token %}
+  <input type="hidden" name="action" id="action">
+</form>
+
 {% if user.is_authenticated %}
   {% if user.is_staff or perms.client.approved %}
     {% if not empty %}
@@ -24,40 +30,83 @@
                   <i class="material-icons">timelapse</i>
                 {% elif doc.0.status == "ok" %}
                   <i class="material-icons">check</i>
+                {% elif doc.0.status == "autosign" %}
+                  <i class="material-icons">assignment_turned_in</i>
                 {% endif %}
                 {{doc.0.document_type.name}}
-              <span class="badge" data-badge-caption="">{{doc.0.compilation_date}}</span></div>
+              <span class="badge" data-badge-caption="">{{doc.0.compilation_date}}</span>
             </div>
             <div class="collapsible-body"><span>
               {% if doc.0.status == "wait" %}
-                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">delete</i> Elimina documento</a>
-                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">edit</i> Modifica documento</a>
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
+                <br>
+                <br>
+              {% elif doc.0.status == "autosign" %}
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('a{{doc.0.id}}')"><i class="material-icons left">check</i>Approva documento</a>
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
+                <a class="waves-effect waves-light btn red lighten-1" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
                 <br>
                 <br>
               {% endif %}
+              <ul class="collapsible">
               {% if doc.0.document_type.personal_data %}
-                <i class="material-icons">person</i>
+                <li>
+                  <div class="collapsible-header">
+                    <i class="material-icons">person</i>Dati personali
+                  </div>
+                  <div class="collapsible-body"><span>
+                    <table class="striped">
+                    <tbody>
+                    {% for field in doc.2 %}
+                      <tr>
+                      <td>{{field}}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                  </span></div>
+                </li>
               {% endif %}
               {% if doc.0.document_type.medical_data %}
-                <i class="material-icons">healing</i>
+                <li>
+                  <div class="collapsible-header">
+                    <i class="material-icons">healing</i>Dati medici
+                  </div>
+                  <div class="collapsible-body"><span>
+                    <table class="striped">
+                    <tbody>
+                    {% for field in doc.3 %}
+                      <tr>
+                      <td>{{field}}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                  </span></div>
+                </li>
               {% endif %}
               {% if doc.0.document_type.custom_data %}
-                <i class="material-icons">add_circle_outline</i>
+                <li>
+                  <div class="collapsible-header">
+                    <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
+                  </div>
+                  <div class="collapsible-body"><span>
+                    <table class="striped">
+                    <tbody>
+                    {% for key in doc.1 %}
+                      <tr>
+                      <td>{{key.key}}</td>
+                      <td>{{key.value}}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                  </span></div>
+                </li>
               {% endif %}
-              {% if doc.0.document_type.custom_data %}
-                <br>
-                <table class="striped">
-                <tbody>
-                {% for key in doc.1 %}
-                  <tr>
-                  <td>{{key.key}}</td>
-                  <td>{{key.value}}</td>
-                  </tr>
-                {% endfor %}
-                </tbody>
-                </table>
-              {% endif %}
+              </ul>
             </span></div>
             </li>
         {% endfor %}
@@ -73,7 +122,7 @@
       <div class="col l4 offset-l4 m8 offset-m2 s12">
         <div class="card">
           <div class="card-content">
-            <p>Il tuo utente non e` ancora stato approvato.</p>
+            <p>Il tuo utente non &egrave; ancora stato approvato.</p>
           </div>
           <div class="card-action">
             <a href="{% url 'approve' %}">Come farsi approvare l'utente</a>
@@ -87,7 +136,7 @@
     <div class="col l4 offset-l4 m8 offset-m2 s12">
       <div class="card">
         <div class="card-content">
-          <p>Se hai gia` un account clicca login in alto a destra. Altrimenti clicca registrazione</p>
+          <p>Se hai gi&agrave; un account clicca login in alto a destra. Altrimenti clicca registrazione</p>
         </div>
       </div>
     </div>
@@ -108,4 +157,10 @@ $('*').click(function(event) {
       $('.tap-target').tapTarget('close');
     }
 });
+function send(id) {
+  var form = document.getElementById('form')
+  var action = document.getElementById('action')
+  action.setAttribute('value', id);
+  form.submit()
+}
 {% endblock %}

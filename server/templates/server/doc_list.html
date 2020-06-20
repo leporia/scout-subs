@@ -51,36 +51,68 @@
                 <i class="material-icons">archive</i>
             {% endif %}
             {{doc.0.document_type.name}}
-            <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span></div>
+            <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
         </div>
         <div class="collapsible-body"><span>
           {{doc.0.code}} <br>
           {{doc.0.compilation_date}}<br>
+          <ul class="collapsible">
           {% if doc.0.document_type.personal_data %}
-            <i class="material-icons">person</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">person</i>Dati personali
+              </div>
+              <div class="collapsible-body"><span>
+                <table class="striped">
+                <tbody>
+                {% for field in doc.2 %}
+                  <tr>
+                  <td>{{field}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              </span></div>
+            </li>
           {% endif %}
           {% if doc.0.document_type.medical_data %}
-            <i class="material-icons">healing</i>
-          {% endif %}
-          {% if doc.0.document_type.custom_message %}
-            <i class="material-icons">message</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">healing</i>Dati medici
+              </div>
+              <div class="collapsible-body"><span>
+                <table class="striped">
+                <tbody>
+                {% for field in doc.3 %}
+                  <tr>
+                  <td>{{field}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              </span></div>
+            </li>
           {% endif %}
           {% if doc.0.document_type.custom_data %}
-            <i class="material-icons">add_circle_outline</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
+              </div>
+              <div class="collapsible-body"><span>
+                <table class="striped">
+                <tbody>
+                {% for key in doc.1 %}
+                  <tr>
+                  <td>{{key.key}}</td>
+                  <td>{{key.value}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              </span></div>
+            </li>
           {% endif %}
-          {% if doc.0.document_type.custom_data %}
-            <br>
-            <table class="striped">
-            <tbody>
-            {% for key in doc.1 %}
-              <tr>
-              <td>{{key.key}}</td>
-              <td>{{key.value}}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-            </table>
-          {% endif %}
+          </ul>
         </span></div>
         </li>
     {% endfor %}

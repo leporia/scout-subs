@@ -40,8 +40,21 @@
   <div class="col l6 s12">
     <div class="card large">
       <div class="card-content">
-          <p>I am a very simple card. I am good at containing small bits of information.
-          I am convenient because I require little markup to use effectively.</p>
+        <ul class="collapsible">
+          {% for doctype in docs %}
+            <li>
+            <div class="collapsible-header">
+                {% if not doctype.0.enabled %}
+                    <i class="material-icons">visibility_off</i>
+                {% endif %}
+                {% if not doctype.0.group_private %}
+                    <i class="material-icons">public</i>
+                {% endif %}
+                {{doctype.0.name}}
+                <span class="new badge red lighten-1" data-badge-caption="">{{doctype.1}}</span>
+            </div>
+          {% endfor %}
+        </ul>
       </div>
       <div class="card-action">
           <a href="{% url 'doctype' %}">Lista tipo doc</a>

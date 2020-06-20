@@ -14,7 +14,7 @@ def index(request):
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
         users = User.objects.filter(groups__name=parent_group)
-        out = []
+        users_out = []
         for user in users:
             code = ""
             if len(UserCode.objects.filter(user=user)) > 0:
@@ -26,9 +26,23 @@ def index(request):
                 status = "Attivo"
             else:
                 status = "In attesa"
-            out.append([user.username, user.first_name,
+            users_out.append([user.username, user.first_name,
                         user.last_name, code, status])
-        context = {'users': out}
+
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+        group = Group.objects.get(name=parent_group)
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=group))
+        docs = []
+        for doc in public_types:
+            ref_docs = Document.objects.filter(document_type=doc)
+            docs.append([doc, len(ref_docs)])
+
+        context = {
+            'docs': docs,
+            'users': users_out,
+            }
         return render(request, 'server/index.html', context)
     else:
         return render(request, 'client/index.html', context)
@@ -44,7 +58,6 @@ def uapprove(request):
             group = Group.objects.get(name=parent_group)
             permission = Permission.objects.get(codename='approved')
             data = request.POST["codes"]
-            data = "".join(data.split())
             data.replace("\r", "")
             data = data.split("\n")
             for i in range(len(data)):
@@ -88,7 +101,6 @@ def docapprove(request):
         data = []
         if request.method == "POST":
             data = request.POST["codes"]
-            data = "".join(data.split())
             data.replace("\r", "")
             data = data.split("\n")
             for i in range(len(data)):
@@ -101,7 +113,7 @@ def docapprove(request):
                 else:
                     document = Document.objects.filter(code=data[i])[0]
                     if document.status == 'ok':
-                        data[i] = data[i] + " - Gia` approvato"
+                        data[i] = data[i] + " - Già approvato"
                     else:
                         document.status = 'ok'
                         document.save()
@@ -221,7 +233,7 @@ def doctype(request):
         return render(request, 'client/index.html', context)
 
 
-def docedit(request):
+def doccreate(request):
     context = {}
     if request.user.is_staff:
         parent_group = request.user.groups.values_list('name', flat=True)[
@@ -234,15 +246,17 @@ def docedit(request):
         custom_data = False
         name = ""
 
-        enabled_check = ""
+        enabled_check = 'checked="checked'
         private_check = 'checked="checked"'
         personal_check = 'checked="checked"'
+        sign_check = 'checked="checked'
         medical_check = ""
         custom_check = ""
         custom_message_check = ""
         context = {
             "enabled_check": enabled_check,
             "private_check": private_check,
+            "sign_check": sign_check,
             "personal_check": personal_check,
             "medical_check": medical_check,
             "custom_check": custom_check,
@@ -250,6 +264,7 @@ def docedit(request):
         }
         if request.method == "POST":
             enabled = "enabled" in request.POST.keys()
+            auto_sign = "sign" not in request.POST.keys()
             group_private = "group_private" in request.POST.keys()
             personal_data = "personal_data" in request.POST.keys()
             medical_data = "medical_data" in request.POST.keys()
@@ -257,18 +272,19 @@ def docedit(request):
             custom_message = "custom_message" in request.POST.keys()
             custom_message_text = request.POST["custom_message_text"]
             name = request.POST["name"]
-            custom = request.POST["custom"]
-            custom += " "
-            custom = custom.split("\n")
             doctype = DocumentType(
-                custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
+                auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
             doctype.save()
-            for i in custom:
-                key = Keys(key=i[:-1], container=doctype)
-                key.save()
+            if custom_data:
+                custom = request.POST["custom"]
+                custom.replace("\r", "")
+                custom = custom.split("\n")
+                for i in custom:
+                    key = Keys(key=i, container=doctype)
+                    key.save()
             return HttpResponseRedirect('doctype')
 
-        return render(request, 'server/doc_edit.html', context)
+        return render(request, 'server/doc_create.html', context)
     else:
         return render(request, 'client/index.html', context)
 
@@ -305,8 +321,14 @@ def doclist(request):
         documents = Document.objects.filter(group=group)
         out = []
         for i in documents:
-            custom_keys = KeyVal.objects.filter(container=i)
-            out.append([i, custom_keys])
+            personal = None
+            medical = None
+            if i.document_type.personal_data:
+                personal = i.personal_data.__dict__.values()
+            if i.document_type.medical_data:
+                medical = i.medical_data.__dict__.values()
+
+            out.append([i, KeyVal.objects.filter(container=i), personal, medical])
         context = {"docs": out}
         return render(request, 'server/doc_list.html', context)
     else:

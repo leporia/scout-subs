@@ -1,6 +1,6 @@
 {% extends 'registration/base.html' %}
 
-{% block title %}Admin - Modifica Tipo{% endblock %}
+{% block title %}Crea Documento{% endblock %}
 
 {% block nav %}
     <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
@@ -46,14 +46,14 @@
             {% if personal_data %}
               <div class="row">
                 <div class="col s12">
-                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&aacute le informazioni personali, prego verificare che siano corrette e aggiornate</a>
+                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&agrave; le informazioni personali, prego verificare che siano corrette e aggiornate</a>
                 </div>
               </div>
             {% endif %}
             {% if medical_data %}
               <div class="row">
                 <div class="col s12">
-                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&aacute le informazioni mediche, prego verificare che siano corrette e aggiornate</a>
+                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&agrave; le informazioni mediche, prego verificare che siano corrette e aggiornate</a>
                 </div>
               </div>
             {% endif %}
@@ -68,7 +68,7 @@
               {% for key in keys %}
                 <div class="row">
                   <div class="input-field col s12">
-                    <input value="{{key.1}}" name="{{key.0.id}}" id="{{key.0.id}}" type="text" class="validate">
+                    <input value="{{key.1}}" name="{{key.0.id}}" id="{{key.0.id}}" type="text">
                     <label for="{{key.0.id}}">{{key.0.key}}</label>
                   </div>
                 </div>

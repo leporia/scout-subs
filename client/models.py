@@ -7,6 +7,7 @@ from datetime import datetime
 
 class DocumentType(models.Model):
     enabled = models.BooleanField(default=False)
+    auto_sign = models.BooleanField(default=False)
     group_private = models.BooleanField(default=False)
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
     personal_data = models.BooleanField(default=False)
@@ -26,6 +27,30 @@ class PersonalData(models.Model):
     born_date = models.DateField(null=True, default=datetime.fromtimestamp(0))
     home_phone = models.CharField(default="", max_length=250)
     phone = models.CharField(default="", max_length=250)
+    email = models.CharField(default="", max_length=250)
+
+
+class MedicalData(models.Model):
+    emer_name = models.CharField(default="", max_length=250)
+    emer_relative = models.CharField(default="", max_length=250)
+    cell_phone = models.CharField(default="", max_length=250)
+    address = models.CharField(default="", max_length=250)
+    emer_phone = models.CharField(default="", max_length=250)
+    health_care = models.CharField(default="", max_length=250)
+    injuries = models.CharField(default="", max_length=250)
+    rc = models.CharField(default="", max_length=250)
+    rega = models.BooleanField(default=False)
+    medic_name = models.CharField(default="", max_length=250)
+    medic_phone = models.CharField(default="", max_length=250)
+    medic_address = models.CharField(default="", max_length=250)
+    sickness = models.CharField(default="", max_length=250)
+    vaccine = models.CharField(default="", max_length=250)
+    tetanus_date = models.DateField(null=True, default=datetime.fromtimestamp(0))
+    allergy = models.CharField(default="", max_length=250)
+    drugs_bool = models.BooleanField(default=False)
+    drugs = models.CharField(default="", max_length=250)
+    misc_bool = models.BooleanField(default=False)
+    misc = models.CharField(default="", max_length=250)
 
 
 class Document(models.Model):
@@ -39,6 +64,9 @@ class Document(models.Model):
 
     personal_data = models.ForeignKey(
         PersonalData, default=None, on_delete=models.PROTECT, null=True)
+
+    medical_data = models.ForeignKey(
+        MedicalData, default=None, on_delete=models.PROTECT, null=True)
 
     class Meta:
         permissions = [
@@ -61,6 +89,7 @@ class Keys(models.Model):
 
 class UserCode(models.Model):
     user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
+    medic = models.ForeignKey(MedicalData, default=None, on_delete=models.PROTECT)
     code = models.IntegerField(default=0)
     parent_name = models.CharField(default="", max_length=250)
     via = models.CharField(default="", max_length=250)

@@ -7,7 +7,7 @@ urlpatterns = [
     path('uapprove', views.uapprove, name='uapprove'),
     path('ulist', views.ulist, name='ulist'),
     path('doctype', views.doctype, name='doctype'),
-    path('docedit', views.docedit, name='docedit'),
+    path('doccreate', views.doccreate, name='doccreate'),
     path('doclist', views.doclist, name='doclist'),
     path('docapprove', views.docapprove, name='docapprove'),
 ]

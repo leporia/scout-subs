@@ -48,41 +48,64 @@
             {% if not doctype.0.group_private %}
                 <i class="material-icons">public</i>
             {% endif %}
+            {% if doctype.0.auto_sign %}
+                <i class="material-icons">assignment_turned_in</i>
+            {% endif %}
             {{doctype.0.name}}
-            <span class="new badge red lighten-1" data-badge-caption="">{{doctype.2}}</span></div>
+            <span class="new badge red lighten-1" data-badge-caption="">{{doctype.2}}</span>
         </div>
         <div class="collapsible-body"><span>
+          <ul class="collapsible">
           {% if doctype.0.personal_data %}
-            <i class="material-icons">person</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">person</i>Dati personali
+              </div>
+            </li>
           {% endif %}
           {% if doctype.0.medical_data %}
-            <i class="material-icons">healing</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">healing</i>Dati medici
+              </div>
+            </li>
           {% endif %}
           {% if doctype.0.custom_data %}
-            <i class="material-icons">add_circle_outline</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
+              </div>
+              <div class="collapsible-body"><span>
+                <table class="striped">
+                <tbody>
+                {% for key in doctype.1 %}
+                  <tr>
+                  <td>{{key.key}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              </span></div>
+            </li>
           {% endif %}
           {% if doctype.0.custom_message %}
-            <i class="material-icons">message</i>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">message</i>Messaggio aggiuntivo
+              </div>
+              <div class="collapsible-body"><span>
+                {{doctype.0.custom_message_text}}
+              </span></div>
+            </li>
           {% endif %}
-          {% if doctype.0.custom_data %}
-            <br>
-            <ul class="collection">
-            {% for key in doctype.1 %}
-              <li class="collection-item">{{key.key}}</li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-          {% if doctype.0.custom_message %}
-            <br>
-            {{doctype.0.custom_message_text}}
-          {% endif %}
+          </ul>
         </span></div>
         </li>
     {% endfor %}
 </ul>
 </form>
 <div class="fixed-action-btn">
-  <a class="btn-floating btn-large red lighten-1" href="{% url 'docedit'%}">
+  <a class="btn-floating btn-large red lighten-1" href="{% url 'doccreate'%}">
     <i class="large material-icons">add</i>
   </a>
 </div>
