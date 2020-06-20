@@ -9,4 +9,5 @@ urlpatterns = [
     path('doctype', views.doctype, name='doctype'),
     path('docedit', views.docedit, name='docedit'),
     path('doclist', views.doclist, name='doclist'),
+    path('docapprove', views.docapprove, name='docapprove'),
 ]

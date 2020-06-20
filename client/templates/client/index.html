@@ -15,34 +15,56 @@
 </div>
 {% if user.is_authenticated %}
   {% if user.is_staff or perms.client.approved %}
-    <form id="selection" action="{% url 'doctype' %}" method="post">
-    {% csrf_token %}
+    {% if not empty %}
     <ul class="collapsible">
         {% for doc in docs %}
             <li>
             <div class="collapsible-header">
-                <label>
-                  <input name={{doc.id}} type="checkbox" class="filled-in"/>
-                  <span></span>
-                </label>
-                {% if doc.enabled %}
-                    <i class="material-icons">visibility_on</i>
-                {% else %}
-                    <i class="material-icons">visibility_off</i>
+                {% if doc.0.status == "wait" %}
+                  <i class="material-icons">timelapse</i>
+                {% elif doc.0.status == "ok" %}
+                  <i class="material-icons">check</i>
                 {% endif %}
-                {{doc.document_type.name}}
+                {{doc.0.document_type.name}}
+              <span class="badge" data-badge-caption="">{{doc.0.compilation_date}}</span></div>
             </div>
             <div class="collapsible-body"><span>
-            {% for key in keys %}
-              {{key}}<br>
-            {% endfor %}
+              {% if doc.0.status == "wait" %}
+                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">delete</i> Elimina documento</a>
+                <a class="waves-effect waves-light btn red lighten-1" href="{%url 'server'%}"><i class="material-icons left">edit</i> Modifica documento</a>
+                <br>
+                <br>
+              {% endif %}
+              {% if doc.0.document_type.personal_data %}
+                <i class="material-icons">person</i>
+              {% endif %}
+              {% if doc.0.document_type.medical_data %}
+                <i class="material-icons">healing</i>
+              {% endif %}
+              {% if doc.0.document_type.custom_data %}
+                <i class="material-icons">add_circle_outline</i>
+              {% endif %}
+              {% if doc.0.document_type.custom_data %}
+                <br>
+                <table class="striped">
+                <tbody>
+                {% for key in doc.1 %}
+                  <tr>
+                  <td>{{key.key}}</td>
+                  <td>{{key.value}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              {% endif %}
             </span></div>
             </li>
         {% endfor %}
     </ul>
-    </form>
+    {% endif %}
     <div class="fixed-action-btn">
-      <a id="add" class="btn-floating btn-large red lightend-1" href="{% url 'create'%}">
+      <a id="add" class="btn-floating btn-large red lighten-1" href="{% url 'create'%}">
         <i class="large material-icons">add</i>
       </a>
     </div>
@@ -75,6 +97,7 @@
 
 {% block script %}
 $(document).ready(function(){
+    $('.collapsible').collapsible();
     $('.tap-target').tapTarget();
     {% if empty %}
       $('.tap-target').tapTarget('open');

@@ -4,7 +4,7 @@
 
 {% block nav %}
     <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-    <a href="#!" class="breadcrumb hide-on-med-and-down">Crea Doc</a>
+    <a href="#!" class="breadcrumb hide-on-med-and-down">Crea Documento</a>
 {% endblock %}
 
 {% block content %}
@@ -14,20 +14,78 @@
       <div class="row">
         <form id="form" action="{% url 'create'%}" method="post" class="col s12">
           {% csrf_token %}
-          <div class="row">
-            <div class="input-field col s12">
-              <select name="doctype">
-                <option value="" disabled selected>Scegli</option>
-                {% for doctype in docs%}
-                  <option value="{{doctype.id}}">{{doctype.name}}</option>
-                {% endfor %}
-              </select>
-              <label>Documento</label>
+          <input type="hidden" name="action" id="action">
+          {% if not next %}
+            <div class="row">
+              <div class="input-field col s12">
+                <select name="doctype">
+                  <option value="" disabled selected>Scegli</option>
+                  {% for doctype in docs%}
+                    <option value="{{doctype.id}}">{{doctype.name}}</option>
+                  {% endfor %}
+                </select>
+                <label>Documento</label>
+              </div>
             </div>
-          </div>
-          <button class="btn waves-effect waves-light" type="submit" name="action">Invia
-            <i class="material-icons right">send</i>
-          </button>
+            <a class="btn waves-effect waves-light" onclick="window.history.back();" >
+              <i class="material-icons left">navigate_before</i>Indietro
+            </a>
+            <a class="btn waves-effect waves-light" onclick="send('details')" >Avanti
+              <i class="material-icons right">navigate_next</i>
+            </a>
+          {% else %}
+            <input type="hidden" name="doctype" value="{{doctype.id}}">
+            <div class="row">
+              <div class="input-field col s12">
+                <select>
+                  <option disabled selected>{{doctype.name}}</option>
+                </select>
+                <label>Documento</label>
+              </div>
+            </div>
+            {% if personal_data %}
+              <div class="row">
+                <div class="col s12">
+                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&aacute le informazioni personali, prego verificare che siano corrette e aggiornate</a>
+                </div>
+              </div>
+            {% endif %}
+            {% if medical_data %}
+              <div class="row">
+                <div class="col s12">
+                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&aacute le informazioni mediche, prego verificare che siano corrette e aggiornate</a>
+                </div>
+              </div>
+            {% endif %}
+            {% if custom_message %}
+              <div class="row">
+                <div class="col s12">
+                  <a style="pointer-events: none; cursor: default;" class="btn red lighten-1">{{custom_message_text}}</a>
+                </div>
+              </div>
+            {% endif %}
+            {% if custom_data %}
+              {% for key in keys %}
+                <div class="row">
+                  <div class="input-field col s12">
+                    <input value="{{key.1}}" name="{{key.0.id}}" id="{{key.0.id}}" type="text" class="validate">
+                    <label for="{{key.0.id}}">{{key.0.key}}</label>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+            <div class="row">
+              <div class="col s12">
+                <br>
+                <a class="btn waves-effect waves-light" onclick="window.history.back();" >
+                  <i class="material-icons left">navigate_before</i>Indietro
+                </a>
+                <a class="btn waves-effect waves-light" onclick="send('save')" >Crea
+                  <i class="material-icons right">create</i>
+                </a>
+              </div>
+            </div>
+          {% endif %}
         </form>
       </div>
     </div>
@@ -38,5 +96,14 @@
 {% block script %}
 $(document).ready(function(){
     $('select').formSelect();
+    {% if error %}
+      M.toast({html: '{{ error_text}}', classes: 'orange'})
+    {% endif %}
   });
+function send(id) {
+  var form = document.getElementById('form')
+  var action = document.getElementById('action')
+  action.setAttribute('value', id);
+  form.submit()
+}
 {% endblock %}

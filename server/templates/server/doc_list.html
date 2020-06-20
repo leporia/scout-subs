@@ -7,10 +7,12 @@
     <div class="nav-wrapper red lighten-1">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-      <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Documenti</a>
+      <a href="{% url 'doclist' %}" class="breadcrumb hide-on-med-and-down">Documenti</a>
       <ul class="right">
           {% if user.is_staff %}
-            <li><a onclick="document.getElementById('selection').submit()">Elimina selezionati</a></li>
+            <li><a onclick="send('archive')">Archivia selezionati</a></li>
+            <li><a onclick="send('approve')">Approva selezionati</a></li>
+            <li><a onclick="send('delete')">Elimina selezionati</a></li>
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}
@@ -30,41 +32,70 @@
 {% endblock %}
 
 {% block content %}
-<form id="selection" action="{% url 'doctype' %}" method="post">
+<form id="selection" action="{% url 'doclist' %}" method="post">
 {% csrf_token %}
+<input type="hidden" name="action" id="action">
 <ul class="collapsible">
     {% for doc in docs %}
         <li>
         <div class="collapsible-header">
             <label>
-              <input name={{doc.id}} type="checkbox" class="filled-in"/>
+              <input name={{doc.0.id}} type="checkbox" class="filled-in"/>
               <span></span>
             </label>
-            {% if doc.enabled %}
-                <i class="material-icons">visibility_on</i>
-            {% else %}
-                <i class="material-icons">visibility_off</i>
+            {% if doc.0.status == "wait" %}
+                <i class="material-icons">timelapse</i>
+            {% elif doc.0.status == "ok" %}
+                <i class="material-icons">check</i>
+            {% elif doc.0.status == "archive" %}
+                <i class="material-icons">archive</i>
             {% endif %}
-            {{doc.document_type.name}}
+            {{doc.0.document_type.name}}
+            <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span></div>
         </div>
         <div class="collapsible-body"><span>
-        {% for key in keys %}
-          {{key}}<br>
-        {% endfor %}
+          {{doc.0.code}} <br>
+          {{doc.0.compilation_date}}<br>
+          {% if doc.0.document_type.personal_data %}
+            <i class="material-icons">person</i>
+          {% endif %}
+          {% if doc.0.document_type.medical_data %}
+            <i class="material-icons">healing</i>
+          {% endif %}
+          {% if doc.0.document_type.custom_message %}
+            <i class="material-icons">message</i>
+          {% endif %}
+          {% if doc.0.document_type.custom_data %}
+            <i class="material-icons">add_circle_outline</i>
+          {% endif %}
+          {% if doc.0.document_type.custom_data %}
+            <br>
+            <table class="striped">
+            <tbody>
+            {% for key in doc.1 %}
+              <tr>
+              <td>{{key.key}}</td>
+              <td>{{key.value}}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+          {% endif %}
         </span></div>
         </li>
     {% endfor %}
 </ul>
 </form>
-<div class="fixed-action-btn">
-  <a class="btn-floating btn-large red lightend-1" href="{% url 'docedit'%}">
-    <i class="large material-icons">add</i>
-  </a>
-</div>
 {% endblock %}
 
 {%block script%}
 $(document).ready(function(){
     $('.collapsible').collapsible();
 });
+function send(id) {
+  var form = document.getElementById('selection')
+  var action = document.getElementById('action')
+  action.setAttribute('value', id);
+  form.submit()
+}
 {% endblock %}

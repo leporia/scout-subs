@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from client.models import UserCode, Keys, DocumentType, Document
+from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.db.models.deletion import ProtectedError
 
 # Create your views here.
 
@@ -36,25 +37,27 @@ def index(request):
 def uapprove(request):
     context = {}
     if (request.user.is_staff):
+        data = []
         if request.method == "POST":
             parent_group = request.user.groups.values_list('name', flat=True)[
                 0]
             group = Group.objects.get(name=parent_group)
             permission = Permission.objects.get(codename='approved')
             data = request.POST["codes"]
-            data += " "
+            data = "".join(data.split())
+            data.replace("\r", "")
             data = data.split("\n")
             for i in range(len(data)):
                 if not data[i].startswith("U"):
                     data[i] = data[i] + " - Formato errato"
-                elif not data[i][1:-1].isdigit():
+                elif not data[i][1:].isdigit():
                     data[i] = data[i] + " - Formato errato"
-                elif int(data[i][1:-1]) < 100000 or int(data[i][1:-1]) > 999999:
+                elif int(data[i][1:]) < 100000 or int(data[i][1:]) > 999999:
                     data[i] = data[i] + " - Formato errato"
-                elif len(UserCode.objects.filter(code=data[i][1:-1])) == 0:
+                elif len(UserCode.objects.filter(code=data[i][1:])) == 0:
                     data[i] = data[i] + " - Invalido"
                 else:
-                    user = UserCode.objects.filter(code=data[i][1:-1])[0].user
+                    user = UserCode.objects.filter(code=data[i][1:])[0].user
                     if len(user.groups.values_list('name', flat=True)) == 0:
                         user.groups.add(group)
                         user.user_permissions.add(permission)
@@ -62,16 +65,54 @@ def uapprove(request):
                     else:
                         if user.groups.values_list('name', flat=True)[0] == parent_group:
                             user.user_permissions.add(permission)
-                            data[i] = data[i] + " - Gia` aggiunto"
+                            data[i] = data[i] + " - Ok"
                         else:
                             user.groups.clear()
                             user.groups.add(group)
                             user.user_permissions.add(permission)
                             data[i] = data[i] + " - Ok, cambio branca"
 
-            context = {'messages': data}
+        context = {
+            'messages': data,
+            'empty': len(data) == 0,
+        }
 
         return render(request, 'server/approve_user.html', context)
+    else:
+        return render(request, 'client/index.html', context)
+
+
+def docapprove(request):
+    context = {}
+    if (request.user.is_staff):
+        data = []
+        if request.method == "POST":
+            data = request.POST["codes"]
+            data = "".join(data.split())
+            data.replace("\r", "")
+            data = data.split("\n")
+            for i in range(len(data)):
+                if not data[i].isdigit():
+                    data[i] = data[i] + " - Formato errato"
+                elif int(data[i]) < 100000 or int(data[i]) > 999999:
+                    data[i] = data[i] + " - Formato errato"
+                elif len(Document.objects.filter(code=data[i])) == 0:
+                    data[i] = data[i] + " - Invalido"
+                else:
+                    document = Document.objects.filter(code=data[i])[0]
+                    if document.status == 'ok':
+                        data[i] = data[i] + " - Gia` approvato"
+                    else:
+                        document.status = 'ok'
+                        document.save()
+                        data[i] = data[i] + " - Ok"
+
+        context = {
+            'messages': data,
+            'empty': len(data) == 0,
+        }
+
+        return render(request, 'server/approve_doc.html', context)
     else:
         return render(request, 'client/index.html', context)
 
@@ -148,10 +189,20 @@ def doctype(request):
             for i in request.POST.keys():
                 if i == "csrfmiddlewaretoken":
                     continue
+                if i == "action":
+                    continue
+
                 selected.append(DocumentType.objects.get(id=i))
 
             for i in selected:
-                i.delete()
+                if request.POST["action"] == 'delete':
+                    try:
+                        i.delete()
+                    except ProtectedError:
+                        print("nope")
+                elif request.POST["action"] == 'hide':
+                    i.enabled = not i.enabled
+                    i.save()
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
@@ -160,7 +211,9 @@ def doctype(request):
             Q(group_private=False) | Q(group=group))
         out = []
         for doc in public_types:
-            out.append(doc)
+            custom_keys = Keys.objects.filter(container=doc)
+            ref_docs = Document.objects.filter(document_type=doc)
+            out.append([doc, custom_keys, len(ref_docs)])
 
         context = {'docs': out}
         return render(request, 'server/doc_type.html', context)
@@ -186,12 +239,14 @@ def docedit(request):
         personal_check = 'checked="checked"'
         medical_check = ""
         custom_check = ""
+        custom_message_check = ""
         context = {
             "enabled_check": enabled_check,
             "private_check": private_check,
             "personal_check": personal_check,
             "medical_check": medical_check,
             "custom_check": custom_check,
+            "custom_message_check": custom_message_check,
         }
         if request.method == "POST":
             enabled = "enabled" in request.POST.keys()
@@ -199,12 +254,14 @@ def docedit(request):
             personal_data = "personal_data" in request.POST.keys()
             medical_data = "medical_data" in request.POST.keys()
             custom_data = "custom_data" in request.POST.keys()
+            custom_message = "custom_message" in request.POST.keys()
+            custom_message_text = request.POST["custom_message_text"]
             name = request.POST["name"]
             custom = request.POST["custom"]
             custom += " "
             custom = custom.split("\n")
             doctype = DocumentType(
-                name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
+                custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
             doctype.save()
             for i in custom:
                 key = Keys(key=i[:-1], container=doctype)
@@ -219,13 +276,37 @@ def docedit(request):
 def doclist(request):
     context = {}
     if request.user.is_staff:
+        if request.method == "POST":
+            selected = []
+            for i in request.POST.keys():
+                if i == "csrfmiddlewaretoken":
+                    continue
+                if i == "action":
+                    continue
+
+                selected.append(Document.objects.get(id=i))
+
+            for i in selected:
+                if request.POST["action"] == 'delete':
+                    try:
+                        i.delete()
+                    except ProtectedError:
+                        print("nope")
+                elif request.POST["action"] == 'approve':
+                    i.status = 'ok'
+                    i.save()
+                elif request.POST["action"] == 'archive':
+                    i.status = 'archive'
+                    i.save()
+
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
         group = Group.objects.get(name=parent_group)
         documents = Document.objects.filter(group=group)
         out = []
         for i in documents:
-            out.append(i)
+            custom_keys = KeyVal.objects.filter(container=i)
+            out.append([i, custom_keys])
         context = {"docs": out}
         return render(request, 'server/doc_list.html', context)
     else:

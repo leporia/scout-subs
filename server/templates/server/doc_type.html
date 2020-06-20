@@ -10,7 +10,8 @@
       <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
       <ul class="right">
           {% if user.is_staff %}
-            <li><a onclick="document.getElementById('selection').submit()">Elimina selezionati</a></li>
+            <li><a onclick="send('hide')">Nascondi/mostra selezionati</a></li>
+            <li><a onclick="send('delete')">Elimina selezionati</a></li>
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}
@@ -32,32 +33,56 @@
 {% block content %}
 <form id="selection" action="{% url 'doctype' %}" method="post">
 {% csrf_token %}
+<input type="hidden" name="action" id="action">
 <ul class="collapsible">
     {% for doctype in docs %}
         <li>
         <div class="collapsible-header">
             <label>
-              <input name={{doctype.id}} type="checkbox" class="filled-in"/>
+              <input name={{doctype.0.id}} type="checkbox" class="filled-in"/>
               <span></span>
             </label>
-            {% if doctype.enabled %}
-                <i class="material-icons">visibility_on</i>
-            {% else %}
+            {% if not doctype.0.enabled %}
                 <i class="material-icons">visibility_off</i>
             {% endif %}
-            {{doctype.name}}
+            {% if not doctype.0.group_private %}
+                <i class="material-icons">public</i>
+            {% endif %}
+            {{doctype.0.name}}
+            <span class="new badge red lighten-1" data-badge-caption="">{{doctype.2}}</span></div>
         </div>
         <div class="collapsible-body"><span>
-        {% for key in keys %}
-          {{key}}<br>
-        {% endfor %}
+          {% if doctype.0.personal_data %}
+            <i class="material-icons">person</i>
+          {% endif %}
+          {% if doctype.0.medical_data %}
+            <i class="material-icons">healing</i>
+          {% endif %}
+          {% if doctype.0.custom_data %}
+            <i class="material-icons">add_circle_outline</i>
+          {% endif %}
+          {% if doctype.0.custom_message %}
+            <i class="material-icons">message</i>
+          {% endif %}
+          {% if doctype.0.custom_data %}
+            <br>
+            <ul class="collection">
+            {% for key in doctype.1 %}
+              <li class="collection-item">{{key.key}}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+          {% if doctype.0.custom_message %}
+            <br>
+            {{doctype.0.custom_message_text}}
+          {% endif %}
         </span></div>
         </li>
     {% endfor %}
 </ul>
 </form>
 <div class="fixed-action-btn">
-  <a class="btn-floating btn-large red lightend-1" href="{% url 'docedit'%}">
+  <a class="btn-floating btn-large red lighten-1" href="{% url 'docedit'%}">
     <i class="large material-icons">add</i>
   </a>
 </div>
@@ -67,4 +92,11 @@
 $(document).ready(function(){
     $('.collapsible').collapsible();
 });
+
+function send(id) {
+  var form = document.getElementById('selection')
+  var action = document.getElementById('action')
+  action.setAttribute('value', id);
+  form.submit()
+}
 {% endblock %}

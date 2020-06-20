@@ -41,29 +41,42 @@
             </div>
           </div>
           <div class="row">
-            <div class="input-field col s3">
+            <div class="input-field col s2">
               <label>
                 <input name="personal_data" type="checkbox" class="filled-in" {{personal_check}}/>
                 <span>Dati personali</span>
               </label>
             </div>
-            <div class="input-field col s3">
+            <div class="input-field col s2">
               <label>
                 <input name="medical_data" type="checkbox" class="filled-in" {{medical_check}} />
                 <span>Dati medici</span>
               </label>
             </div>
-            <div class="input-field col s3">
+            <div class="input-field col s4">
               <label>
                 <input name="custom_data" type="checkbox" class="filled-in" {{custom_check}}/>
                 <span>Parametri personalizzati</span>
               </label>
             </div>
+            <div class="input-field col s4">
+              <label>
+                <input name="custom_message" type="checkbox" class="filled-in" {{custom_message_check}}/>
+                <span>Messaggio personalizzato</span>
+              </label>
+            </div>
           </div>
+          <br>
           <div class="row">
             <div class="input-field col s12">
               <textarea name="custom" id="textarea" class="materialize-textarea"></textarea>
               <label for="textarea">Lista parametri personalizzati, uno per riga</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <textarea name="custom_message_text" id="textarea" class="materialize-textarea"></textarea>
+              <label for="textarea">Messaggio personalizzato</label>
             </div>
           </div>
           <div class="fixed-action-btn">

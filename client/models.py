@@ -12,6 +12,8 @@ class DocumentType(models.Model):
     personal_data = models.BooleanField(default=False)
     medical_data = models.BooleanField(default=False)
     custom_data = models.BooleanField(default=False)
+    custom_message = models.BooleanField(default=False)
+    custom_message_text = models.CharField(default="", max_length=250)
     name = models.CharField(default="", max_length=250)
 
 
@@ -36,7 +38,7 @@ class Document(models.Model):
         DocumentType, default=None, on_delete=models.PROTECT)
 
     personal_data = models.ForeignKey(
-        PersonalData, default=None, on_delete=models.PROTECT)
+        PersonalData, default=None, on_delete=models.PROTECT, null=True)
 
     class Meta:
         permissions = [

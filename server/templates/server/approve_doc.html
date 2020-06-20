@@ -5,7 +5,7 @@
 {% block nav %}
   <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
   <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-  <a href="{% url 'uapprove'%}" class="breadcrumb hide-on-med-and-down">Approva Utente</a>
+  <a href="{% url 'docapprove'%}" class="breadcrumb hide-on-med-and-down">Approva Documento</a>
 {% endblock %}
 
 {% block content %}
@@ -27,7 +27,7 @@
 <div class="row">
   <div class="col l4 offset-l4 m8 offset-m2 s12">
     <div class="card">
-      <form id="form" action="{% url 'uapprove'%}" method="post">
+      <form id="form" action="{% url 'docapprove'%}" method="post">
         {% csrf_token %}
         <div class="card-content">
           <p>Inserire un codice per riga</p>
