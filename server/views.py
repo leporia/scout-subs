@@ -352,15 +352,24 @@ def doclist(request):
     if request.user.is_staff:
         error = False
         error_text = ""
+
+        hidden = False
+        wait = True
+        selfsign = True
+        ok = True
+
+        hidden_check = 'checked="checked"'
+        wait_check = 'checked="checked"'
+        selfsign_check = 'checked="checked"'
+        ok_check = 'checked="checked"'
+        newer = ""
+        older = ""
+
         if request.method == "POST":
             selected = []
             for i in request.POST.keys():
-                if i == "csrfmiddlewaretoken":
-                    continue
-                if i == "action":
-                    continue
-
-                selected.append(Document.objects.get(id=i))
+                if i.isdigit():
+                    selected.append(Document.objects.get(id=i))
 
             for i in selected:
                 if request.POST["action"] == 'delete':
@@ -382,11 +391,30 @@ def doclist(request):
                     else:
                         error = True
                         error_text = "Non puoi dearchiviare un documento non archiviato"
+            
+            hidden = "filter_hidden" in request.POST
+            wait = "filter_wait" in request.POST
+            selfsign = "filter_selfsign" in request.POST
+            ok = "filter_ok" in request.POST
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
         group = Group.objects.get(name=parent_group)
         documents = Document.objects.filter(group=group)
+
+        if not hidden:
+            documents = documents.filter(~Q(status="archive"))
+            hidden_check = ""
+        if not wait:
+            documents = documents.filter(~Q(status="wait"))
+            wait_check = ""
+        if not selfsign:
+            documents = documents.filter(~Q(status="autosign"))
+            selfsign_check = ""
+        if not ok:
+            documents = documents.filter(~Q(status="ok"))
+            ok_check = ""
+
         out = []
         for i in documents:
             personal = None
@@ -397,8 +425,17 @@ def doclist(request):
                 medical = i.medical_data.__dict__.values()
 
             out.append([i, KeyVal.objects.filter(container=i), personal, medical])
+
+        types = DocumentType.objects.filter(Q(group_private=False) | Q(group=group))
+        users = User.objects.filter(groups__name=parent_group)
         context = {
+            "types": types,
+            "users": users,
             "docs": out,
+            "hidden_check": hidden_check,
+            "wait_check": wait_check,
+            "selfsign_check": selfsign_check,
+            "ok_check": ok_check,
             'error': error,
             'error_text': error_text,
             }
