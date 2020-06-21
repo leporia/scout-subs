@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+<style>
+.center {
+  text-align: center;
+}
+.left {
+  text-align: left;
+}
+.right {
+  text-align: right;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+h1 {
+  font-size: 4.2rem;
+  line-height: 110%;
+  margin: 2.8rem 0 1.68rem 0;
+}
+
+h2 {
+  font-size: 3.56rem;
+  line-height: 110%;
+  margin: 2.3733333333rem 0 1.424rem 0;
+}
+
+h3 {
+  font-size: 2.92rem;
+  line-height: 110%;
+  margin: 1.9466666667rem 0 1.168rem 0;
+}
+
+h4 {
+  font-size: 2.28rem;
+  line-height: 110%;
+  margin: 1.52rem 0 0.912rem 0;
+}
+
+h5 {
+  font-size: 1.64rem;
+  line-height: 110%;
+  margin: 1.0933333333rem 0 0.656rem 0;
+}
+
+h6 {
+  font-size: 1.15rem;
+  line-height: 110%;
+  margin: 0.7666666667rem 0 0.46rem 0;
+}
+
+.footer {
+}
+
+.content {
+  margin-left: 25%;
+  width: 50%;
+}
+
+table {
+  border-collapse:collapse;
+  margin:0px;
+  padding:0;
+  width:100%;
+}
+
+</style>
+</head>
+<body>
+  <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
+    <div class="title"><h1 class="center">{{doc.code}}</h1></div>
+    <div class="code"><h3 class="center">{{doc.document_type.name}}</h3></div>
+    <div class="content">
+      <p>Con la presente firma approvo il documento con codice {{doc.code}} accettando
+      tutte le clausole apposte su di esso.
+      Inoltre comprovo come veritieri e completi tutti i dati apposti sul documento.
+      </p>
+    </div>
+    <br><br><br><br>
+    <br><br><br><br>
+    <br><br><br><br>
+    <br><br><br><br>
+    <div class"footer">
+      <table>
+        <tr>
+          <td><h4 class="left">Data</h4></div></td>
+          <td><h4 class="right">Firma</h4></td>
+        </tr>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

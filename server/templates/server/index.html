@@ -50,6 +50,9 @@
                 {% if not doctype.0.group_private %}
                     <i class="material-icons">public</i>
                 {% endif %}
+                {% if doctype.0.auto_sign %}
+                  <i class="material-icons">assignment_turned_in</i>
+                {% endif %}
                 {{doctype.0.name}}
                 <span class="new badge red lighten-1" data-badge-caption="">{{doctype.1}}</span>
             </div>

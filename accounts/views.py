@@ -77,10 +77,16 @@ def personal(request):
         else:
             parent_group = request.user.groups.values_list('name', flat=True)[
                 0]
-            if parent_group == "muta":
+            if parent_group == "colonia":
+                branca_castorini = "selected"
+            elif parent_group == "muta":
                 branca_lupetti = "selected"
             elif parent_group == "reparto":
                 branca_esploratori = "selected"
+            elif parent_group == "posto":
+                branca_pionieri = "selected"
+            elif parent_group == "clan":
+                branca_rover = "selected"
             else:
                 branca_default = "selected"
 

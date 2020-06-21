@@ -3,16 +3,13 @@
 {% block title %}Admin - Documenti{% endblock %}
 
 {% block nav %}
-  <nav>
+  <nav class="nav-extended">
     <div class="nav-wrapper red lighten-1">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
       <a href="{% url 'doclist' %}" class="breadcrumb hide-on-med-and-down">Documenti</a>
       <ul class="right">
           {% if user.is_staff %}
-            <li><a onclick="send('archive')">Archivia selezionati</a></li>
-            <li><a onclick="send('approve')">Approva selezionati</a></li>
-            <li><a onclick="send('delete')">Elimina selezionati</a></li>
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}
@@ -28,12 +25,86 @@
           {% endif %}
       </ul>
     </div>
+    <div class="nav-wrapper red lighten-1">
+      <ul>
+        <li>
+          <input id="select-all" type="checkbox" class="filled-in"/>
+          <label for="select-all">
+            <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
+          </label>
+          </a>
+        </li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Archivia selezionati" onclick="send('archive')"><i class="material-icons">archive</i></a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
+      </ul>
+      <ul class="right">
+        <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+      </ul>
+    </div>
   </nav>
 {% endblock %}
 
 {% block content %}
 <form id="selection" action="{% url 'doclist' %}" method="post">
 {% csrf_token %}
+<div id="modal1" class="modal">
+  <div class="modal-content">
+    <h5>Filtri</h5>
+    <div class="row">
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
+          <span><i class="material-icons left">archive</i>Archiviati</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_public" type="checkbox" class="filled-in" {{public_check}}/>
+          <span><i class="material-icons left">timelapse</i>In Attesa</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
+          <span><i class="material-icons left">assignment_turned_in</i>No firma</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_personal" type="checkbox" class="filled-in" {{personal_check}}/>
+          <span><i class="material-icons left">check</i>Approvati</span>
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s6">
+        <label for="tetanus_date">Pi&ugrave; recenti di</label>
+        <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
+      </div>
+      <div class="input-field col s6">
+        <label for="tetanus_date">Pi&ugrave; vecchi di</label>
+        <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
+      </div>
+    </div>
+    <div class ="row">
+      <div class="input-field col s12">
+        <input value="{{misc}}" name="misc" id="misc" type="text" data-length="250">
+        <label for="misc">Tipo di documento</label>
+      </div>
+    </div>
+    <div class ="row">
+      <div class="input-field col s12">
+        <input value="{{misc}}" name="misc" id="misc" type="text" data-length="250">
+        <label for="misc">Proprietario del documento</label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" onclick="send('filter')" class="modal-close waves-effect waves-green btn-flat">Applica</a>
+  </div>
+</div>
 <input type="hidden" name="action" id="action">
 <ul class="collapsible">
     {% for doc in docs %}
@@ -49,6 +120,8 @@
                 <i class="material-icons">check</i>
             {% elif doc.0.status == "archive" %}
                 <i class="material-icons">archive</i>
+            {% elif doc.0.status == "autosign" %}
+              <i class="material-icons">assignment_turned_in</i>
             {% endif %}
             {{doc.0.document_type.name}}
             <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
@@ -123,6 +196,11 @@
 {%block script%}
 $(document).ready(function(){
     $('.collapsible').collapsible();
+    $('.tooltipped').tooltip();
+    $('.modal').modal();
+    {% if error %}
+      M.toast({html: '{{ error_text}}', classes: 'orange'})
+    {% endif %}
 });
 function send(id) {
   var form = document.getElementById('selection')
@@ -130,4 +208,41 @@ function send(id) {
   action.setAttribute('value', id);
   form.submit()
 }
+$('#select-all').click(function(event) {   
+    if(this.checked) {
+        // Iterate each checkbox
+        $(':checkbox').each(function() {
+            this.checked = true;                        
+        });
+    } else {
+        $(':checkbox').each(function() {
+            this.checked = false;                       
+        });
+    }
+});
+var options = {
+  container: document.getElementById('main'),
+  yearRange:100,
+  format:'dd mmmm yyyy',
+  i18n: {
+    months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
+    monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
+    weekdays: [ 'domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato' ],
+    weekdaysShort: [ 'dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab' ],
+    weekdaysAbbrev: [ 'D', 'L', 'M', 'M', 'G', 'V', 'S' ],
+    today: 'Oggi',
+    clear: 'Cancella',
+    close: 'Chiudi',
+    firstDay: 1,
+    format: 'dddd d mmmm yyyy',
+    formatSubmit: 'yyyy/mm/dd',
+    labelMonthNext: 'Mese successivo',
+    labelMonthPrev: 'Mese precedente',
+    labelMonthSelect: 'Seleziona un mese',
+    labelYearSelect: 'Seleziona un anno'
+        }}
+  document.addEventListener('DOMContentLoaded', function() {
+  var elems = document.querySelectorAll('.datepicker');
+  var instances = M.Datepicker.init(elems, options);
+  });
 {% endblock %}

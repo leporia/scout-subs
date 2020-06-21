@@ -3,15 +3,13 @@
 {% block title %}Admin - Tipo Documenti{% endblock %}
 
 {% block nav %}
-  <nav>
+  <nav class="nav-extended">
     <div class="nav-wrapper red lighten-1">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
       <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
       <ul class="right">
           {% if user.is_staff %}
-            <li><a onclick="send('hide')">Nascondi/mostra selezionati</a></li>
-            <li><a onclick="send('delete')">Elimina selezionati</a></li>
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}
@@ -27,12 +25,84 @@
           {% endif %}
       </ul>
     </div>
+    <div class="nav-wrapper red lighten-1">
+      <ul>
+        <li>
+          <input id="select-all" type="checkbox" class="filled-in"/>
+          <label for="select-all">
+            <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
+          </label>
+          </a>
+        </li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Mostra selezionati" onclick="send('show')"><i class="material-icons">visibility</i></a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Nascondi selezionati" Onclick="send('hide')"><i class="material-icons">visibility_off</i></a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons">delete</i></a></li>
+      </ul>
+      <ul class="right">
+        <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+      </ul>
+    </div>
   </nav>
 {% endblock %}
 
 {% block content %}
 <form id="selection" action="{% url 'doctype' %}" method="post">
 {% csrf_token %}
+<div id="modal1" class="modal">
+  <div class="modal-content">
+    <h5>Filtri</h5>
+    <div class="row">
+      <div class="input-field col s4">
+        <label>
+          <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
+          <span><i class="material-icons left">visibility_off</i>Disabilitati</span>
+        </label>
+      </div>
+      <div class="input-field col s4">
+        <label>
+          <input name="filter_public" type="checkbox" class="filled-in" {{public_check}}/>
+          <span><i class="material-icons left">public</i>Pubblici</span>
+        </label>
+      </div>
+      <div class="input-field col s4">
+        <label>
+          <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
+          <span><i class="material-icons left">assignment_turned_in</i>No firma</span>
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_personal" type="checkbox" class="filled-in" {{personal_check}}/>
+          <span><i class="material-icons left">person</i>Personali</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_medic" type="checkbox" class="filled-in" {{medic_check}}/>
+          <span><i class="material-icons left">healing</i>Medici</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_custom" type="checkbox" class="filled-in" {{custom_check}}/>
+          <span><i class="material-icons left">add_circle_outline</i>Personalizzati</span>
+        </label>
+      </div>
+      <div class="input-field col s3">
+        <label>
+          <input name="filter_message" type="checkbox" class="filled-in" {{message_check}}/>
+          <span><i class="material-icons left">message</i>Messaggi</span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" onclick="send('filter')" class="modal-close waves-effect waves-green btn-flat">Applica</a>
+  </div>
+</div>
+
 <input type="hidden" name="action" id="action">
 <ul class="collapsible">
     {% for doctype in docs %}
@@ -114,6 +184,11 @@
 {%block script%}
 $(document).ready(function(){
     $('.collapsible').collapsible();
+    $('.tooltipped').tooltip();
+    $('.modal').modal();
+    {% if error %}
+      M.toast({html: '{{ error_text}}', classes: 'orange'})
+    {% endif %}
 });
 
 function send(id) {
@@ -122,4 +197,17 @@ function send(id) {
   action.setAttribute('value', id);
   form.submit()
 }
+
+$('#select-all').click(function(event) {   
+    if(this.checked) {
+        // Iterate each checkbox
+        $(':checkbox').each(function() {
+            this.checked = true;                        
+        });
+    } else {
+        $(':checkbox').each(function() {
+            this.checked = false;                       
+        });
+    }
+});
 {% endblock %}

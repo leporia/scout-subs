@@ -33,7 +33,7 @@ def index(request):
             0]
         group = Group.objects.get(name=parent_group)
         public_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=group))
+            Q(group_private=False) | Q(group=group) & Q(enabled=True))
         docs = []
         for doc in public_types:
             ref_docs = Document.objects.filter(document_type=doc)
@@ -196,38 +196,96 @@ def ulist(request):
 def doctype(request):
     context = {}
     if request.user.is_staff:
+        error = False
+        error_text = ""
+
+        public = True
+        selfsign = True
+        hidden = False
+        personal = True
+        medic = True
+        custom = True
+        message = True
+        public_check = 'checked="checked"'
+        selfsign_check = 'checked="checked"'
+        hidden_check = 'checked="checked"'
+        personal_check = 'checked="checked"'
+        medic_check = 'checked="checked"'
+        custom_check = 'checked="checked"'
+        message_check = 'checked="checked"'
         if request.method == "POST":
             selected = []
             for i in request.POST.keys():
-                if i == "csrfmiddlewaretoken":
-                    continue
-                if i == "action":
-                    continue
-
-                selected.append(DocumentType.objects.get(id=i))
+                if i.isdigit():
+                    selected.append(DocumentType.objects.get(id=i))
 
             for i in selected:
                 if request.POST["action"] == 'delete':
                     try:
                         i.delete()
                     except ProtectedError:
-                        print("nope")
+                        error = True
+                        error_text = "Non puoi eliminare un tipo a cui é collegato uno o piú documenti"
                 elif request.POST["action"] == 'hide':
-                    i.enabled = not i.enabled
+                    i.enabled = False
                     i.save()
+                elif request.POST["action"] == 'show':
+                    i.enabled = True
+                    i.save()
+
+            public = "filter_public" in request.POST
+            selfsign = "filter_selfsign" in request.POST
+            hidden = "filter_hidden" in request.POST
+            personal = "filter_personal" in request.POST
+            medic = "filter_medic" in request.POST
+            custom = "filter_custom" in request.POST
+            message = "filter_message" in request.POST
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
         group = Group.objects.get(name=parent_group)
         public_types = DocumentType.objects.filter(
             Q(group_private=False) | Q(group=group))
+        if not public:
+            public_types = public_types.filter(group_private=True)
+            public_check = ""
+        if not selfsign:
+            public_types = public_types.filter(auto_sign=False)
+            selfsign_check = ""
+        if not hidden:
+            public_types = public_types.filter(enabled=True)
+            hidden_check = ""
+        if not personal:
+            public_types = public_types.filter(personal_data=False)
+            personal_check = ""
+        if not medic:
+            public_types = public_types.filter(medical_data=False)
+            medic_check = ""
+        if not custom:
+            public_types = public_types.filter(custom_data=False)
+            custom_check = ""
+        if not message:
+            public_types = public_types.filter(custom_message=False)
+            message_check = ""
+
         out = []
         for doc in public_types:
             custom_keys = Keys.objects.filter(container=doc)
             ref_docs = Document.objects.filter(document_type=doc)
             out.append([doc, custom_keys, len(ref_docs)])
 
-        context = {'docs': out}
+        context = {
+            'docs': out,
+            'public_check': public_check,
+            'selfsign_check': selfsign_check,
+            'hidden_check': hidden_check,
+            'personal_check': personal_check,
+            'medic_check': medic_check,
+            'custom_check': custom_check,
+            'message_check': message_check,
+            'error': error,
+            'error_text': error_text,
+            }
         return render(request, 'server/doc_type.html', context)
     else:
         return render(request, 'client/index.html', context)
@@ -292,6 +350,8 @@ def doccreate(request):
 def doclist(request):
     context = {}
     if request.user.is_staff:
+        error = False
+        error_text = ""
         if request.method == "POST":
             selected = []
             for i in request.POST.keys():
@@ -304,16 +364,24 @@ def doclist(request):
 
             for i in selected:
                 if request.POST["action"] == 'delete':
-                    try:
-                        i.delete()
-                    except ProtectedError:
-                        print("nope")
+                    i.delete()
                 elif request.POST["action"] == 'approve':
                     i.status = 'ok'
                     i.save()
                 elif request.POST["action"] == 'archive':
-                    i.status = 'archive'
-                    i.save()
+                    if i.status == 'ok':
+                        i.status = 'archive'
+                        i.save()
+                    else:
+                        error = True
+                        error_text = "Non puoi archiviare un documento non approvato"
+                elif request.POST["action"] == 'unarchive':
+                    if i.status == 'archive':
+                        i.status = 'ok'
+                        i.save()
+                    else:
+                        error = True
+                        error_text = "Non puoi dearchiviare un documento non archiviato"
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
@@ -329,7 +397,11 @@ def doclist(request):
                 medical = i.medical_data.__dict__.values()
 
             out.append([i, KeyVal.objects.filter(container=i), personal, medical])
-        context = {"docs": out}
+        context = {
+            "docs": out,
+            'error': error,
+            'error_text': error_text,
+            }
         return render(request, 'server/doc_list.html', context)
     else:
         return render(request, 'client/index.html', context)

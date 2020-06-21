@@ -2,9 +2,13 @@ from random import randint
 from django.contrib.auth.models import Group, Permission, User
 from client.models import UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 
 from django.shortcuts import render
+
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from io import BytesIO
 
 # Create your views here.
 
@@ -27,7 +31,14 @@ def index(request):
         if request.method == "POST":
             document = Document.objects.get(id=request.POST["action"][1:])
             if request.POST["action"][0] == 'f':
-                pass
+                template = get_template('client/approve_doc_pdf.html')
+                context = {'doc': document}
+                html = template.render(context)
+                result = BytesIO()
+                pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+
+                result.seek(0)
+                return FileResponse(result, as_attachment=True, filename=document.document_type.name+".pdf")
             elif request.POST["action"][0] == 'a':
                 document.status = "ok"
                 document.save()
