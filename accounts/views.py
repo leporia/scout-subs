@@ -3,10 +3,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.models import Group
+from django.core.files.storage import FileSystemStorage
+from django.http import FileResponse
 
 from client.models import UserCode
 
-import dateparser
+import dateparser, os
 
 
 class SignUp(generic.CreateView):
@@ -29,6 +31,18 @@ def personal(request):
         branca_rover = ""
 
         if request.method == "POST":
+            if request.POST['action'] == "download_vac":
+                if medic.vac_certificate != None:
+                    filename = os.path.basename(medic.vac_certificate.name)
+                    filename = filename[filename.find("_")+1:]
+                    return FileResponse(medic.vac_certificate.file, as_attachment=True, filename=filename)
+
+            if request.POST['action'] == "download_health":
+                if medic.health_care_certificate != None:
+                    filename = os.path.basename(medic.health_care_certificate.name)
+                    filename = filename[filename.find("_")+1:]
+                    return FileResponse(medic.health_care_certificate.file, as_attachment=True, filename=filename)
+
             request.user.first_name = request.POST["first_name"]
             request.user.last_name = request.POST["last_name"]
             request.user.email = request.POST["email"]
@@ -71,6 +85,24 @@ def personal(request):
                 request.user.groups.clear()
                 request.user.groups.add(
                     Group.objects.get(name=request.POST["branca"]))
+            
+            if "vac_certificate" in request.FILES:
+                myfile = request.FILES['vac_certificate']
+                medic.vac_certificate.save(request.user.username+"_"+myfile.name, myfile)
+                medic.save()
+
+            if "health_care_certificate" in request.FILES:
+                myfile = request.FILES['health_care_certificate']
+                medic.health_care_certificate.save(request.user.username+"_"+myfile.name, myfile)
+                medic.save()
+
+            if request.POST["delete_vac"] == 'vac':
+                medic.vac_certificate.delete()
+                medic.save()
+
+            if request.POST["delete_health"] == 'health':
+                medic.health_care_certificate.delete()
+                medic.save()
 
         if len(request.user.groups.values_list('name', flat=True)) == 0:
             branca_default = "selected"
@@ -99,6 +131,18 @@ def personal(request):
         misc = ""
         if medic.misc_bool:
             misc = "checked='checked'"
+
+        if (medic.vac_certificate != None):
+            vac_name = os.path.basename(medic.vac_certificate.name)
+            vac_name = vac_name[vac_name.find("_")+1:]
+        else:
+            vac_name = ''
+
+        if (medic.health_care_certificate != None):
+            card_name = os.path.basename(medic.health_care_certificate.name)
+            card_name = card_name[card_name.find("_")+1:]
+        else:
+            card_name = ''
 
         context = {
             'first_name': request.user.first_name,
@@ -140,6 +184,8 @@ def personal(request):
             'drugs': medic.drugs,
             'misc_check': misc,
             'misc': medic.misc,
+            'health_care_certificate': card_name,
+            'vac_certificate': vac_name,
         }
 
         return render(request, 'accounts/index.html', context)

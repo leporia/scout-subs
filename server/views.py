@@ -2,13 +2,16 @@ from django.shortcuts import render
 from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, FileResponse
 from django.db.models.deletion import ProtectedError
+from django.template.loader import get_template
 
 import dateparser
 from datetime import datetime
 from datetime import timedelta
 import pytz
+import pdfkit
+from io import BytesIO
 
 # Create your views here.
 
@@ -364,6 +367,9 @@ def doccreate(request):
 def doclist(request):
     context = {}
     if request.user.is_staff:
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+        group = Group.objects.get(name=parent_group)
         zurich = pytz.timezone('Europe/Zurich')
         error = False
         error_text = ""
@@ -385,6 +391,19 @@ def doclist(request):
         chips_types = []
 
         if request.method == "POST":
+            if request.POST["action"][0] == 'f':
+                document = Document.objects.get(id=request.POST["action"][1:])
+                if document.group == group:
+                    template = get_template('server/download_doc.html')
+                    doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
+                    context = {'doc': doc}
+                    html = template.render(context)
+                    pdf = pdfkit.from_string(html, False)
+                    result = BytesIO(pdf)
+                    result.seek(0)
+
+                    return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+
             selected = []
             for i in request.POST.keys():
                 if i.isdigit():
@@ -430,9 +449,6 @@ def doclist(request):
                 owner = []
                 types = []
 
-        parent_group = request.user.groups.values_list('name', flat=True)[
-            0]
-        group = Group.objects.get(name=parent_group)
         documents = Document.objects.filter(group=group)
 
         if not hidden:
@@ -474,11 +490,13 @@ def doclist(request):
             personal = None
             medical = None
             if i.document_type.personal_data:
-                personal = i.personal_data.__dict__.values()
+                personal = i.personal_data
             if i.document_type.medical_data:
-                medical = i.medical_data.__dict__.values()
+                medical = i.medical_data
 
-            out.append([i, KeyVal.objects.filter(container=i), personal, medical])
+            doc_group = i.user.groups.values_list('name', flat=True)[0]
+
+            out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group])
 
         auto_types = DocumentType.objects.filter(Q(group_private=False) | Q(group=group))
         users = User.objects.filter(groups__name=parent_group)

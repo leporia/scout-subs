@@ -1,4 +1,4 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_client.html' %}
 
 {% block title %}Modifica documento{% endblock %}
 
@@ -26,21 +26,39 @@
           {% if personal_data %}
             <div class="row">
               <div class="col s12">
-                <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&agrave; le informazioni personali, prego verificare che siano corrette e aggiornate</a>
+                <div class="card teal">
+                  <div class="card-content">
+                    <p style="color:white"><b>
+                      Il documento conterr&agrave; le informazioni personali, prego verificare che siano corrette e aggiornate
+                    </b></p>
+                  </div>
+                </div>
               </div>
             </div>
           {% endif %}
           {% if medical_data %}
             <div class="row">
               <div class="col s12">
-                <a style="pointer-events: none; cursor: default;" class="btn red lighten-1"> Il documento conterr&agrave; le informazioni mediche, prego verificare che siano corrette e aggiornate</a>
+                <div class="card teal">
+                  <div class="card-content">
+                    <p style="color:white"><b>
+                      Il documento conterr&agrave; le informazioni mediche, prego verificare che siano corrette e aggiornate
+                    </b></p>
+                  </div>
+                </div>
               </div>
             </div>
           {% endif %}
           {% if custom_message %}
             <div class="row">
               <div class="col s12">
-                <a style="pointer-events: none; cursor: default;" class="btn red lighten-1">{{custom_message_text}}</a>
+                <div class="card teal">
+                  <div class="card-content">
+                    <p style="color:white"><b>
+                      {{custom_message_text}}
+                    </b></p>
+                  </div>
+                </div>
               </div>
             </div>
           {% endif %}

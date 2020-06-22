@@ -1,4 +1,4 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_client.html' %}
 
 {% block title %}Crea Documento{% endblock %}
 
@@ -46,7 +46,7 @@
             {% if personal_data %}
               <div class="row">
                 <div class="col s12">
-                  <div class="card red lighten-1">
+                  <div class="card teal">
                     <div class="card-content">
                       <p style="color:white"><b>
                         Il documento conterr&agrave; le informazioni personali, prego verificare che siano corrette e aggiornate
@@ -59,7 +59,7 @@
             {% if medical_data %}
               <div class="row">
                 <div class="col s12">
-                  <div class="card red lighten-1">
+                  <div class="card teal">
                     <div class="card-content">
                       <p style="color:white"><b>
                         Il documento conterr&agrave; le informazioni mediche, prego verificare che siano corrette e aggiornate
@@ -72,7 +72,7 @@
             {% if custom_message %}
               <div class="row">
                 <div class="col s12">
-                  <div class="card red lighten-1">
+                  <div class="card teal">
                     <div class="card-content">
                       <p style="color:white"><b>
                         {{custom_message_text}}

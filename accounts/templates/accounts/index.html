@@ -4,7 +4,7 @@
 
 {%block nav%}
   <nav class="nav-extended">
-    <div class="nav-wrapper red lighten-1">
+    <div class="nav-wrapper teal">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="#!" class="breadcrumb hide-on-med-and-down">Account</a>
       <ul class="right">
@@ -24,7 +24,7 @@
           {% endif %}
       </ul>
     </div>
-    <div class="nav-content red lighten-1">
+    <div class="nav-content teal">
       <ul class="tabs tabs-transparent">
         <li class="tab"><a class="active" href="#personal">Info Personali</a></li>
         <li class="tab"><a href="#medic">Info Mediche</a></li>
@@ -55,24 +55,25 @@
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-        <form action="{% url 'personal'%}" method="post" id="form" class="col s12">
+        <form action="{% url 'personal'%}" method="post" id="form" class="col s12" enctype="multipart/form-data">
+          <input type="hidden" name="action" id="action">
+          <input type="hidden" name="delete_vac" id="delete_vac">
+          <input type="hidden" name="delete_health" id="delete_health">
           {% csrf_token %}
           <div class="row">
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input name="first_name" value="{{first_name}}" id="first_name" type="text" >
               <label for="first_name">Nome</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input name="last_name" value="{{last_name}}" id="last_name" type="text" >
               <label for="last_name">Cognome</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" class="datepicker">
               <label for="birth_date">Data di nascita</label>
             </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <select name="branca">
                 <option value="" disabled {{branca_default}}>Scegli</option>
                 <option value="colonia" {{branca_castorini}}>Castorini</option>
@@ -83,57 +84,49 @@
               </select>
               <label>Branca</label>
             </div>
-            <div class="input-field col s8">
+            <div class="input-field col l8 s12">
               <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" >
               <label for="parent_name">Nome dei genitori</label>
             </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s12">
+            <div class="input-field col l12 s12">
               <input value="{{via}}" name="via" id="via" type="text" >
               <label for="via">Via e numero</label>
             </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{cap}}" name="cap" id="cap" type="text" >
               <label for="cap">CAP</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{country}}" name="country" id="country" type="text" >
               <label for="country">Paese</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{nationality}}" name="nationality" id="nationality" type="text" >
               <label for="nationality">Nazionalit&agrave;</label>
             </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{phone}}" name="phone" id="phone" type="text" >
               <label for="phone">Cellulare</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" >
               <label for="home_phone">Telefono di casa</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{email}}" name="email" id="email" type="text" >
               <label for="email">Email</label>
             </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s8">
+            <div class="input-field col l8 s12">
               <input value="{{school}}" name="school" id="school" type="text" >
               <label for="school">Scuola frequentata</label>
             </div>
-            <div class="input-field col s4">
+            <div class="input-field col l4 s12">
               <input value="{{year}}" name="year" id="year" type="text" >
               <label for="year">Classe</label>
             </div>
           </div>
             <div class="fixed-action-btn">
-              <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('form').submit()">
+              <a class="btn-floating btn-large teal" onclick="document.getElementById('form').submit()">
                 <i class="large material-icons">save</i>
               </a>
             </div>
@@ -145,210 +138,437 @@
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-          {% csrf_token %}
-          <div class="row">
-            <div class="col s12">
-              <h6>Persona di contatto in caso di necessit&agrave;</h6>
+        <div class="col s12">
+          <h6>Persona di contatto in caso di necessit&agrave;</h6>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col l6 s12">
+          <input name="emer_name" value="{{emer_name}}" id="emer_name" type="text" >
+          <label for="emer_name">Nome e cognome</label>
+        </div>
+        <div class="input-field col l3 s12">
+          <input name="emer_relative" value="{{emer_relative}}" id="emer_relative" type="text" >
+          <label for="emer_releative">Parentela</label>
+        </div>
+        <div class="input-field col l3 s12">
+          <input name="cell_phone" value="{{cell_phone}}" id="cellphone" type="text" >
+          <label for="cell_phone">Cellulare</label>
+        </div>
+        <div class="input-field col l9 s12">
+          <input value="{{address}}" name="address" id="address" type="text" >
+          <label for="address">Indirizzo completo</label>
+        </div>
+        <div class="input-field col l3 s12">
+          <input value="{{emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+          <label for="emer_phone">Telefono di casa</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <h6>Assicurazione</h6>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col l4 s12">
+          <input value="{{health_care}}" name="health_care" id="health_care" type="text" >
+          <label for="health_care">Cassa Malati</label>
+        </div>
+        <div class="input-field col l4 s12">
+          <input value="{{injuries}}" name="injuries" id="injuries" type="text" >
+          <label for="injuries">Infortuni</label>
+        </div>
+        <div class="input-field col l4 s12">
+          <input value="{{rc}}" name="rc" id="rc" type="text" >
+          <label for="rc">Responsabilit&agrave; civile</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="switch col s12">
+          &Egrave; sostenitore REGA&nbsp;&nbsp;
+          <label>
+            No
+            <input name="rega" type="checkbox" {{rega_check}}>
+            <span class="lever"></span>
+            Si
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <h6>Medico di famiglia</h6>
+        </div>
+        <div class="input-field col l6 s12">
+          <input value="{{medic_name}}" name="medic_name" id="medic_name" type="text" >
+          <label for="medic_name">Nome e cognome</label>
+        </div>
+        <div class="input-field col l6 s12">
+          <input value="{{medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+          <label for="medic_phone">Telefono studio</label>
+        </div>
+        <div class="input-field col l12 s12">
+          <input value="{{medic_address}}" name="medic_address" id="medic_address" type="text" >
+          <label for="medic_address">Indirizzo completo</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <h6>Scheda medica personale</h6>
+        </div>
+        <div class="input-field col s12">
+          <input value="{{sickness}}" name="sickness" id="sickness" type="text" data-length="250">
+          <label for="sickness">Principali malattie avute</label>
+        </div>
+        <div class="input-field col l8 s12">
+          <input value="{{vaccine}}" name="vaccine" id="vaccine" type="text" data-length="250">
+          <label for="vaccine">Vacinazioni fatte</label>
+        </div>
+        <div class="input-field col l4 s12">
+          <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
+          <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
+        </div>
+        <div class="input-field col s12">
+          <input value="{{allergy}}" name="allergy" id="allergy" type="text" data-length="250">
+          <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
+        </div>
+        <div class="switch col s12">
+          Deve assumere regolarmente medicamenti&nbsp;&nbsp;
+          <label>
+            No
+            <input name="drugs_bool" type="checkbox" {{drugs_check}}>
+            <span class="lever"></span>
+            Si
+          </label>
+        </div>
+        <div class="col s12">
+          <div class="card teal">
+            <div class="card-content">
+              <p style="color:white"><b>In caso dovesse assumere farmaci, avvisare comunque i capi</b></p>
             </div>
           </div>
-          <div class="row">
-            <div class="input-field col s6">
-              <input name="emer_name" value="{{emer_name}}" id="emer_name" type="text" >
-              <label for="emer_name">Nome e cognome</label>
-            </div>
-            <div class="input-field col s3">
-              <input name="emer_relative" value="{{emer_relative}}" id="emer_relative" type="text" >
-              <label for="emer_releative">Parentela</label>
-            </div>
-            <div class="input-field col s3">
-              <input name="cell_phone" value="{{cell_phone}}" id="cellphone" type="text" >
-              <label for="cell_phone">Cellulare</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s9">
-              <input value="{{address}}" name="address" id="address" type="text" >
-              <label for="address">Indirizzo completo</label>
-            </div>
-            <div class="input-field col s3">
-              <input value="{{emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
-              <label for="emer_phone">Telefono di casa</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Assicurazione</h6>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s4">
-              <input value="{{health_care}}" name="health_care" id="health_care" type="text" >
-              <label for="health_care">Cassa Malati</label>
-            </div>
-            <div class="input-field col s4">
-              <input value="{{injuries}}" name="injuries" id="injuries" type="text" >
-              <label for="injuries">Infortuni</label>
-            </div>
-            <div class="input-field col s4">
-              <input value="{{rc}}" name="rc" id="rc" type="text" >
-              <label for="rc">Responsabilit&agrave; civile</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="switch col s12">
-              &Egrave; sostenitore REGA&nbsp;&nbsp;
-              <label>
-                No
-                <input name="rega" type="checkbox" {{rega_check}}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Medico di famiglia</h6>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s6">
-              <input value="{{medic_name}}" name="medic_name" id="medic_name" type="text" >
-              <label for="medic_name">Nome e cognome</label>
-            </div>
-            <div class="input-field col s6">
-              <input value="{{medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
-              <label for="medic_phone">Telefono studio</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s12">
-              <input value="{{medic_address}}" name="medic_address" id="medic_address" type="text" >
-              <label for="medic_address">Indirizzo completo</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Scheda medica personale</h6>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s12">
-              <input value="{{sickness}}" name="sickness" id="sickness" type="text" data-length="250">
-              <label for="sickness">Principali malattie avute</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s8">
-              <input value="{{vaccine}}" name="vaccine" id="vaccine" type="text" data-length="250">
-              <label for="vaccine">Vacinazioni fatte</label>
-            </div>
-            <div class="input-field col s4">
-              <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-              <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s12">
-              <input value="{{allergy}}" name="allergy" id="allergy" type="text" data-length="250">
-              <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="switch col s12">
-              Deve assumere regolarmente medicamenti&nbsp;&nbsp;
-              <label>
-                No
-                <input name="drugs_bool" type="checkbox" {{drugs_check}}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <div class="card red lighten-1">
-                <div class="card-content">
-                  <p style="color:white"><b>In caso dovesse assumere farmaci, avvisare comunque i capi</b></p>
+        </div>
+        <div class="input-field col s12">
+          <input value="{{drugs}}" name="drugs" id="drugs" type="text" data-length="250">
+          <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
+        </div>
+        <div class="switch col s12">
+          Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
+          <label>
+            No
+            <input name="misc_bool" type="checkbox" {{misc_check}}>
+            <span class="lever"></span>
+            Si
+          </label>
+        </div>
+        <div class="input-field col s12">
+          <input value="{{misc}}" name="misc" id="misc" type="text" data-length="250">
+          <label for="misc">Se s&igrave; quali</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <h6>Allegati</h6>
+        </div>
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              Certificato di vacinazione
+              <div class="file-field input-field">
+                <div class="btn teal">
+                  <span><i class="material-icons left">file_upload</i>File</span>
+                  <input type="file" name="vac_certificate">
+                </div>
+                <div class="file-path-wrapper">
+                  <input id="vac_file" value="{{vac_certificate}}" class="file-path" type="text" placeholder="Certificato di vacinazione">
                 </div>
               </div>
-            </div>
-            <div class="input-field col s12">
-              <input value="{{drugs}}" name="drugs" id="drugs" type="text" data-length="250">
-              <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="switch col s12">
-              Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
-              <label>
-                No
-                <input name="misc_bool" type="checkbox" {{misc_check}}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-            <div class="input-field col s12">
-              <input value="{{misc}}" name="misc" id="misc" type="text" data-length="250">
-              <label for="misc">Se s&igrave; quali</label>
+              {% if vac_certificate != ''%}
+                <a class="btn teal" onclick="send('download_vac')"><i class="material-icons left">file_download</i>Download</a>
+                <a class="btn teal" onclick="delete_vac()"><i class="material-icons left">delete</i><span>Elimina</span></a>
+              {% endif %}
             </div>
           </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Allegati</h6>
+        </div>
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              Tessera cassa malati
+              <div class="file-field input-field">
+                <div class="btn teal">
+                  <span><i class="material-icons left">file_upload</i>File</span>
+                  <input type="file" name="health_care_certificate">
+                </div>
+                <div class="file-path-wrapper">
+                  <input id="health_care_file" value="{{health_care_certificate}}" class="file-path" type="text" placeholder="Tessera cassa malati">
+                </div>
+              </div>
+              {% if health_care_certificate != ''%}
+                <a class="btn teal" onclick="send('download_health')"><i class="material-icons left">file_download</i>Download</a>
+                <a class="btn teal" onclick="delete_health()"><i class="material-icons left">delete</i><span>Elimina</span></a>
+              {% endif %}
             </div>
           </div>
-          <div class="row">
-            <div class="col s6">
-              Certificato delle vacinazioni
-            </div>
-            <div class="col s6">
-              Tessera della cassa malati
-            </div>
-          </div>
-          <div class="fixed-action-btn">
-            <a class="btn-floating btn-large red lighten-1" onclick="document.getElementById('form').submit()">
-              <i class="large material-icons">save</i>
-            </a>
-          </div>
-        </form>
+        </div>
       </div>
+      <div class="fixed-action-btn">
+        <a class="btn-floating btn-large teal" onclick="send('save')">
+          <i class="large material-icons">save</i>
+        </a>
+      </div>
+      </form>
     </div>
   </div>
 </div>
 {% endblock %}
 
 {% block script %}
-    var elem = $('.tabs')
-    var options = {
-      yearRange:100,
-      format:'dd mmmm yyyy',
-      i18n: {
-        months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
-        monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
-        weekdays: [ 'domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato' ],
-        weekdaysShort: [ 'dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab' ],
-        weekdaysAbbrev: [ 'D', 'L', 'M', 'M', 'G', 'V', 'S' ],
-        today: 'Oggi',
-        clear: 'Cancella',
-        close: 'Chiudi',
-        firstDay: 1,
-        format: 'dddd d mmmm yyyy',
-        formatSubmit: 'yyyy/mm/dd',
-        labelMonthNext: 'Mese successivo',
-        labelMonthPrev: 'Mese precedente',
-        labelMonthSelect: 'Seleziona un mese',
-        labelYearSelect: 'Seleziona un anno'
-            }}
-    var instance = M.Tabs.init(elem, options);
-    document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.datepicker');
-    var instances = M.Datepicker.init(elems, options);
+function send(id) {
+  var form = document.getElementById('form');
+  var action = document.getElementById('action');
+  action.setAttribute('value', id);
+  form.submit();
+}
+
+function delete_vac() {
+  var action = document.getElementById('delete_vac');
+  var text = document.getElementById('vac_file');
+  action.setAttribute('value', 'vac');
+  text.setAttribute('value', '');
+}
+
+function delete_health() {
+  var action = document.getElementById('delete_health');
+  var text = document.getElementById('health_care_file');
+  action.setAttribute('value', 'health');
+  text.setAttribute('value', '');
+}
+
+var elem = $('.tabs')
+var options = {
+  yearRange:100,
+  format:'dd mmmm yyyy',
+  i18n: {
+    months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
+    monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
+    weekdays: [ 'domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato' ],
+    weekdaysShort: [ 'dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab' ],
+    weekdaysAbbrev: [ 'D', 'L', 'M', 'M', 'G', 'V', 'S' ],
+    today: 'Oggi',
+    clear: 'Cancella',
+    close: 'Chiudi',
+    firstDay: 1,
+    format: 'dddd d mmmm yyyy',
+    formatSubmit: 'yyyy/mm/dd',
+    labelMonthNext: 'Mese successivo',
+    labelMonthPrev: 'Mese precedente',
+    labelMonthSelect: 'Seleziona un mese',
+    labelYearSelect: 'Seleziona un anno'
+        }}
+var instance = M.Tabs.init(elem, options);
+document.addEventListener('DOMContentLoaded', function() {
+var elems = document.querySelectorAll('.datepicker');
+var instances = M.Datepicker.init(elems, options);
+});
+document.addEventListener('DOMContentLoaded', function() {
+var elems = document.querySelectorAll('select');
+var instances = M.FormSelect.init(elems, options);
+});
+$(document).ready(function() {
+$('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
+});
+
+/*!
+ * jQuery Plugin: Are-You-Sure (Dirty Form Detection)
+ * https://github.com/codedance/jquery.AreYouSure/
+ *
+ * Copyright (c) 2012-2014, Chris Dance and PaperCut Software http://www.papercut.com/
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * Author:  chris.dance@papercut.com
+ * Version: 1.9.0
+ * Date:    13th August 2014
+ */
+(function($) {
+  
+  $.fn.areYouSure = function(options) {
+      
+    var settings = $.extend(
+      {
+        'message' : 'You have unsaved changes!',
+        'dirtyClass' : 'dirty',
+        'change' : null,
+        'silent' : false,
+        'addRemoveFieldsMarksDirty' : false,
+        'fieldEvents' : 'change keyup propertychange input',
+        'fieldSelector': ":input:not(input[type=submit]):not(input[type=button])"
+      }, options);
+
+    var getValue = function($field) {
+      if ($field.hasClass('ays-ignore')
+          || $field.hasClass('aysIgnore')
+          || $field.attr('data-ays-ignore')
+          || $field.attr('name') === undefined) {
+        return null;
+      }
+
+      if ($field.is(':disabled')) {
+        return 'ays-disabled';
+      }
+
+      var val;
+      var type = $field.attr('type');
+      if ($field.is('select')) {
+        type = 'select';
+      }
+
+      switch (type) {
+        case 'checkbox':
+        case 'radio':
+          val = $field.is(':checked');
+          break;
+        case 'select':
+          val = '';
+          $field.find('option').each(function(o) {
+            var $option = $(this);
+            if ($option.is(':selected')) {
+              val += $option.val();
+            }
+          });
+          break;
+        default:
+          val = $field.val();
+      }
+
+      return val;
+    };
+
+    var storeOrigValue = function($field) {
+      $field.data('ays-orig', getValue($field));
+    };
+
+    var checkForm = function(evt) {
+
+      var isFieldDirty = function($field) {
+        var origValue = $field.data('ays-orig');
+        if (undefined === origValue) {
+          return false;
+        }
+        return (getValue($field) != origValue);
+      };
+
+      var $form = ($(this).is('form')) 
+                    ? $(this)
+                    : $(this).parents('form');
+
+      // Test on the target first as it's the most likely to be dirty
+      if (isFieldDirty($(evt.target))) {
+        setDirtyStatus($form, true);
+        return;
+      }
+
+      $fields = $form.find(settings.fieldSelector);
+
+      if (settings.addRemoveFieldsMarksDirty) {              
+        // Check if field count has changed
+        var origCount = $form.data("ays-orig-field-count");
+        if (origCount != $fields.length) {
+          setDirtyStatus($form, true);
+          return;
+        }
+      }
+
+      // Brute force - check each field
+      var isDirty = false;
+      $fields.each(function() {
+        var $field = $(this);
+        if (isFieldDirty($field)) {
+          isDirty = true;
+          return false; // break
+        }
+      });
+      
+      setDirtyStatus($form, isDirty);
+    };
+
+    var initForm = function($form) {
+      var fields = $form.find(settings.fieldSelector);
+      $(fields).each(function() { storeOrigValue($(this)); });
+      $(fields).unbind(settings.fieldEvents, checkForm);
+      $(fields).bind(settings.fieldEvents, checkForm);
+      $form.data("ays-orig-field-count", $(fields).length);
+      setDirtyStatus($form, false);
+    };
+
+    var setDirtyStatus = function($form, isDirty) {
+      var changed = isDirty != $form.hasClass(settings.dirtyClass);
+      $form.toggleClass(settings.dirtyClass, isDirty);
+        
+      // Fire change event if required
+      if (changed) {
+        if (settings.change) settings.change.call($form, $form);
+
+        if (isDirty) $form.trigger('dirty.areYouSure', [$form]);
+        if (!isDirty) $form.trigger('clean.areYouSure', [$form]);
+        $form.trigger('change.areYouSure', [$form]);
+      }
+    };
+
+    var rescan = function() {
+      var $form = $(this);
+      var fields = $form.find(settings.fieldSelector);
+      $(fields).each(function() {
+        var $field = $(this);
+        if (!$field.data('ays-orig')) {
+          storeOrigValue($field);
+          $field.bind(settings.fieldEvents, checkForm);
+        }
+      });
+      // Check for changes while we're here
+      $form.trigger('checkform.areYouSure');
+    };
+
+    var reinitialize = function() {
+      initForm($(this));
+    }
+
+    if (!settings.silent && !window.aysUnloadSet) {
+      window.aysUnloadSet = true;
+      $(window).bind('beforeunload', function() {
+        $dirtyForms = $("form").filter('.' + settings.dirtyClass);
+        if ($dirtyForms.length == 0) {
+          return;
+        }
+        // Prevent multiple prompts - seen on Chrome and IE
+        if (navigator.userAgent.toLowerCase().match(/msie|chrome/)) {
+          if (window.aysHasPrompted) {
+            return;
+          }
+          window.aysHasPrompted = true;
+          window.setTimeout(function() {window.aysHasPrompted = false;}, 900);
+        }
+        return settings.message;
+      });
+    }
+
+    return this.each(function(elem) {
+      if (!$(this).is('form')) {
+        return;
+      }
+      var $form = $(this);
+        
+      $form.submit(function() {
+        $form.removeClass(settings.dirtyClass);
+      });
+      $form.bind('reset', function() { setDirtyStatus($form, false); });
+      // Add a custom events
+      $form.bind('rescan.areYouSure', rescan);
+      $form.bind('reinitialize.areYouSure', reinitialize);
+      $form.bind('checkform.areYouSure', checkForm);
+      initForm($form);
     });
-    document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems, options);
-    });
-    $(document).ready(function() {
-    $('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
-    });
+  };
+})(jQuery);
+$('form').areYouSure();
+
 {% endblock %}

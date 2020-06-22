@@ -51,6 +51,8 @@ class MedicalData(models.Model):
     drugs = models.CharField(default="", max_length=250)
     misc_bool = models.BooleanField(default=False)
     misc = models.CharField(default="", max_length=250)
+    vac_certificate = models.FileField(upload_to='documents/', null=True)
+    health_care_certificate = models.FileField(default=None, upload_to='documents/', null=True)
 
 
 class Document(models.Model):

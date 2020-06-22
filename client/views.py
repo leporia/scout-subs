@@ -6,9 +6,9 @@ from django.http import HttpResponseRedirect, FileResponse
 
 from django.shortcuts import render
 
-from xhtml2pdf import pisa
 from django.template.loader import get_template
 from io import BytesIO
+import pdfkit
 
 # Create your views here.
 
@@ -30,15 +30,19 @@ def index(request):
 
         if request.method == "POST":
             document = Document.objects.get(id=request.POST["action"][1:])
+
+            if document.user != request.user:
+                return
+
             if request.POST["action"][0] == 'f':
                 template = get_template('client/approve_doc_pdf.html')
                 context = {'doc': document}
                 html = template.render(context)
-                result = BytesIO()
-                pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-
+                pdf = pdfkit.from_string(html, False)
+                result = BytesIO(pdf)
                 result.seek(0)
                 return FileResponse(result, as_attachment=True, filename=document.document_type.name+".pdf")
+
             elif request.POST["action"][0] == 'a':
                 document.status = "ok"
                 document.save()
@@ -68,11 +72,13 @@ def index(request):
             personal = None
             medical = None
             if i.document_type.personal_data:
-                personal = i.personal_data.__dict__.values()
+                personal = i.personal_data
             if i.document_type.medical_data:
-                medical = i.medical_data.__dict__.values()
+                medical = i.medical_data
 
-            out.append([i, KeyVal.objects.filter(container=i), personal, medical])
+            doc_group = i.user.groups.values_list('name', flat=True)[0]
+
+            out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group])
         context = {
             "docs": out,
             "empty": len(out) == 0,
