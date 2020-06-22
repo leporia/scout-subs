@@ -40,6 +40,7 @@
         <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
       </ul>
       <ul class="right">
+        <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
         <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
       </ul>
     </div>
@@ -104,6 +105,8 @@
   </div>
 </div>
 <input type="hidden" name="action" id="action">
+<input type="hidden" name="owner" id="owner">
+<input type="hidden" name="type" id="type">
 <ul class="collapsible">
     {% for doc in docs %}
         <li>
@@ -122,12 +125,20 @@
               <i class="material-icons">assignment_turned_in</i>
             {% endif %}
             {{doc.0.document_type.name}}
-            <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
+            <span class="badge" data-badge-caption="">{{doc.0.user.first_name}} {{doc.0.user.last_name}}</span>
         </div>
         <div class="collapsible-body"><span>
-          {{doc.0.code}} <br>
-          {{doc.0.compilation_date}}<br>
           <ul class="collapsible">
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">confirmation_number</i>DEBUG {{doc.0.code}}
+              </div>
+            </li>
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">send</i>{{doc.0.compilation_date}}
+              </div>
+            </li>
           {% if doc.0.document_type.personal_data %}
             <li>
               <div class="collapsible-header">
@@ -212,7 +223,12 @@ $('#chips_type').chips({
     },
     limit: Infinity,
     minLength: 0
-  }
+  },
+  data: [
+    {% for d in chips_type %}
+      {tag: '{{d}}'},
+    {% endfor %}
+  ]
 });
 $('#chips_owner').chips({
   placeholder: 'Utente',
@@ -220,18 +236,40 @@ $('#chips_owner').chips({
   autocompleteOptions: {
     data: {
       {% for user in users %}
-        '{{user.first_name}} {{user.last_name}}': null,
+        '{{user.username}} ({{user.first_name}} {{user.last_name}})': null,
       {% endfor %}
     },
     limit: Infinity,
     minLength: 0
-  }
+  },
+  data: [
+    {% for d in chips_owner %}
+      {tag: '{{d}}'},
+    {% endfor %}
+  ]
 });
 
 function send(id) {
   var form = document.getElementById('selection')
   var action = document.getElementById('action')
+  var owner = document.getElementById('owner')
+  var type = document.getElementById('type')
+  var chips_owner = M.Chips.getInstance(document.getElementById('chips_owner'));
+  var chips_type = M.Chips.getInstance(document.getElementById('chips_type'));
+  var type_array = []
+  var owner_array = []
+
+  for (i=0; i < chips_owner.chipsData.length; i++) {
+    owner_array.push(chips_owner.chipsData[i].tag)
+  }
+
+  for (i=0; i < chips_type.chipsData.length; i++) {
+    type_array.push(chips_type.chipsData[i].tag)
+  }
+
   action.setAttribute('value', id);
+  owner.setAttribute('value', owner_array.join("^|"))
+  type.setAttribute('value', type_array.join("^|"))
   form.submit()
 }
 $('#select-all').click(function(event) {   

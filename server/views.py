@@ -5,6 +5,11 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.db.models.deletion import ProtectedError
 
+import dateparser
+from datetime import datetime
+from datetime import timedelta
+import pytz
+
 # Create your views here.
 
 
@@ -241,6 +246,15 @@ def doctype(request):
             custom = "filter_custom" in request.POST
             message = "filter_message" in request.POST
 
+            if request.POST["action"] == 'clear':
+                public = True
+                selfsign = True
+                hidden = False
+                personal = True
+                medic = True
+                custom = True
+                message = True
+
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
         group = Group.objects.get(name=parent_group)
@@ -350,6 +364,7 @@ def doccreate(request):
 def doclist(request):
     context = {}
     if request.user.is_staff:
+        zurich = pytz.timezone('Europe/Zurich')
         error = False
         error_text = ""
 
@@ -362,8 +377,12 @@ def doclist(request):
         wait_check = 'checked="checked"'
         selfsign_check = 'checked="checked"'
         ok_check = 'checked="checked"'
-        newer = ""
-        older = ""
+        newer = zurich.localize(dateparser.parse("1970-01-01"))
+        older = zurich.localize(datetime.now())
+        owner = []
+        types = []
+        chips_owner = []
+        chips_types = []
 
         if request.method == "POST":
             selected = []
@@ -396,6 +415,20 @@ def doclist(request):
             wait = "filter_wait" in request.POST
             selfsign = "filter_selfsign" in request.POST
             ok = "filter_ok" in request.POST
+            newer = zurich.localize(dateparser.parse(request.POST["newer"]))
+            older = zurich.localize(dateparser.parse(request.POST["older"]) + timedelta(days=1))
+            owner = request.POST["owner"].split("^|")
+            types = request.POST["type"].split("^|")
+
+            if request.POST["action"] == 'clear':
+                hidden = False
+                wait = True
+                selfsign = True
+                ok = True
+                newer = zurich.localize(dateparser.parse("1970-01-01"))
+                older = zurich.localize(datetime.now())
+                owner = []
+                types = []
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
@@ -415,6 +448,27 @@ def doclist(request):
             documents = documents.filter(~Q(status="ok"))
             ok_check = ""
 
+        documents = documents.filter(compilation_date__range=[newer, older])
+
+        if len(types) > 0:
+            if types[0] != "":
+                q_obj = Q()
+                for t in types:
+                    q_obj |= Q(document_type__name=t)
+                    chips_types.append(t)
+
+                documents = documents.filter(q_obj)
+
+        if len(owner) > 0:
+            if owner[0] != "":
+                q_obj = Q()
+                for u in owner:
+                    user = u.split("(")[0][:-1]
+                    q_obj |= Q(user__username=user)
+                    chips_owner.append(u)
+
+                documents = documents.filter(q_obj)
+
         out = []
         for i in documents:
             personal = None
@@ -426,16 +480,20 @@ def doclist(request):
 
             out.append([i, KeyVal.objects.filter(container=i), personal, medical])
 
-        types = DocumentType.objects.filter(Q(group_private=False) | Q(group=group))
+        auto_types = DocumentType.objects.filter(Q(group_private=False) | Q(group=group))
         users = User.objects.filter(groups__name=parent_group)
         context = {
-            "types": types,
+            "types": auto_types,
             "users": users,
             "docs": out,
             "hidden_check": hidden_check,
             "wait_check": wait_check,
             "selfsign_check": selfsign_check,
             "ok_check": ok_check,
+            "newer": newer,
+            "older": older,
+            "chips_owner": chips_owner,
+            "chips_type": chips_types,
             'error': error,
             'error_text': error_text,
             }
