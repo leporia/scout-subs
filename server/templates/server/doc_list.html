@@ -36,8 +36,10 @@
         </li>
         <li><a class="tooltipped" data-position="top" data-tooltip="Archivia selezionati" onclick="send('archive')"><i class="material-icons">archive</i></a></li>
         <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
+        {% if settings.DEBUG %}
+          <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
+          <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
+        {% endif %}
       </ul>
       <ul class="right">
         <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
@@ -79,25 +81,34 @@
         </label>
       </div>
     </div>
+    <br>
     <div class="row">
-      <div class="input-field col s6">
-        <label for="newer">Pi&ugrave; recenti di</label>
-        <input value="{{newer}}" name="newer" id="newer" type="text" class="datepicker">
-      </div>
-      <div class="input-field col s6">
-        <label for="older">Pi&ugrave; vecchi di</label>
-        <input value="{{older}}" name="older" id="older" type="text" class="datepicker">
-      </div>
-    </div>
-    <div class = "row">
-      <div class="col s12">
-        <div id="chips_type" class="chips chips-placeholder chips-autocomplete"></div>
-      </div>
-    </div>
-    <div class ="row col s12">
-      <div class="col s12">
-        <div id="chips_owner" class="chips chips-placeholder chips-autocomplete "></div>
-      </div>
+      <ul class="collapsible"><li>
+        <div class="collapsible-header">Avanzati</div>
+        <div class="collapsible-body"><span>
+          <div class = "row">
+            <div class="input-field col s6">
+              <label for="newer">Pi&ugrave; recenti di</label>
+              <input value="{{newer}}" name="newer" id="newer" type="text" class="datepicker">
+            </div>
+            <div class="input-field col s6">
+              <label for="older">Pi&ugrave; vecchi di</label>
+              <input value="{{older}}" name="older" id="older" type="text" class="datepicker">
+            </div>
+          </div>
+          <div class = "row">
+            <div class="col s12">
+              <div id="chips_type" class="chips chips-placeholder chips-autocomplete"></div>
+            </div>
+            <div class="col s12">
+              <div id="chips_owner" class="chips chips-placeholder chips-autocomplete "></div>
+            </div>
+            <div class="col s12">
+              <div id="chips_groups" class="chips chips-placeholder chips-autocomplete "></div>
+            </div>
+          </div>
+        </span></div>
+      </li></ul>
     </div>
   </div>
   <div class="modal-footer">
@@ -107,6 +118,7 @@
 <input type="hidden" name="action" id="action">
 <input type="hidden" name="owner" id="owner">
 <input type="hidden" name="type" id="type">
+<input type="hidden" name="groups" id="groups">
 <ul class="collapsible">
     {% for doc in docs %}
         <li>
@@ -129,7 +141,7 @@
         </div>
         <div class="collapsible-body"><span>
           {% if doc.0.status == "ok" or doc.0.status == 'archive' %}
-            <a class="waves-effect waves-light btn red lighten-1" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento</a>
+            <a class="waves-effect waves-light btn red lighten-1" onclick="send('k{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento</a>
             <br>
             <br>
           {% endif %}
@@ -138,6 +150,13 @@
             <li>
               <div class="collapsible-header">
                 <i class="material-icons">confirmation_number</i>{{doc.0.code}}
+              </div>
+            </li>
+            {% endif %}
+            {% if doc.0.document_type.custom_group %}
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">group_work</i>{{doc.0.group.name}}
               </div>
             </li>
             {% endif %}
@@ -415,16 +434,37 @@ $('#chips_owner').chips({
     {% endfor %}
   ]
 });
+$('#chips_groups').chips({
+  placeholder: 'Gruppo',
+  secondaryPlaceholder: '+Altro gruppo',
+  autocompleteOptions: {
+    data: {
+      {% for g in groups %}
+        '{{g}}': null,
+      {% endfor %}
+    },
+    limit: Infinity,
+    minLength: 0
+  },
+  data: [
+    {% for g in chips_groups %}
+      {tag: '{{g}}'},
+    {% endfor %}
+  ]
+});
 
 function send(id) {
   var form = document.getElementById('selection')
   var action = document.getElementById('action')
   var owner = document.getElementById('owner')
   var type = document.getElementById('type')
+  var groups = document.getElementById('groups')
   var chips_owner = M.Chips.getInstance(document.getElementById('chips_owner'));
   var chips_type = M.Chips.getInstance(document.getElementById('chips_type'));
+  var chips_groups = M.Chips.getInstance(document.getElementById('chips_groups'));
   var type_array = []
   var owner_array = []
+  var groups_array = []
 
   for (i=0; i < chips_owner.chipsData.length; i++) {
     owner_array.push(chips_owner.chipsData[i].tag)
@@ -434,9 +474,14 @@ function send(id) {
     type_array.push(chips_type.chipsData[i].tag)
   }
 
+  for (i=0; i < chips_groups.chipsData.length; i++) {
+    groups_array.push(chips_groups.chipsData[i].tag)
+  }
+
   action.setAttribute('value', id);
   owner.setAttribute('value', owner_array.join("^|"))
   type.setAttribute('value', type_array.join("^|"))
+  groups.setAttribute('value', groups_array.join("^|"))
   form.submit()
 }
 $('#select-all').click(function(event) {   

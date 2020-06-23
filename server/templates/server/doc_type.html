@@ -53,45 +53,51 @@
   <div class="modal-content">
     <h5>Filtri</h5>
     <div class="row">
-      <div class="input-field col s4">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
           <span><i class="material-icons left">visibility_off</i>Disabilitati</span>
         </label>
       </div>
-      <div class="input-field col s4">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_public" type="checkbox" class="filled-in" {{public_check}}/>
           <span><i class="material-icons left">public</i>Pubblici</span>
         </label>
       </div>
-      <div class="input-field col s4">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
           <span><i class="material-icons left">assignment_turned_in</i>No firma</span>
         </label>
       </div>
+      <div class="input-field col l3 s12">
+        <label>
+          <input name="filter_group" type="checkbox" class="filled-in" {{group_check}}/>
+          <span><i class="material-icons left">group_work</i>Gruppo</span>
+        </label>
+      </div>
     </div>
     <div class="row">
-      <div class="input-field col s3">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_personal" type="checkbox" class="filled-in" {{personal_check}}/>
           <span><i class="material-icons left">person</i>Personali</span>
         </label>
       </div>
-      <div class="input-field col s3">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_medic" type="checkbox" class="filled-in" {{medic_check}}/>
           <span><i class="material-icons left">healing</i>Medici</span>
         </label>
       </div>
-      <div class="input-field col s3">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_custom" type="checkbox" class="filled-in" {{custom_check}}/>
           <span><i class="material-icons left">add_circle_outline</i>Personalizzati</span>
         </label>
       </div>
-      <div class="input-field col s3">
+      <div class="input-field col l3 s12">
         <label>
           <input name="filter_message" type="checkbox" class="filled-in" {{message_check}}/>
           <span><i class="material-icons left">message</i>Messaggi</span>
@@ -119,6 +125,9 @@
             {% if not doctype.0.group_private %}
                 <i class="material-icons">public</i>
             {% endif %}
+            {% if doctype.0.custom_group %}
+              <i class="material-icons">group_work</i>
+            {% endif %}
             {% if doctype.0.auto_sign %}
                 <i class="material-icons">assignment_turned_in</i>
             {% endif %}
@@ -127,6 +136,13 @@
         </div>
         <div class="collapsible-body"><span>
           <ul class="collapsible">
+          {% if not doctype.0.group_private %}
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">group_work</i>{{doctype.0.group.name}}
+              </div>
+            </li>
+          {% endif %}
           {% if doctype.0.personal_data %}
             <li>
               <div class="collapsible-header">

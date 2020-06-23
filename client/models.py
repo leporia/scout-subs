@@ -10,6 +10,7 @@ class DocumentType(models.Model):
     auto_sign = models.BooleanField(default=False)
     group_private = models.BooleanField(default=False)
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
+    custom_group = models.BooleanField(default=False)
     personal_data = models.BooleanField(default=False)
     medical_data = models.BooleanField(default=False)
     custom_data = models.BooleanField(default=False)

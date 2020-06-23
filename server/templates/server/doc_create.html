@@ -80,14 +80,20 @@
           <br>
           <div class="row">
             <div class="input-field col s12">
-              <textarea name="custom" id="textarea" class="materialize-textarea"></textarea>
-              <label for="textarea">Lista parametri personalizzati, uno per riga</label>
+              <textarea name="custom" id="param" class="materialize-textarea"></textarea>
+              <label for="param">Lista parametri personalizzati, uno per riga</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s12">
-              <textarea name="custom_message_text" id="textarea" class="materialize-textarea"></textarea>
-              <label for="textarea">Messaggio personalizzato</label>
+              <textarea name="custom_message_text" id="message" class="materialize-textarea"></textarea>
+              <label for="message">Messaggio personalizzato</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <textarea name="custom_group" id="group" class="materialize-textarea"></textarea>
+              <label for="group">Gruppo personalizzato</label>
             </div>
           </div>
           <div class="fixed-action-btn">
@@ -100,4 +106,12 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block script%}
+$(document).ready(function(){
+  {% if error %}
+    M.toast({html: '{{ error_text}}', classes: 'orange'})
+  {% endif %}
+});
 {% endblock %}

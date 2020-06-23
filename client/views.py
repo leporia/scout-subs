@@ -92,7 +92,7 @@ def approve(request):
     if not (request.user.is_staff or request.user.has_perm('approved')):
         usercode = UserCode.objects.filter(user=request.user)[0]
         okay = False
-        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and len(request.user.groups.values_list('name', flat=True)) != 0:
+        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
             okay = True
         context = {'code': 'U' + str(usercode.code), 'okay': okay}
         return render(request, 'client/approve.html', context)
@@ -162,7 +162,7 @@ def create(request):
                         break
 
                 document = Document(
-                    user=request.user, group=group, code=code, status=status, document_type=document_type, personal_data=personal_data, medical_data=medical_data)
+                    user=request.user, group=document_type.group, code=code, status=status, document_type=document_type, personal_data=personal_data, medical_data=medical_data)
                 document.save()
 
                 if document_type.custom_data:

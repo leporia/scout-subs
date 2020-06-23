@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse
 from django.db.models.deletion import ProtectedError
 from django.template.loader import get_template
+from django.conf import settings
 
 import dateparser
 from datetime import datetime
@@ -140,61 +141,27 @@ def docapprove(request):
 def ulist(request):
     context = {}
     if (request.user.is_staff):
-        parent_group = request.user.groups.values_list('name', flat=True)[
-            0]
-        users = User.objects.filter(groups__name=parent_group)
+        parent_group = request.user.groups.values_list('name', flat=True)[0]
+        group = Group.objects.get(name=parent_group)
+        if request.method == "POST":
+            if request.POST["action"][0] == 'f':
+                document = Document.objects.get(id=request.POST["action"][1:])
+                if document.group == group:
+                    template = get_template('server/download_doc.html')
+                    doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
+                    context = {'doc': doc}
+                    html = template.render(context)
+                    pdf = pdfkit.from_string(html, False)
+                    result = BytesIO(pdf)
+                    result.seek(0)
+
+                    return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+        users = User.objects.filter(groups__name=parent_group).order_by("first_name")
         out = []
         for user in users:
-            code = ""
-            parent_name = ""
-            via = ""
-            cap = ""
-            country = ""
-            nationality = ""
-            born_date = ""
-            home_phone = ""
-            phone = ""
-            school = ""
-            year = ""
-            status = ""
-            if user.is_staff:
-                status = "Staff"
-            elif user.has_perm("approved"):
-                status = "Attivo"
-            else:
-                status = "In attesa"
-            if len(UserCode.objects.filter(user=user)) > 0:
-                usercode = UserCode.objects.filter(user=user)[0]
-                code = 'U' + str(usercode.code)
-                parent_name = usercode.parent_name
-                via = usercode.via
-                cap = usercode.cap
-                country = usercode.country
-                nationality = usercode.nationality
-                born_date = usercode.born_date
-                home_phone = usercode.home_phone
-                phone = usercode.phone
-                school = usercode.school
-                year = usercode.year
-            else:
-                status = "Non registrato"
-            out.append([
-                status,
-                user.username,
-                user.first_name,
-                user.last_name,
-                born_date,
-                parent_name,
-                user.email,
-                phone,
-                home_phone,
-                via,
-                cap,
-                country,
-                nationality,
-                school,
-                year,
-                code])
+            usercode = UserCode.objects.filter(user=user)[0]
+            documents = Document.objects.filter(Q(user=user) & ~Q(status='archive'))
+            out.append([user, usercode, parent_group, documents])
         context = {'users': out}
         return render(request, 'server/user_list.html', context)
     else:
@@ -214,6 +181,7 @@ def doctype(request):
         medic = True
         custom = True
         message = True
+        group_bool = True
         public_check = 'checked="checked"'
         selfsign_check = 'checked="checked"'
         hidden_check = 'checked="checked"'
@@ -221,11 +189,15 @@ def doctype(request):
         medic_check = 'checked="checked"'
         custom_check = 'checked="checked"'
         message_check = 'checked="checked"'
+        group_check = 'checked="checked"'
         if request.method == "POST":
             selected = []
+            parent_groups = request.user.groups.values_list('name', flat=True)
             for i in request.POST.keys():
                 if i.isdigit():
-                    selected.append(DocumentType.objects.get(id=i))
+                    docc = DocumentType.objects.get(id=i)
+                    if docc.group.name in parent_groups:
+                        selected.append(docc)
 
             for i in selected:
                 if request.POST["action"] == 'delete':
@@ -248,6 +220,7 @@ def doctype(request):
             medic = "filter_medic" in request.POST
             custom = "filter_custom" in request.POST
             message = "filter_message" in request.POST
+            group_bool = "filter_group" in request.POST
 
             if request.POST["action"] == 'clear':
                 public = True
@@ -257,6 +230,7 @@ def doctype(request):
                 medic = True
                 custom = True
                 message = True
+                group_bool = True
 
         parent_group = request.user.groups.values_list('name', flat=True)[
             0]
@@ -284,6 +258,9 @@ def doctype(request):
         if not message:
             public_types = public_types.filter(custom_message=False)
             message_check = ""
+        if not group_bool:
+            public_types = public_types.filter(custom_group=False)
+            group_check = ""
 
         out = []
         for doc in public_types:
@@ -300,6 +277,7 @@ def doctype(request):
             'medic_check': medic_check,
             'custom_check': custom_check,
             'message_check': message_check,
+            'group_check': group_check,
             'error': error,
             'error_text': error_text,
             }
@@ -319,12 +297,14 @@ def doccreate(request):
         personal_data = False
         medical_data = False
         custom_data = False
+        custom_group_bool = False
         name = ""
+        custom_group = ""
 
-        enabled_check = 'checked="checked'
+        enabled_check = 'checked="checked"'
         private_check = 'checked="checked"'
         personal_check = 'checked="checked"'
-        sign_check = 'checked="checked'
+        sign_check = 'checked="checked"'
         medical_check = ""
         custom_check = ""
         custom_message_check = ""
@@ -347,8 +327,20 @@ def doccreate(request):
             custom_message = "custom_message" in request.POST.keys()
             custom_message_text = request.POST["custom_message_text"]
             name = request.POST["name"]
+            custom_group = request.POST["custom_group"]
+
+            if custom_group != "":
+                print("here")
+                if custom_group not in request.user.groups.values_list('name', flat=True):
+                    context["error"] = "true"
+                    context["error_text"] = "Non puoi creare un tipo assegnato ad un gruppo di cui non fai parte"
+                    return render(request, 'server/doc_create.html', context)
+                else:
+                    group = Group.objects.filter(name=custom_group)[0]
+                    custom_group_bool = True
+
             doctype = DocumentType(
-                auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
+                custom_group=custom_group_bool, auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
             doctype.save()
             if custom_data:
                 custom = request.POST["custom"]
@@ -387,11 +379,13 @@ def doclist(request):
         older = zurich.localize(datetime.now())
         owner = []
         types = []
+        groups = []
         chips_owner = []
         chips_types = []
+        chips_groups = []
 
         if request.method == "POST":
-            if request.POST["action"][0] == 'f':
+            if request.POST["action"][0] == 'k':
                 document = Document.objects.get(id=request.POST["action"][1:])
                 if document.group == group:
                     template = get_template('server/download_doc.html')
@@ -405,9 +399,12 @@ def doclist(request):
                     return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
 
             selected = []
+            parent_groups = request.user.groups.values_list('name', flat=True)
             for i in request.POST.keys():
                 if i.isdigit():
-                    selected.append(Document.objects.get(id=i))
+                    docc = Document.objects.get(id=i)
+                    if docc.group.name in parent_groups:
+                        selected.append(docc)
 
             for i in selected:
                 if request.POST["action"] == 'delete':
@@ -438,6 +435,7 @@ def doclist(request):
             older = zurich.localize(dateparser.parse(request.POST["older"]) + timedelta(days=1))
             owner = request.POST["owner"].split("^|")
             types = request.POST["type"].split("^|")
+            groups = request.POST["groups"].split("^|")
 
             if request.POST["action"] == 'clear':
                 hidden = False
@@ -448,8 +446,14 @@ def doclist(request):
                 older = zurich.localize(datetime.now())
                 owner = []
                 types = []
+                groups = []
 
-        documents = Document.objects.filter(group=group)
+        parent_groups = request.user.groups.values_list('name', flat=True)
+        q_obj = Q()
+        for i in parent_groups:
+            q_obj |= Q(group__name=i)
+
+        documents = Document.objects.filter(q_obj)
 
         if not hidden:
             documents = documents.filter(~Q(status="archive"))
@@ -485,6 +489,15 @@ def doclist(request):
 
                 documents = documents.filter(q_obj)
 
+        if len(groups) > 0:
+            if groups[0] != "":
+                q_obj = Q()
+                for g in groups:
+                    q_obj |= Q(group__name=g)
+                    chips_groups.append(g)
+
+                documents = documents.filter(q_obj)
+
         out = []
         for i in documents:
             personal = None
@@ -503,6 +516,7 @@ def doclist(request):
         context = {
             "types": auto_types,
             "users": users,
+            "groups": parent_groups,
             "docs": out,
             "hidden_check": hidden_check,
             "wait_check": wait_check,
@@ -512,8 +526,10 @@ def doclist(request):
             "older": older,
             "chips_owner": chips_owner,
             "chips_type": chips_types,
+            "chips_groups": chips_groups,
             'error': error,
             'error_text': error_text,
+            'settings': settings,
             }
         return render(request, 'server/doc_list.html', context)
     else:
