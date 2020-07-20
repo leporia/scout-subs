@@ -14,6 +14,7 @@ from datetime import timedelta
 import pytz
 import pdfkit
 from io import BytesIO
+import os, base64
 
 # Create your views here.
 
@@ -142,9 +143,20 @@ def ulist(request):
         if request.POST["action"][0] == 'f':
             document = Document.objects.get(id=request.POST["action"][1:])
             if document.group == group:
+                vac_file = ""
+                health_file = ""
+                if document.medical_data:
+                    if document.medical_data.vac_certificate.name:
+                        with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
+                            vac_file = base64.b64encode(image_file.read()).decode()
+
+                    if document.medical_data.health_care_certificate.name:
+                        with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
+                            health_file = base64.b64encode(image_file.read()).decode()
+
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
-                context = {'doc': doc}
+                context = {'doc': doc, 'vac': vac_file, 'health': health_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
@@ -155,8 +167,18 @@ def ulist(request):
     out = []
     for user in users:
         usercode = UserCode.objects.filter(user=user)[0]
-        documents = Document.objects.filter(Q(user=user) & ~Q(status='archive'))
-        out.append([user, usercode, parent_group, documents])
+        documents = Document.objects.filter(Q(user=user) & ~Q(status='archive') & Q(group__name=parent_group))
+        vac_file = ""
+        health_file = ""
+        if usercode.medic:
+            if usercode.medic.vac_certificate.name:
+                with open(usercode.medic.vac_certificate.name, 'rb') as image_file:
+                    vac_file = base64.b64encode(image_file.read()).decode()
+
+            if usercode.medic.health_care_certificate.name:
+                with open(usercode.medic.health_care_certificate.name, 'rb') as image_file:
+                    health_file = base64.b64encode(image_file.read()).decode()
+        out.append([user, usercode, parent_group, documents, vac_file, health_file])
     context = {'users': out}
     return render(request, 'server/user_list.html', context)
 
@@ -377,9 +399,20 @@ def doclist(request):
         if request.POST["action"][0] == 'k':
             document = Document.objects.get(id=request.POST["action"][1:])
             if document.group == group:
+                vac_file = ""
+                health_file = ""
+                if document.medical_data:
+                    if document.medical_data.vac_certificate.name:
+                        with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
+                            vac_file = base64.b64encode(image_file.read()).decode()
+
+                    if document.medical_data.health_care_certificate.name:
+                        with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
+                            health_file = base64.b64encode(image_file.read()).decode()
+
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
-                context = {'doc': doc}
+                context = {'doc': doc, 'vac': vac_file, 'health': health_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
@@ -495,10 +528,17 @@ def doclist(request):
             personal = i.personal_data
         if i.document_type.medical_data:
             medical = i.medical_data
+            if medical.vac_certificate.name:
+                with open(medical.vac_certificate.name, 'rb') as image_file:
+                    vac_file = base64.b64encode(image_file.read()).decode()
+
+            if medical.health_care_certificate.name:
+                with open(medical.health_care_certificate.name, 'rb') as image_file:
+                    health_file = base64.b64encode(image_file.read()).decode()
 
         doc_group = i.user.groups.values_list('name', flat=True)[0]
 
-        out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group])
+        out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group, vac_file, health_file])
 
     auto_types = DocumentType.objects.filter(Q(group_private=False) | Q(group=group))
     users = User.objects.filter(groups__name=parent_group)

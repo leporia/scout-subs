@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'server.apps.ServerConfig',
     'accounts.apps.AccountsConfig',
     'client.apps.ClientConfig',
-    'django_cleanup',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

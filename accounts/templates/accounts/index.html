@@ -51,11 +51,12 @@
 {% endblock%}
 
 {% block content %}
+<form action="{% url 'personal'%}" method="post" id="form" enctype="multipart/form-data">
 <div id="personal" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-        <form action="{% url 'personal'%}" method="post" id="form" class="col s12" enctype="multipart/form-data">
+        <div class="col 12">
           <input type="hidden" name="action" id="action">
           <input type="hidden" name="delete_vac" id="delete_vac">
           <input type="hidden" name="delete_health" id="delete_health">
@@ -130,6 +131,7 @@
                 <i class="large material-icons">save</i>
               </a>
             </div>
+        </div>
       </div>
     </div>
   </div>
@@ -323,6 +325,7 @@
 
 {% block script %}
 function send(id) {
+  $('#form').trigger('reinitialize.areYouSure');
   var form = document.getElementById('form');
   var action = document.getElementById('action');
   action.setAttribute('value', id);
@@ -364,17 +367,21 @@ var options = {
     labelMonthSelect: 'Seleziona un mese',
     labelYearSelect: 'Seleziona un anno'
         }}
+
 var instance = M.Tabs.init(elem, options);
+
 document.addEventListener('DOMContentLoaded', function() {
-var elems = document.querySelectorAll('.datepicker');
-var instances = M.Datepicker.init(elems, options);
+  var elems = document.querySelectorAll('.datepicker');
+  var instances = M.Datepicker.init(elems, options);
 });
+
 document.addEventListener('DOMContentLoaded', function() {
-var elems = document.querySelectorAll('select');
-var instances = M.FormSelect.init(elems, options);
+  var elems = document.querySelectorAll('select');
+  var instances = M.FormSelect.init(elems, options);
 });
+
 $(document).ready(function() {
-$('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
+  $('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
 });
 
 /*!

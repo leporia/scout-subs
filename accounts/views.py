@@ -99,11 +99,11 @@ def personal(request):
             medic.save()
 
         if request.POST["delete_vac"] == 'vac':
-            medic.vac_certificate.delete()
+            medic.vac_certificate = None
             medic.save()
 
         if request.POST["delete_health"] == 'health':
-            medic.health_care_certificate.delete()
+            medic.health_care_certificate = None
             medic.save()
 
     if len(request.user.groups.values_list('name', flat=True)) == 0:

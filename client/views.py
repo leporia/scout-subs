@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from io import BytesIO
 import pdfkit
+import base64
 
 # Create your views here.
 
@@ -77,9 +78,17 @@ def index(request):
             if i.document_type.medical_data:
                 medical = i.medical_data
 
+                if medical.vac_certificate.name:
+                    with open(medical.vac_certificate.name, 'rb') as image_file:
+                        vac_file = base64.b64encode(image_file.read()).decode()
+
+                if medical.health_care_certificate.name:
+                    with open(medical.health_care_certificate.name, 'rb') as image_file:
+                        health_file = base64.b64encode(image_file.read()).decode()
+
             doc_group = i.user.groups.values_list('name', flat=True)[0]
 
-            out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group])
+            out.append([i, KeyVal.objects.filter(container=i), personal, medical, doc_group, vac_file, health_file])
         context = {
             "docs": out,
             "empty": len(out) == 0,
@@ -155,7 +164,7 @@ def create(request):
 
             if document_type.medical_data:
                 medic = usercode.medic
-                medical_data = MedicalData(emer_name=medic.emer_name, emer_relative=medic.emer_relative, cell_phone=medic.cell_phone, address=medic.address, emer_phone=medic.emer_phone, health_care=medic.health_care, injuries=medic.injuries, rc=medic.rc, rega=medic.rega, medic_name=medic.medic_name, medic_phone=medic.medic_phone, medic_address=medic.medic_address, sickness=medic.sickness, vaccine=medic.vaccine, tetanus_date=medic.tetanus_date, allergy=medic.allergy, drugs_bool=medic.drugs_bool, drugs=medic.drugs, misc_bool=medic.misc_bool, misc=medic.misc)
+                medical_data = MedicalData(vac_certificate=medic.vac_certificate, health_care_certificate=medic.health_care_certificate, emer_name=medic.emer_name, emer_relative=medic.emer_relative, cell_phone=medic.cell_phone, address=medic.address, emer_phone=medic.emer_phone, health_care=medic.health_care, injuries=medic.injuries, rc=medic.rc, rega=medic.rega, medic_name=medic.medic_name, medic_phone=medic.medic_phone, medic_address=medic.medic_address, sickness=medic.sickness, vaccine=medic.vaccine, tetanus_date=medic.tetanus_date, allergy=medic.allergy, drugs_bool=medic.drugs_bool, drugs=medic.drugs, misc_bool=medic.misc_bool, misc=medic.misc)
                 medical_data.save()
 
             while (True):
@@ -200,7 +209,7 @@ def edit_wrapper(request, context):
 
             if document.document_type.medical_data:
                 medic = usercode.medic
-                medical_data = MedicalData(emer_name=medic.emer_name, emer_relative=medic.emer_relative, cell_phone=medic.cell_phone, address=medic.address, emer_phone=medic.emer_phone, health_care=medic.health_care, injuries=medic.injuries, rc=medic.rc, rega=medic.rega, medic_name=medic.medic_name, medic_phone=medic.medic_phone, medic_address=medic.medic_address, sickness=medic.sickness, vaccine=medic.vaccine, tetanus_date=medic.tetanus_date, allergy=medic.allergy, drugs_bool=medic.drugs_bool, drugs=medic.drugs, misc_bool=medic.misc_bool, misc=medic.misc)
+                medical_data = MedicalData(vac_certificate=medic.vac_certificate, health_care_certificate=medic.health_care_certificate, emer_name=medic.emer_name, emer_relative=medic.emer_relative, cell_phone=medic.cell_phone, address=medic.address, emer_phone=medic.emer_phone, health_care=medic.health_care, injuries=medic.injuries, rc=medic.rc, rega=medic.rega, medic_name=medic.medic_name, medic_phone=medic.medic_phone, medic_address=medic.medic_address, sickness=medic.sickness, vaccine=medic.vaccine, tetanus_date=medic.tetanus_date, allergy=medic.allergy, drugs_bool=medic.drugs_bool, drugs=medic.drugs, misc_bool=medic.misc_bool, misc=medic.misc)
                 medical_data.save()
                 old_data = document.medical_data
                 document.medical_data = medical_data
