@@ -59,25 +59,25 @@
       <div class="input-field col s3">
         <label>
           <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
-          <span><i class="material-icons left">archive</i>Archiviati</span>
+          <span style="color:black"><i class="material-icons left">archive</i>Archiviati</span>
         </label>
       </div>
       <div class="input-field col s3">
         <label>
           <input name="filter_wait" type="checkbox" class="filled-in" {{wait_check}}/>
-          <span><i class="material-icons left">timelapse</i>In Attesa</span>
+          <span style="color:black"><i class="material-icons left">timelapse</i>In Attesa</span>
         </label>
       </div>
       <div class="input-field col s3">
         <label>
           <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
-          <span><i class="material-icons left">assignment_turned_in</i>No firma</span>
+          <span style="color:black"><i class="material-icons left">assignment_turned_in</i>No firma</span>
         </label>
       </div>
       <div class="input-field col s3">
         <label>
           <input name="filter_ok" type="checkbox" class="filled-in" {{ok_check}}/>
-          <span><i class="material-icons left">check</i>Approvati</span>
+          <span style="color:black"><i class="material-icons left">check</i>Approvati</span>
         </label>
       </div>
     </div>
@@ -420,10 +420,12 @@ $(document).ready(function(){
     $('.collapsible').collapsible();
     $('.tooltipped').tooltip();
     $('.modal').modal();
+    $('.datepicker').datepicker(options);
     {% if error %}
       M.toast({html: '{{ error_text}}', classes: 'orange'})
     {% endif %}
 });
+
 $('.chips').chips();
 $('#chips_type').chips({
   placeholder: 'Tipo',
@@ -511,6 +513,7 @@ function send(id) {
   groups.setAttribute('value', groups_array.join("^|"))
   form.submit()
 }
+
 $('#select-all').click(function(event) {   
     if(this.checked) {
         // Iterate each checkbox
@@ -523,6 +526,7 @@ $('#select-all').click(function(event) {
         });
     }
 });
+
 var options = {
   showClearBtn: true,
   container: document.getElementById('main'),
@@ -545,9 +549,6 @@ var options = {
     labelMonthPrev: 'Mese precedente',
     labelMonthSelect: 'Seleziona un mese',
     labelYearSelect: 'Seleziona un anno'
-        }}
-  document.addEventListener('DOMContentLoaded', function() {
-  var elems = document.querySelectorAll('.datepicker');
-  var instances = M.Datepicker.init(elems, options);
-  });
+  }
+}
 {% endblock %}

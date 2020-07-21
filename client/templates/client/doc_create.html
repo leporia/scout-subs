@@ -117,7 +117,8 @@ $(document).ready(function(){
     {% if error %}
       M.toast({html: '{{ error_text}}', classes: 'orange'})
     {% endif %}
-  });
+});
+
 function send(id) {
   var form = document.getElementById('form')
   var action = document.getElementById('action')

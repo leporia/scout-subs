@@ -366,22 +366,14 @@ var options = {
     labelMonthPrev: 'Mese precedente',
     labelMonthSelect: 'Seleziona un mese',
     labelYearSelect: 'Seleziona un anno'
-        }}
-
-var instance = M.Tabs.init(elem, options);
-
-document.addEventListener('DOMContentLoaded', function() {
-  var elems = document.querySelectorAll('.datepicker');
-  var instances = M.Datepicker.init(elems, options);
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  var elems = document.querySelectorAll('select');
-  var instances = M.FormSelect.init(elems, options);
-});
+  }
+}
 
 $(document).ready(function() {
   $('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
+  $('.datepicker').datepicker(options);
+  $('.tabs').tabs();
+  $('select').formSelect();
 });
 
 /*!

@@ -213,6 +213,9 @@ def doctype(request):
                 docc = DocumentType.objects.get(id=i)
                 if docc.group.name in parent_groups:
                     selected.append(docc)
+                else:
+                    error = True
+                    error_text = "Non puoi modificare un documento non del tuo gruppo"
 
         for i in selected:
             if request.POST["action"] == 'delete':
@@ -524,6 +527,8 @@ def doclist(request):
     for i in documents:
         personal = None
         medical = None
+        vac_file = ""
+        health_file = ""
         if i.document_type.personal_data:
             personal = i.personal_data
         if i.document_type.medical_data:

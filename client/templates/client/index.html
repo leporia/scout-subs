@@ -44,7 +44,19 @@
                 <br>
                 <br>
               {% elif doc.0.status == "autosign" %}
-                <a class="waves-effect waves-light btn teal" onclick="send('a{{doc.0.id}}')"><i class="material-icons left">check</i>Approva documento</a>
+                <div id="modal{{doc.0.id}}" class="modal">
+                  <div class="modal-content">
+                    <h4>Attenzione</h4>
+                    <p>Una volta approvato il documento non potrà più essere modificato.<br>
+                      Sei sicuro di volerlo approvare?
+                    </p>
+                  </div>
+                  <div class="modal-footer">
+                    <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+                    <a onclick="send('a{{doc.0.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
+                  </div>
+                </div>
+                <a class="waves-effect waves-light btn teal modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
                 <a class="waves-effect waves-light btn teal" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
                 <a class="waves-effect waves-light btn teal" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
                 <br>
@@ -335,15 +347,19 @@
 $(document).ready(function(){
     $('.collapsible').collapsible();
     $('.tap-target').tapTarget();
+    $('.modal').modal();
+    $('.tooltipped').tooltip();
     {% if empty %}
       $('.tap-target').tapTarget('open');
     {% endif %}
 });
+
 $('*').click(function(event) {
     if (this === event.target) {
       $('.tap-target').tapTarget('close');
     }
 });
+
 function send(id) {
   var form = document.getElementById('form')
   var action = document.getElementById('action')

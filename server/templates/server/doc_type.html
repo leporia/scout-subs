@@ -7,7 +7,7 @@
     <div class="nav-wrapper red lighten-1">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-      <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
+      <a ref="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
       <ul class="right">
           {% if user.is_staff %}
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
@@ -39,6 +39,15 @@
         <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons">delete</i></a></li>
       </ul>
       <ul class="right">
+        <li>
+          <form>
+            <div class="input-field">
+              <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
+              <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+              <i class="material-icons">close</i>
+            </div>
+          </form>
+        </li>
         <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
         <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
       </ul>
@@ -56,25 +65,25 @@
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
-          <span><i class="material-icons left">visibility_off</i>Disabilitati</span>
+          <span style="color:black"><i class="material-icons left">visibility_off</i>Disabilitati</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_public" type="checkbox" class="filled-in" {{public_check}}/>
-          <span><i class="material-icons left">public</i>Pubblici</span>
+          <span style="color:black"><i class="material-icons left">public</i>Pubblici</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
-          <span><i class="material-icons left">assignment_turned_in</i>No firma</span>
+          <span style="color:black"><i class="material-icons left">assignment_turned_in</i>No firma</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_group" type="checkbox" class="filled-in" {{group_check}}/>
-          <span><i class="material-icons left">group_work</i>Gruppo</span>
+          <span style="color:black"><i class="material-icons left">group_work</i>Gruppo</span>
         </label>
       </div>
     </div>
@@ -82,25 +91,25 @@
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_personal" type="checkbox" class="filled-in" {{personal_check}}/>
-          <span><i class="material-icons left">person</i>Personali</span>
+          <span style="color:black"><i class="material-icons left">person</i>Personali</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_medic" type="checkbox" class="filled-in" {{medic_check}}/>
-          <span><i class="material-icons left">healing</i>Medici</span>
+          <span style="color:black"><i class="material-icons left">healing</i>Medici</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_custom" type="checkbox" class="filled-in" {{custom_check}}/>
-          <span><i class="material-icons left">add_circle_outline</i>Personalizzati</span>
+          <span style="color:black"><i class="material-icons left">add_circle_outline</i>Personalizzati</span>
         </label>
       </div>
       <div class="input-field col l3 s12">
         <label>
           <input name="filter_message" type="checkbox" class="filled-in" {{message_check}}/>
-          <span><i class="material-icons left">message</i>Messaggi</span>
+          <span style="color:black"><i class="material-icons left">message</i>Messaggi</span>
         </label>
       </div>
     </div>
@@ -114,7 +123,7 @@
 <ul class="collapsible">
     {% for doctype in docs %}
         <li>
-        <div class="collapsible-header">
+        <div class="collapsible-header list">
             <label>
               <input name={{doctype.0.id}} type="checkbox" class="filled-in"/>
               <span></span>
@@ -227,4 +236,21 @@ $('#select-all').click(function(event) {
         });
     }
 });
+
+function filterResults() {
+  var search = document.getElementById('search')
+  var filter = search.value.toUpperCase()
+  var items = document.getElementsByClassName('list')
+
+
+  for (i = 0; i < items.length; i++) {
+    var a = items[i];
+    var txtValue = a.innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      items[i].style.display = "";
+    } else {
+      items[i].style.display = "none";
+    }
+  }
+}
 {% endblock %}

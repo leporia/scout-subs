@@ -36,6 +36,9 @@ def index(request):
             if document.user != request.user:
                 return
 
+            if document.status == "ok" or document.status == "archive":
+                return
+
             if request.POST["action"][0] == 'f':
                 template = get_template('client/approve_doc_pdf.html')
                 context = {'doc': document}
@@ -46,8 +49,9 @@ def index(request):
                 return FileResponse(result, as_attachment=True, filename=document.document_type.name+".pdf")
 
             elif request.POST["action"][0] == 'a':
-                document.status = "ok"
-                document.save()
+                if document.status == "autosign":
+                    document.status = "ok"
+                    document.save()
             elif request.POST["action"][0] == 'd':
                 document.delete()
             elif request.POST["action"][0] == 'e':
@@ -73,6 +77,8 @@ def index(request):
         for i in documents:
             personal = None
             medical = None
+            vac_file = ""
+            health_file = ""
             if i.document_type.personal_data:
                 personal = i.personal_data
             if i.document_type.medical_data:
