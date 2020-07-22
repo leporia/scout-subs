@@ -10,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from client.models import UserCode
 
 import dateparser, os
+from io import BytesIO
+from PIL import Image, UnidentifiedImageError
 
 
 class SignUp(generic.CreateView):
@@ -30,6 +32,8 @@ def personal(request):
     branca_esploratori = ""
     branca_pionieri = ""
     branca_rover = ""
+    error = False
+    error_text = ""
 
     if request.method == "POST":
         if request.POST['action'] == "download_vac":
@@ -90,13 +94,29 @@ def personal(request):
         
         if "vac_certificate" in request.FILES:
             myfile = request.FILES['vac_certificate']
-            medic.vac_certificate.save(request.user.username+"_"+myfile.name, myfile)
             medic.save()
+            try:
+                im = Image.open(myfile)
+                im_io = BytesIO()
+                im.save(im_io, 'JPEG', quality=70)
+                medic.vac_certificate.save(request.user.username+"_"+myfile.name, im_io)
+                medic.save()
+            except UnidentifiedImageError:
+                error = True
+                error_text = "Il file non è un immagine valida"
 
         if "health_care_certificate" in request.FILES:
             myfile = request.FILES['health_care_certificate']
-            medic.health_care_certificate.save(request.user.username+"_"+myfile.name, myfile)
-            medic.save()
+            try:
+                im = Image.open(myfile)
+                im_io = BytesIO()
+                im.save(im_io, 'JPEG', quality=70)
+                medic.health_care_certificate.save(request.user.username+"_"+myfile.name, im_io)
+                medic.save()
+            except UnidentifiedImageError:
+                error = True
+                error_text = "Il file non è un immagine valida"
+
 
         if request.POST["delete_vac"] == 'vac':
             medic.vac_certificate = None
@@ -188,6 +208,8 @@ def personal(request):
         'misc': medic.misc,
         'health_care_certificate': card_name,
         'vac_certificate': vac_name,
+        'error': error,
+        'error_text': error_text,
     }
 
     return render(request, 'accounts/index.html', context)

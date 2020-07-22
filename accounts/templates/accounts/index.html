@@ -374,6 +374,9 @@ $(document).ready(function() {
   $('.datepicker').datepicker(options);
   $('.tabs').tabs();
   $('select').formSelect();
+  {% if error %}
+    M.toast({html: '{{ error_text}}', classes: 'orange'})
+  {% endif %}
 });
 
 /*!
