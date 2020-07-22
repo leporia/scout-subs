@@ -39,7 +39,7 @@
         <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons">delete</i></a></li>
       </ul>
       <ul class="right">
-        <li>
+        <li class="hide-on-med-and-down">
           <form>
             <div class="input-field">
               <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
@@ -48,11 +48,16 @@
             </div>
           </form>
         </li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
-        <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+        <li class="hide-on-med-and-down"><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
+        <li class="hide-on-med-and-down"><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+        <li class="hide-on-large-only"><a class='dropdown-trigger' href='#' data-target='dropdown1'><i class="material-icons">filter_list</i></a></li>
       </ul>
     </div>
   </nav>
+  <ul id='dropdown1' class='dropdown-content'>
+    <li><a Onclick="send('clear')"><i class="material-icons">clear</i>Pulisci</a></li>
+    <li><a href="#modal1" data-target="modal1" class="modal-trigger"><i class="material-icons">filter_list</i>Filtri</a></li>
+  </ul>
 {% endblock %}
 
 {% block content %}
@@ -111,6 +116,14 @@
           <input name="filter_message" type="checkbox" class="filled-in" {{message_check}}/>
           <span style="color:black"><i class="material-icons left">message</i>Messaggi</span>
         </label>
+      </div>
+    </div>
+    <div class="row hide-on-large-only">
+      <div class="col s12">
+        <div class="input-field">
+          <input autocomplete="off" id="searchs" type="text" onkeyup="filterResultsSmall()" required>
+          <label for="searchs"><i class="material-icons">search</i></label>
+        </div>
       </div>
     </div>
   </div>
@@ -212,6 +225,7 @@ $(document).ready(function(){
     $('.collapsible').collapsible();
     $('.tooltipped').tooltip();
     $('.modal').modal();
+    $('.dropdown-trigger').dropdown({constantWidth: false});
     {% if error %}
       M.toast({html: '{{ error_text}}', classes: 'orange'})
     {% endif %}
@@ -239,6 +253,23 @@ $('#select-all').click(function(event) {
 
 function filterResults() {
   var search = document.getElementById('search')
+  var filter = search.value.toUpperCase()
+  var items = document.getElementsByClassName('list')
+
+
+  for (i = 0; i < items.length; i++) {
+    var a = items[i];
+    var txtValue = a.innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      items[i].style.display = "";
+    } else {
+      items[i].style.display = "none";
+    }
+  }
+}
+
+function filterResultsSmall() {
+  var search = document.getElementById('searchs')
   var filter = search.value.toUpperCase()
   var items = document.getElementsByClassName('list')
 
