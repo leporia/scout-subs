@@ -98,7 +98,7 @@ def personal(request):
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
-                im.save(im_io, 'JPEG', quality=70)
+                im.save(im_io, 'WEBP', quality=70)
                 medic.vac_certificate.save(request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
@@ -110,7 +110,7 @@ def personal(request):
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
-                im.save(im_io, 'JPEG', quality=70)
+                im.save(im_io, 'WEBP', quality=70)
                 medic.health_care_certificate.save(request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
