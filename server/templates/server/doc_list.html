@@ -124,7 +124,7 @@
         <li>
         <div class="collapsible-header">
             <label>
-              <input name={{doc.0.id}} type="checkbox" class="filled-in"/>
+              <input name={{doc.0.id}} type="checkbox" class="filled-in allselect"/>
               <span></span>
             </label>
             {% if doc.0.status == "wait" %}
@@ -165,6 +165,8 @@
                 <i class="material-icons">send</i>{{doc.0.compilation_date}}
               </div>
             </li>
+          </ul>
+          <ul class="collapsible">
           {% if doc.0.document_type.personal_data %}
             <li>
               <div class="collapsible-header">
@@ -517,11 +519,11 @@ function send(id) {
 $('#select-all').click(function(event) {   
     if(this.checked) {
         // Iterate each checkbox
-        $(':checkbox').each(function() {
+        $('.allselect').each(function() {
             this.checked = true;                        
         });
     } else {
-        $(':checkbox').each(function() {
+        $('.allselect').each(function() {
             this.checked = false;                       
         });
     }

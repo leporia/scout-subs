@@ -30,7 +30,6 @@
         <div class="input-field">
           <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
           <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-          <i class="material-icons">close</i>
         </div>
       </form>
     </div>
@@ -51,6 +50,30 @@
         {{user.0.first_name}} {{user.0.last_name}}
       </div>
       <div class="collapsible-body"><span>
+        {% if not user.0.is_staff %}
+        <div id="modal{{user.0.id}}" class="modal">
+          <div class="modal-content">
+            <h4>Attenzione</h4>
+            <p>
+              Sei sicuro di volerlere deapprovare l'utente {{user.0.first_name}} {{user.0.last_name}}?<br>
+              Una volta deapprovato l'utente non potrà più creare documenti e per essere riapprovato dovrà essere usato il codice di approvazione.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+            <a onclick="send('d{{user.0.id}}')" class="modal-close waves-effect waves-green btn-flat">Deapprova</a>
+          </div>
+        </div>
+        <a class="waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+        <br><br>
+        {% endif %}
+        <ul class="collapsible">
+          <li>
+            <div class="collapsible-header">
+              <i class="material-icons">confirmation_number</i>U{{user.1.code}}
+            </div>
+          </li>
+        </ul>
         <ul class="collapsible">
           <li>
             <div class="collapsible-header">
@@ -292,9 +315,9 @@
 {% endblock %}
 
 {% block script %}
-document.addEventListener('DOMContentLoaded', function() {
-  var elems = document.querySelectorAll('.collapsible');
-  var instances = M.Collapsible.init(elems, {});
+$(document).ready(function(){
+    $('.modal').modal();
+    $('.collapsible').collapsible();
 });
 
 function send(id) {

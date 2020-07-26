@@ -7,6 +7,7 @@ from django.db.models.deletion import ProtectedError
 from django.template.loader import get_template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.contenttypes.models import ContentType
 
 import dateparser
 from datetime import datetime
@@ -80,18 +81,16 @@ def uapprove(request):
                 data[i] = data[i] + " - Invalido"
             else:
                 user = UserCode.objects.filter(code=data[i][1:])[0].user
+                user.user_permissions.add(permission)
                 if len(user.groups.values_list('name', flat=True)) == 0:
                     user.groups.add(group)
-                    user.user_permissions.add(permission)
                     data[i] = data[i] + " - Ok"
                 else:
                     if user.groups.values_list('name', flat=True)[0] == parent_group:
-                        user.user_permissions.add(permission)
                         data[i] = data[i] + " - Ok"
                     else:
                         user.groups.clear()
                         user.groups.add(group)
-                        user.user_permissions.add(permission)
                         data[i] = data[i] + " - Ok, cambio branca"
 
     context = {
@@ -163,9 +162,19 @@ def ulist(request):
                 result.seek(0)
 
                 return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+        elif request.POST["action"][0] == 'd':
+            user = User.objects.get(id=request.POST["action"][1:])
+            if user.groups.all()[0] == group:
+                content_type = ContentType.objects.get_for_model(Document)
+                permission = Permission.objects.get(content_type=content_type, codename="approved")
+                user.user_permissions.remove(permission)
+
     users = User.objects.filter(groups__name=parent_group).order_by("first_name")
     out = []
     for user in users:
+        if not user.has_perm("client.approved") and not user.is_staff:
+            continue
+
         usercode = UserCode.objects.filter(user=user)[0]
         documents = Document.objects.filter(Q(user=user) & ~Q(status='archive') & Q(group__name=parent_group))
         vac_file = ""
@@ -345,8 +354,12 @@ def doccreate(request):
         name = request.POST["name"]
         custom_group = request.POST["custom_group"]
 
+        if len(DocumentType.objects.filter(name=name)) > 0:
+            context["error"] = "true"
+            context["error_text"] = "Questo nome esiste già. Prego usarne un altro."
+            return render(request, 'server/doc_create.html', context)
+
         if custom_group != "":
-            print("here")
             if custom_group not in request.user.groups.values_list('name', flat=True):
                 context["error"] = "true"
                 context["error_text"] = "Non puoi creare un tipo assegnato ad un gruppo di cui non fai parte"

@@ -60,9 +60,21 @@
         </ul>
       </div>
       <div class="card-action">
+        <div class="hide-on-small-only">
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
+        </div>
+
+        <div class="hide-on-med-and-up">
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
+        </div>
       </div>
     </div>
   </div>

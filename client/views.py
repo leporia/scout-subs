@@ -52,8 +52,10 @@ def index(request):
                 if document.status == "autosign":
                     document.status = "ok"
                     document.save()
+                    return HttpResponseRedirect("/")
             elif request.POST["action"][0] == 'd':
                 document.delete()
+                return HttpResponseRedirect("/")
             elif request.POST["action"][0] == 'e':
                 document_type = document.document_type
                 context = {
@@ -151,13 +153,18 @@ def create(request):
                 context['custom_message'] = document_type.custom_message
                 context['custom_message_text'] = document_type.custom_message_text
         elif request.POST["action"] == "save":
+            document_type = DocumentType.objects.get(
+                id=request.POST["doctype"])
+
+            current_docs = Document.objects.filter(document_type=document_type)
+            if len(current_docs) > 0:
+                return
+
             usercode = UserCode.objects.filter(user=request.user)[0]
             code = 0
             status = "wait"
             personal_data = None
             medical_data = None
-            document_type = DocumentType.objects.get(
-                id=request.POST["doctype"])
 
             if document_type.auto_sign:
                 status = "autosign"
@@ -202,6 +209,10 @@ def edit_wrapper(request, context):
     if request.method == "POST":
         if "action" not in request.POST.keys():
             document = Document.objects.get(id=request.POST["doc"])
+
+            if document.user != request.user:
+                return
+            
             usercode = UserCode.objects.filter(user=document.user)[0]
 
             if document.document_type.personal_data:

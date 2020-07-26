@@ -86,11 +86,11 @@ def personal(request):
         medic.misc = request.POST["misc"]
         medic.save()
 
-        if "branca" in request.POST:
-            if request.POST["branca"] != "":
-                request.user.groups.clear()
-                request.user.groups.add(
-                    Group.objects.get(name=request.POST["branca"]))
+        #if "branca" in request.POST:
+        #    if request.POST["branca"] != "":
+        #        request.user.groups.clear()
+        #        request.user.groups.add(
+        #            Group.objects.get(name=request.POST["branca"]))
         
         if "vac_certificate" in request.FILES:
             myfile = request.FILES['vac_certificate']
