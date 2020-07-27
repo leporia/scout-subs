@@ -244,3 +244,12 @@ def edit_wrapper(request, context):
             return HttpResponseRedirect('/')
 
     return render(request, 'client/doc_edit.html', context)
+
+def about(request):
+    version = ""
+    with open("version.txt", 'r') as f:
+        version = f.read()
+        if version.startswith("0"):
+            version = "Beta " + version
+    context = {"version": version}
+    return render(request, 'client/about.html', context)

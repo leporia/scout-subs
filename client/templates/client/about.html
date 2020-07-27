@@ -1,0 +1,46 @@
+{% extends 'registration/base_client.html' %}
+
+{% block title %}About{% endblock %}
+
+{%block nav%}
+  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+  <a href="!#" class="breadcrumb hide-on-med-and-down">Informazioni</a>
+{% endblock%}
+
+{% block content %}
+  <div class="row">
+    <div class="col l4 offset-l4 m8 offset-m2 s12">
+      <div class="card">
+        <div class="card-content">
+          <p>
+            Versione software {{version}}
+          </p>
+          <h5>Licenza</h5>
+          <blockquote>
+            Copyright (C) 2020 Andrea Lepori<br><br>
+
+            This program is free software: you can redistribute it and/or modify
+            it under the terms of the GNU General Public License as published by
+            the Free Software Foundation, either version 3 of the License, or
+            (at your option) any later version.<br><br>
+
+            This program is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+            GNU General Public License for more details.<br><br>
+
+            You should have received a copy of the GNU General Public License
+            along with this program. If not, see <a href=https://www.gnu.org/licenses>https://www.gnu.org/licenses/</a>.
+          </blockquote>
+          <h5>Codice sorgente</h5>
+          <blockquote>
+          <a href=git.thearcway.org>git.thearcway.org</a>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
