@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse_lazy
+from django.contrib.auth import login, authenticate
 from django.views import generic
 from django.contrib.auth.models import Group
 from django.core.files.storage import FileSystemStorage
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.debug import sensitive_variables
+from django.http import HttpResponseRedirect
 
 from client.models import UserCode
 
@@ -14,10 +16,31 @@ from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
 
-class SignUp(generic.CreateView):
-    form_class = UserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'accounts/signup.html'
+@sensitive_variables("raw_passsword")
+def signup(request):
+    if request.method == 'POST':
+        if "terms_accept" not in request.POST:
+            form = UserCreationForm()
+            context = {
+                "form": form,
+                "error": True,
+                "error_text": "Accettare i termini e condizioni prego"
+            }
+            return render(request, 'accounts/signup.html', context)
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return HttpResponseRedirect('/')
+    else:
+        form = UserCreationForm()
+    context = {
+        "form": form,
+    }
+    return render(request, 'accounts/signup.html', context)
 
 
 @login_required
@@ -219,3 +242,7 @@ def personal(request):
     }
 
     return render(request, 'accounts/index.html', context)
+
+def terms(request):
+    context = {}
+    return render(request, 'accounts/terms.html', context)

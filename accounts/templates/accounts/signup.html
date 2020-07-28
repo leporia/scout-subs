@@ -12,10 +12,24 @@
             {% csrf_token %}
             {{ form.as_p }}
             <br>
+            <label>
+              <input name="terms_accept" type="checkbox" class="filled-in"/>
+              <span style="color:black">Accetto i <a href="{% url 'terms' %}">Termini e condizioni generali</a></span>
+            </label>
+            <br>
+            <br>
             <button class="btn waves-effect waves-light" type="submit">Invia</button>
           </form>
         </div>
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+{% if error %}
+document.addEventListener('DOMContentLoaded', function() {
+  M.toast({html: '{{ error_text }}', classes: 'orange'})
+});
+{% endif %}
 {% endblock %}
