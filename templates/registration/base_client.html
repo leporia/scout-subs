@@ -2,7 +2,7 @@
 <html>
 <head>
   {% load static %}
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta charset="utf-8">
@@ -21,7 +21,7 @@
             <li><a class="tooltipped" data-position="bottom" data-tooltip="Preferenze" href="{% url 'personal' %}">{{ user.username }}</a></li>
           {% endif %}
           {% if user.username != "" %}
-            <li><a href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
+            <li><a class="tooltipped" data-position="bottom" data-tooltip="Informazioni" href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
             <li>
             <a class="tooltipped" data-position="bottom" data-tooltip="Logout" href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
             </li>

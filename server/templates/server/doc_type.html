@@ -160,26 +160,20 @@
             <span class="new badge red lighten-1" data-badge-caption="">{{doctype.2}}</span>
         </div>
         <div class="collapsible-body"><span>
-          <ul class="collapsible">
+          <ul class="collection">
           {% if not doctype.0.group_private %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">group_work</i>{{doctype.0.group.name}}
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">group_work</i>{{doctype.0.group.name}}
             </li>
           {% endif %}
           {% if doctype.0.personal_data %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">person</i>Dati personali
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">person</i>Dati personali
             </li>
           {% endif %}
           {% if doctype.0.medical_data %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">healing</i>Dati medici
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">healing</i>Dati medici
             </li>
           {% endif %}
           </ul>

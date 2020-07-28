@@ -17,29 +17,21 @@ import pdfkit
 from io import BytesIO
 import os, base64
 
-# Create your views here.
-
 
 @staff_member_required
 def index(request):
     context = {}
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
-    users = User.objects.filter(groups__name=parent_group)
+    users = User.objects.filter(groups__name=parent_group).order_by("id")
     users_out = []
+
     for user in users:
-        code = ""
-        if len(UserCode.objects.filter(user=user)) > 0:
-            code = 'U' + str(UserCode.objects.filter(user=user)[0].code)
-        status = ""
-        if user.is_staff:
-            status = "Staff"
-        elif user.has_perm("client.approved"):
-            status = "Attivo"
-        else:
-            status = "In attesa"
+        if not user.has_perm("client.approved") and not user.is_staff:
+            continue
+
         users_out.append([user.username, user.first_name,
-                    user.last_name, code, status])
+                    user.last_name])
 
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
@@ -168,6 +160,7 @@ def ulist(request):
                 content_type = ContentType.objects.get_for_model(Document)
                 permission = Permission.objects.get(content_type=content_type, codename="approved")
                 user.user_permissions.remove(permission)
+                return HttpResponseRedirect("ulist")
 
     users = User.objects.filter(groups__name=parent_group).order_by("first_name")
     out = []

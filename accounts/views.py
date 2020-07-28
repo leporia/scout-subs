@@ -40,12 +40,18 @@ def personal(request):
             if medic.vac_certificate != None:
                 filename = os.path.basename(medic.vac_certificate.name)
                 filename = filename[filename.find("_")+1:]
+                if filename.rfind('.') != -1:
+                    filename = filename[:filename.rfind('.')]
+                filename = filename + ".jpg"
                 return FileResponse(medic.vac_certificate.file, as_attachment=True, filename=filename)
 
         if request.POST['action'] == "download_health":
             if medic.health_care_certificate != None:
                 filename = os.path.basename(medic.health_care_certificate.name)
                 filename = filename[filename.find("_")+1:]
+                if filename.rfind('.') != -1:
+                    filename = filename[:filename.rfind('.')]
+                filename = filename + ".jpg"
                 return FileResponse(medic.health_care_certificate.file, as_attachment=True, filename=filename)
 
         request.user.first_name = request.POST["first_name"]

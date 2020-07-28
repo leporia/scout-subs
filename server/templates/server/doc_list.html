@@ -145,25 +145,19 @@
             <br>
             <br>
           {% endif %}
-          <ul class="collapsible">
+          <ul class="collection">
             {% if doc.0.status == 'ok' or doc.0.status == 'archive' %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">confirmation_number</i>{{doc.0.code}}
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">confirmation_number</i>{{doc.0.code}}
             </li>
             {% endif %}
             {% if doc.0.document_type.custom_group %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">group_work</i>{{doc.0.group.name}}
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">group_work</i>{{doc.0.group.name}}
             </li>
             {% endif %}
-            <li>
-              <div class="collapsible-header">
-                <i class="material-icons">send</i>{{doc.0.compilation_date}}
-              </div>
+            <li class="collection-item">
+              <i class="material-icons left">send</i>{{doc.0.compilation_date}}
             </li>
           </ul>
           <ul class="collapsible">

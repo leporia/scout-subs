@@ -11,17 +11,9 @@
           {% if user.is_staff %}
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-          {% endif %}
-          {% if user.username != "" %}
-            <li>
-            <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
-            </li>
-          {% else %}
-            <li><a href="{% url 'signup' %}">Registrazione</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-          {% endif %}
+          <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
+          <li><a class="tooltipped" data-position="bottom" data-tooltip="Informazioni" href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
+          <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
       </ul>
     </div>
     <div class="nav-content teal">
