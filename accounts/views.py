@@ -123,11 +123,10 @@ def personal(request):
         
         if "vac_certificate" in request.FILES:
             myfile = request.FILES['vac_certificate']
-            medic.save()
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
-                im.save(im_io, 'WEBP', quality=70)
+                im.save(im_io, 'WEBP', quality=50)
                 medic.vac_certificate.save(request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
@@ -139,7 +138,7 @@ def personal(request):
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
-                im.save(im_io, 'WEBP', quality=70)
+                im.save(im_io, 'WEBP', quality=50)
                 medic.health_care_certificate.save(request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
@@ -154,6 +153,9 @@ def personal(request):
         if request.POST["delete_health"] == 'health':
             medic.health_care_certificate = None
             medic.save()
+
+        if not error:
+            return HttpResponseRedirect("")
 
     if len(request.user.groups.values_list('name', flat=True)) == 0:
         branca_default = "selected"

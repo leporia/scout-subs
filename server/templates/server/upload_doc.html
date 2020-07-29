@@ -1,0 +1,86 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}Admin - Carica documento{% endblock %}
+
+{% block nav %}
+  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a href="{% url 'docupload'%}" class="breadcrumb hide-on-med-and-down">Carica Documento</a>
+{% endblock %}
+
+{% block content %}
+<form target="_blank" action="{% url 'docpreview' %}" method="post" id="preview_form">
+  {% csrf_token %}
+  <input type="hidden" name="preview" id="code_submit">
+</form>
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+      <form id="form" action="{% url 'docupload'%}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-content">
+          <div class="row">
+            <div class="input-field col s12">
+              <input name="code" id="code" type="text">
+              <label for="code">Codice documento</label>
+            </div>
+            <a class="waves-effect waves-light btn red lighten-1" onclick="send()">Anteprima documento</a>
+          </div>
+          <br>
+          <div class="row">
+            <div class="file-field input-field col s12">
+              <div class="btn red lighten-1">
+                <span><i class="material-icons left">file_upload</i>File</span>
+                <input type="file" name="doc_sign" id="doc_sign" onchange="loadFile(event)">
+              </div>
+              <div class="file-path-wrapper">
+                <input id="doc_sign_name" class="file-path" type="text" placeholder="Documento firmato">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-action">
+          <a class="waves-effect waves-light btn red lighten-1" href="#" onclick="document.getElementById('form').submit()">Invia</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+    <div class="card-image">
+      <img id="preview"/>
+    </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+function send() {
+  var form = document.getElementById('preview_form')
+  var action = document.getElementById('code_submit')
+  var text = document.getElementById('code').value
+  action.setAttribute('value', text);
+  form.submit()
+}
+
+var loadFile = function(event) {
+  var output = document.getElementById('preview');
+  output.src = URL.createObjectURL(event.target.files[0]);
+  output.onload = function() {
+    URL.revokeObjectURL(output.src) // free memory
+  }
+};
+$(document).ready(function(){
+    {% if error %}
+      M.toast({html: '{{ error_text }}', classes: 'orange'})
+    {% elif success %}
+      M.toast({html: '{{ success_text }}', classes: 'green'})
+    {% endif %}
+});
+{% endblock %}

@@ -16,6 +16,7 @@ import pytz
 import pdfkit
 from io import BytesIO
 import os, base64
+from PIL import Image, UnidentifiedImageError
 
 
 @staff_member_required
@@ -97,6 +98,9 @@ def uapprove(request):
 def docapprove(request):
     context = {}
     data = []
+    parent_group = request.user.groups.values_list('name', flat=True)[
+        0]
+    group = Group.objects.get(name=parent_group)
     if request.method == "POST":
         data = request.POST["codes"]
         data.replace("\r", "")
@@ -107,6 +111,8 @@ def docapprove(request):
             elif int(data[i]) < 100000 or int(data[i]) > 999999:
                 data[i] = data[i] + " - Formato errato"
             elif len(Document.objects.filter(code=data[i])) == 0:
+                data[i] = data[i] + " - Invalido"
+            elif Document.objects.filter(code=data[i])[0].group != group:
                 data[i] = data[i] + " - Invalido"
             else:
                 document = Document.objects.filter(code=data[i])[0]
@@ -136,6 +142,7 @@ def ulist(request):
             if document.group == group:
                 vac_file = ""
                 health_file = ""
+                sign_doc_file = ""
                 if document.medical_data:
                     if document.medical_data.vac_certificate.name:
                         with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
@@ -144,10 +151,13 @@ def ulist(request):
                     if document.medical_data.health_care_certificate.name:
                         with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
                             health_file = base64.b64encode(image_file.read()).decode()
+                if document.signed_doc:
+                    with open(document.signed_doc.name, 'rb') as image_file:
+                        sign_doc_file = base64.b64encode(image_file.read()).decode()
 
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
-                context = {'doc': doc, 'vac': vac_file, 'health': health_file}
+                context = {'doc': doc, 'vac': vac_file, 'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
@@ -390,11 +400,13 @@ def doclist(request):
     wait = True
     selfsign = True
     ok = True
+    signdoc = False
 
     hidden_check = 'checked="checked"'
     wait_check = 'checked="checked"'
     selfsign_check = 'checked="checked"'
     ok_check = 'checked="checked"'
+    signdoc_check = 'checked="checked"'
     newer = zurich.localize(dateparser.parse("1970-01-01"))
     older = zurich.localize(datetime.now())
     owner = []
@@ -410,6 +422,7 @@ def doclist(request):
             if document.group == group:
                 vac_file = ""
                 health_file = ""
+                sign_doc_file = ""
                 if document.medical_data:
                     if document.medical_data.vac_certificate.name:
                         with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
@@ -418,10 +431,14 @@ def doclist(request):
                     if document.medical_data.health_care_certificate.name:
                         with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
                             health_file = base64.b64encode(image_file.read()).decode()
+                
+                if document.signed_doc:
+                    with open(document.signed_doc.name, 'rb') as image_file:
+                        sign_doc_file = base64.b64encode(image_file.read()).decode()
 
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
-                context = {'doc': doc, 'vac': vac_file, 'health': health_file}
+                context = {'doc': doc, 'vac': vac_file, 'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
@@ -462,6 +479,7 @@ def doclist(request):
         wait = "filter_wait" in request.POST
         selfsign = "filter_selfsign" in request.POST
         ok = "filter_ok" in request.POST
+        signdoc = "filter_signdoc" in request.POST
         newer = zurich.localize(dateparser.parse(request.POST["newer"]))
         older = zurich.localize(dateparser.parse(request.POST["older"]) + timedelta(days=1))
         owner = request.POST["owner"].split("^|")
@@ -498,6 +516,8 @@ def doclist(request):
     if not ok:
         documents = documents.filter(~Q(status="ok"))
         ok_check = ""
+    if not signdoc:
+        signdoc_check = ""
 
     documents = documents.filter(compilation_date__range=[newer, older])
 
@@ -531,6 +551,10 @@ def doclist(request):
 
     out = []
     for i in documents:
+        if signdoc:
+            if i.status == "ok" and not i.signed_doc:
+                continue
+
         personal = None
         medical = None
         vac_file = ""
@@ -562,6 +586,7 @@ def doclist(request):
         "wait_check": wait_check,
         "selfsign_check": selfsign_check,
         "ok_check": ok_check,
+        "signdoc_check": signdoc_check,
         "newer": newer,
         "older": older,
         "chips_owner": chips_owner,
@@ -572,3 +597,101 @@ def doclist(request):
         'settings': settings,
         }
     return render(request, 'server/doc_list.html', context)
+
+@staff_member_required
+def upload_doc(request):
+    parent_group = request.user.groups.values_list('name', flat=True)[
+        0]
+    group = Group.objects.get(name=parent_group)
+    message = ""
+    error = False
+    success = False
+    error_text = ""
+    success_text = ""
+    document = None
+    if request.method == "POST":
+        data = request.POST["code"]
+        if not data.isdigit():
+            error_text = "Formato codice errato"
+            error = True
+        elif int(data) < 100000 or int(data) > 999999:
+            error_text = "Formato codice errato"
+            error = True
+        elif len(Document.objects.filter(code=data)) == 0:
+            error_text = "Codice invalido"
+            error = True
+        elif Document.objects.filter(code=data)[0].group != group:
+            error_text = "Codice invalido"
+            error = True
+        else:
+            document = Document.objects.filter(code=data)[0]
+            if document.status == 'ok':
+                success_text = "File caricato"
+                success = True
+            else:
+                document.status = 'ok'
+                document.save()
+                success_text = "Documento approvato e file caricato"
+                success = True
+
+            if "doc_sign" in request.FILES and not error:
+                myfile = request.FILES['doc_sign']
+                try:
+                    im = Image.open(myfile)
+                    im_io = BytesIO()
+                    im.save(im_io, 'WEBP', quality=50)
+                    document.signed_doc.save(data+"_"+myfile.name, im_io)
+                    document.save()
+                except UnidentifiedImageError:
+                    error = True
+                    error_text = "Il file non è un immagine valida"
+            else:
+                error = True
+                error_text = "Prego caricare un file"
+
+    context = {
+        "message": message,
+        "error": error,
+        "error_text": error_text,
+        "success": success,
+        "success_text": success_text,
+
+    }
+    return render(request, 'server/upload_doc.html', context)
+
+def docpreview(request):
+    context = {}
+    parent_group = request.user.groups.values_list('name', flat=True)[
+        0]
+    group = Group.objects.get(name=parent_group)
+    if request.method == "POST":
+        print(request.POST)
+        code = request.POST["preview"]
+        if not code.isdigit():
+            return render(request, 'server/download_doc.html', context)
+        if len(Document.objects.filter(code=code)) == 0:
+            return render(request, 'server/download_doc.html', context)
+        if Document.objects.filter(code=code)[0].group != group:
+            return render(request, 'server/download_doc.html', context)
+
+        document = Document.objects.filter(code=code)[0]
+        vac_file = ""
+        health_file = ""
+        sign_doc_file = ""
+        if document.medical_data:
+            if document.medical_data.vac_certificate.name:
+                with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
+                    vac_file = base64.b64encode(image_file.read()).decode()
+
+            if document.medical_data.health_care_certificate.name:
+                with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
+                    health_file = base64.b64encode(image_file.read()).decode()
+        if document.signed_doc:
+            with open(document.signed_doc.name, 'rb') as image_file:
+                sign_doc_file = base64.b64encode(image_file.read()).decode()
+
+        template = get_template('server/download_doc.html')
+        doc = [document, KeyVal.objects.filter(container=document), document.personal_data, document.medical_data, parent_group]
+        context = {'doc': doc, 'vac': vac_file, 'health': health_file, 'sign_doc_file': sign_doc_file}
+
+    return render(request, 'server/download_doc.html', context)

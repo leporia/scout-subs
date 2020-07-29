@@ -262,7 +262,7 @@
             <div class="col s12">
               <div class="card">
                 <div class="card-image">
-                  <img src="data:;base64,{{ vac }}">
+                  {% if vac %}<img src="data:;base64,{{ vac }}">{% endif %}
                 </div>
               </div>
             </div>
@@ -271,7 +271,16 @@
             <div class="col s12">
               <div class="card">
                 <div class="card-image">
-                  <img src="data:;base64,{{ health }}">
+                  {% if health %}<img src="data:;base64,{{ health }}">{% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <div class="card">
+                <div class="card-image">
+                  {% if sign_doc_file %}<img src="data:;base64,{{ sign_doc_file }}">{% endif %}
                 </div>
               </div>
             </div>

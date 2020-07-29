@@ -71,6 +71,8 @@ class Document(models.Model):
     medical_data = models.ForeignKey(
         MedicalData, default=None, on_delete=models.PROTECT, null=True)
 
+    signed_doc = models.FileField(default=None, upload_to='documents/', null=True)
+
     class Meta:
         permissions = [
             ("approved", "The user is approved")

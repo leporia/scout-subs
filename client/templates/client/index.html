@@ -310,7 +310,7 @@
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            <img src="data:;base64,{{ doc.5 }}">
+                            {% if doc.5 %} <img src="data:;base64,{{ doc.5 }}"> {% endif %}
                           </div>
                         </div>
                       </div>
@@ -319,7 +319,7 @@
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            <img src="data:;base64,{{ doc.6 }}">
+                            {% if doc.6 %}<img src="data:;base64,{{ doc.6 }}">{% endif %}
                           </div>
                         </div>
                       </div>

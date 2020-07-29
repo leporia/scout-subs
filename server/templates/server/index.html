@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="col l6 s12">
+  <div class="col l4 s12">
     <div class="card large">
       <div class="card-content">
         <p>
@@ -35,7 +35,7 @@
       </div>
     </div>
   </div>
-  <div class="col l6 s12">
+  <div class="col l8 s12">
     <div class="card large">
       <div class="card-content">
         <ul class="collection">
@@ -60,6 +60,7 @@
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
+          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docupload' %}">Carica firma</a>
         </div>
 
         <div class="hide-on-med-and-up">
@@ -70,6 +71,9 @@
           <br>
           <br>
           <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'docupload' %}">Carica firma</a>
         </div>
       </div>
     </div>

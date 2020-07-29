@@ -274,7 +274,7 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      <img src="data:;base64,{{ user.4 }}">
+                      {% if user.4 %}<img src="data:;base64,{{ user.4 }}">{% endif %}
                     </div>
                   </div>
                 </div>
@@ -283,7 +283,7 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      <img src="data:;base64,{{ user.5 }}">
+                      {% if user.5 %}<img src="data:;base64,{{ user.5 }}">{% endif %}
                     </div>
                   </div>
                 </div>
