@@ -48,7 +48,6 @@ def personal(request):
     context = {}
     usercode = UserCode.objects.filter(user=request.user)[0]
     medic = usercode.medic
-    debug = ""
     branca_default = ""
     branca_castorini = ""
     branca_lupetti = ""

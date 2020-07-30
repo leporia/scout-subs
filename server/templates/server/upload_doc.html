@@ -25,9 +25,7 @@
               <input name="code" id="code" type="text">
               <label for="code">Codice documento</label>
             </div>
-            <a class="waves-effect waves-light btn red lighten-1" onclick="send()">Anteprima documento</a>
           </div>
-          <br>
           <div class="row">
             <div class="file-field input-field col s12">
               <div class="btn red lighten-1">
@@ -41,7 +39,8 @@
           </div>
         </div>
         <div class="card-action">
-          <a class="waves-effect waves-light btn red lighten-1" href="#" onclick="document.getElementById('form').submit()">Invia</a>
+          <a id="send_button" class="waves-effect waves-light btn red lighten-1" href="#" onclick="confirm()">Approva</a>
+          <a class="right waves-effect waves-light btn red lighten-1" onclick="send()">Anteprima documento</a>
         </div>
       </form>
     </div>
@@ -61,6 +60,13 @@
 {% endblock %}
 
 {% block script %}
+function confirm() {
+  var button = document.getElementById('send_button')
+  button.innerHTML = "Sicuro?"
+  button.setAttribute('onclick', "document.getElementById('form').submit()")
+  button.setAttribute('class', "waves-effect waves-light btn green")
+}
+
 function send() {
   var form = document.getElementById('preview_form')
   var action = document.getElementById('code_submit')

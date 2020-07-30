@@ -455,9 +455,9 @@ def doclist(request):
                     selected.append(docc)
 
         for i in selected:
-            if request.POST["action"] == 'delete':
+            if request.POST["action"] == 'delete' and settings.DEBUG:
                 i.delete()
-            elif request.POST["action"] == 'approve':
+            elif request.POST["action"] == 'approve' and settings.DEBUG:
                 i.status = 'ok'
                 i.save()
             elif request.POST["action"] == 'archive':
