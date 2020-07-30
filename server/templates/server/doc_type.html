@@ -9,7 +9,7 @@
       <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
       <a ref="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
       <ul class="right">
-          {% if user.is_staff %}
+          {% if user.is_staff or perms.client.staff %}
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}

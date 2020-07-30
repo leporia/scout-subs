@@ -9,6 +9,7 @@
 
 {% block content %}
 <div class="row">
+  {% if user.is_staff %}
   <div class="col l4 s12">
     <div class="card large">
       <div class="card-content">
@@ -35,7 +36,12 @@
       </div>
     </div>
   </div>
+  {% endif %}
+  {% if user.is_staff %}
   <div class="col l8 s12">
+  {% else %}
+  <div class="col s12">
+  {% endif %}
     <div class="card large">
       <div class="card-content">
         <ul class="collection">

@@ -8,7 +8,7 @@
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
       <a href="#!" class="breadcrumb hide-on-med-and-down">Account</a>
       <ul class="right">
-          {% if user.is_staff %}
+          {% if user.is_staff or perms.client.staff %}
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
@@ -23,23 +23,6 @@
       </ul>
     </div>
   </nav>
-
-  <ul class="sidenav" id="mobile-demo">
-    {% if user.is_staff %}
-      <li><a href="{% url 'server' %}">Pannello Admin</a></li>
-    {% endif %}
-    {% if user.is_authenticated %}
-      <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-    {% endif %}
-    {% if user.username != "" %}
-      <li>
-      <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
-      </li>
-    {% else %}
-      <li><a href="{% url 'signup' %}">Registrazione</a></li>
-      <li><a href="{% url 'login' %}">Login</a></li>
-    {% endif %}
-  </ul>
 {% endblock%}
 
 {% block content %}

@@ -75,7 +75,8 @@ class Document(models.Model):
 
     class Meta:
         permissions = [
-            ("approved", "The user is approved")
+            ("approved", "The user is approved"),
+            ("staff", "The user is staff of the non primary group")
         ]
 
 

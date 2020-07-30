@@ -14,7 +14,7 @@
       {% block nav %}
       {% endblock %}
       <ul class="right">
-          {% if user.is_staff %}
+          {% if user.is_staff or perms.client.staff %}
             <li><a href="{% url 'server' %}">Pannello Admin</a></li>
           {% endif %}
           {% if user.is_authenticated %}

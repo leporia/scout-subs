@@ -7,6 +7,7 @@ from django.db.models.deletion import ProtectedError
 from django.template.loader import get_template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 
 import dateparser
@@ -19,7 +20,15 @@ import os, base64
 from PIL import Image, UnidentifiedImageError
 
 
-@staff_member_required
+def isStaff(user):
+    if user.is_staff:
+        return True
+    if user.has_perm("client.staff"):
+        return True
+    return False
+
+
+@user_passes_test(isStaff)
 def index(request):
     context = {}
     parent_group = request.user.groups.values_list('name', flat=True)[
@@ -37,17 +46,26 @@ def index(request):
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
-    public_types = DocumentType.objects.filter(
-        Q(group_private=False) | Q(group=group) & Q(enabled=True))
+    if request.user.is_staff:
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=group) & Q(enabled=True))
+    else:
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False) & Q(enabled=True))
     docs = []
     for doc in public_types:
         ref_docs = Document.objects.filter(document_type=doc)
         docs.append([doc, len(ref_docs)])
 
-    context = {
-        'docs': docs,
-        'users': users_out,
-        }
+    if request.user.is_staff:
+        context = {
+            'docs': docs,
+            'users': users_out,
+            }
+    else:
+        context = {
+            'docs': docs,
+            }
     return render(request, 'server/index.html', context)
 
 
@@ -94,25 +112,32 @@ def uapprove(request):
     return render(request, 'server/approve_user.html', context)
 
 
-@staff_member_required
+@user_passes_test(isStaff)
 def docapprove(request):
     context = {}
     data = []
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
+
+    if request.user.is_staff:
+        groups = request.user.groups.values_list('name', flat=True)
+    else:
+        groups = request.user.groups.values_list('name', flat=True)[1:]
+
     group = Group.objects.get(name=parent_group)
     if request.method == "POST":
         data = request.POST["codes"]
         data.replace("\r", "")
         data = data.split("\n")
         for i in range(len(data)):
+            print(Document.objects.filter(code=data[i])[0].group.name)
             if not data[i].isdigit():
                 data[i] = data[i] + " - Formato errato"
             elif int(data[i]) < 100000 or int(data[i]) > 999999:
                 data[i] = data[i] + " - Formato errato"
             elif len(Document.objects.filter(code=data[i])) == 0:
                 data[i] = data[i] + " - Invalido"
-            elif Document.objects.filter(code=data[i])[0].group != group:
+            elif Document.objects.filter(code=data[i])[0].group.name not in groups:
                 data[i] = data[i] + " - Invalido"
             else:
                 document = Document.objects.filter(code=data[i])[0]
@@ -195,7 +220,7 @@ def ulist(request):
     return render(request, 'server/user_list.html', context)
 
 
-@staff_member_required
+@user_passes_test(isStaff)
 def doctype(request):
     context = {}
     error = False
@@ -219,7 +244,10 @@ def doctype(request):
     group_check = 'checked="checked"'
     if request.method == "POST":
         selected = []
-        parent_groups = request.user.groups.values_list('name', flat=True)
+        if request.user.is_staff:
+            parent_groups = request.user.groups.values_list('name', flat=True)
+        else:
+            parent_groups = request.user.groups.values_list('name', flat=True)[1:]
         for i in request.POST.keys():
             if i.isdigit():
                 docc = DocumentType.objects.get(id=i)
@@ -265,8 +293,12 @@ def doctype(request):
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
-    public_types = DocumentType.objects.filter(
-        Q(group_private=False) | Q(group=group))
+    if request.user.is_staff:
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=group))
+    else:
+        public_types = DocumentType.objects.filter(
+            Q(group_private=False))
     if not public:
         public_types = public_types.filter(group_private=True)
         public_check = ""
@@ -314,12 +346,20 @@ def doctype(request):
     return render(request, 'server/doc_type.html', context)
 
 
-@staff_member_required
+@user_passes_test(isStaff)
 def doccreate(request):
     context = {}
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
+    if request.user.is_staff:
+        groups = request.user.groups.values_list('name', flat=True)
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            0]
+    else:
+        groups = request.user.groups.values_list('name', flat=True)[1:]
+        parent_group = request.user.groups.values_list('name', flat=True)[
+            1]
+
     group = Group.objects.get(name=parent_group)
+
     enabled = False
     group_private = False
     personal_data = False
@@ -363,7 +403,7 @@ def doccreate(request):
             return render(request, 'server/doc_create.html', context)
 
         if custom_group != "":
-            if custom_group not in request.user.groups.values_list('name', flat=True):
+            if custom_group not in groups:
                 context["error"] = "true"
                 context["error_text"] = "Non puoi creare un tipo assegnato ad un gruppo di cui non fai parte"
                 return render(request, 'server/doc_create.html', context)
@@ -386,12 +426,18 @@ def doccreate(request):
     return render(request, 'server/doc_create.html', context)
 
 
-@staff_member_required
+@user_passes_test(isStaff)
 def doclist(request):
     context = {}
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
+
+    if request.user.is_staff:
+        parent_groups = request.user.groups.values_list('name', flat=True)
+    else:
+        parent_groups = request.user.groups.values_list('name', flat=True)[1:]
+
     zurich = pytz.timezone('Europe/Zurich')
     error = False
     error_text = ""
@@ -419,7 +465,7 @@ def doclist(request):
     if request.method == "POST":
         if request.POST["action"][0] == 'k':
             document = Document.objects.get(id=request.POST["action"][1:])
-            if document.group == group:
+            if document.group.name in parent_groups:
                 vac_file = ""
                 health_file = ""
                 sign_doc_file = ""
@@ -447,7 +493,6 @@ def doclist(request):
                 return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
 
         selected = []
-        parent_groups = request.user.groups.values_list('name', flat=True)
         for i in request.POST.keys():
             if i.isdigit():
                 docc = Document.objects.get(id=i)
@@ -497,7 +542,6 @@ def doclist(request):
             types = []
             groups = []
 
-    parent_groups = request.user.groups.values_list('name', flat=True)
     q_obj = Q()
     for i in parent_groups:
         q_obj |= Q(group__name=i)
@@ -598,11 +642,17 @@ def doclist(request):
         }
     return render(request, 'server/doc_list.html', context)
 
-@staff_member_required
+
+@user_passes_test(isStaff)
 def upload_doc(request):
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
+    if request.user.is_staff:
+        groups = request.user.groups.values_list('name', flat=True)
+    else:
+        groups = request.user.groups.values_list('name', flat=True)[1:]
+
     message = ""
     error = False
     success = False
@@ -620,7 +670,7 @@ def upload_doc(request):
         elif len(Document.objects.filter(code=data)) == 0:
             error_text = "Codice invalido"
             error = True
-        elif Document.objects.filter(code=data)[0].group != group:
+        elif Document.objects.filter(code=data)[0].group.name not in groups:
             error_text = "Codice invalido"
             error = True
         else:
@@ -659,19 +709,22 @@ def upload_doc(request):
     }
     return render(request, 'server/upload_doc.html', context)
 
+
+@user_passes_test(isStaff)
 def docpreview(request):
     context = {}
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
+    if request.user.is_staff:
+        groups = request.user.groups.values_list('name', flat=True)
+    else:
+        groups = request.user.groups.values_list('name', flat=True)[1:]
+
     if request.method == "POST":
-        print(request.POST)
         code = request.POST["preview"]
         if not code.isdigit():
             return render(request, 'server/download_doc.html', context)
         if len(Document.objects.filter(code=code)) == 0:
             return render(request, 'server/download_doc.html', context)
-        if Document.objects.filter(code=code)[0].group != group:
+        if Document.objects.filter(code=code)[0].group.name not in groups:
             return render(request, 'server/download_doc.html', context)
 
         document = Document.objects.filter(code=code)[0]
