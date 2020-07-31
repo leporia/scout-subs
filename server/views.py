@@ -33,7 +33,7 @@ def index(request):
     context = {}
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
-    users = User.objects.filter(groups__name=parent_group).order_by("id")
+    users = User.objects.filter(groups__name=parent_group).order_by("-id")
     users_out = []
 
     for user in users:
@@ -48,10 +48,10 @@ def index(request):
     group = Group.objects.get(name=parent_group)
     if request.user.is_staff:
         public_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=group) & Q(enabled=True))
+            Q(group_private=False) | Q(group=group) & Q(enabled=True)).order_by("-id")
     else:
         public_types = DocumentType.objects.filter(
-            Q(group_private=False) & Q(enabled=True))
+            Q(group_private=False) & Q(enabled=True)).order_by("-id")
     docs = []
     for doc in public_types:
         ref_docs = Document.objects.filter(document_type=doc)
