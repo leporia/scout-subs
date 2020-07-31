@@ -34,7 +34,7 @@
           </label>
           </a>
         </li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Archivia selezionati" onclick="send('archive')"><i class="material-icons">archive</i></a></li>
+        <li><a class="tooltipped modal-trigger" href="#modal2" data-position="top" data-tooltip="Archivia selezionati"><i class="material-icons">archive</i></a></li>
         <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
         {% if settings.DEBUG %}
           <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
@@ -50,6 +50,20 @@
 {% endblock %}
 
 {% block content %}
+
+<div id="modal2" class="modal">
+  <div class="modal-content">
+    <h4>Attenzione</h4>
+    <p>
+      Se il documento contine dati medici quando archiviato tutti i dati medici verranno eliminati.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+    <a onclick="send('archive')" class="modal-close waves-effect waves-green btn-flat">Archivia documenti</a>
+  </div>
+</div>
+
 <form id="selection" action="{% url 'doclist' %}" method="post">
 {% csrf_token %}
 <div id="modal1" class="modal">
@@ -245,8 +259,13 @@
           {% if doc.0.document_type.medical_data %}
             <li>
               <div class="collapsible-header">
-                <i class="material-icons">healing</i>Dati medici
+                {% if doc.0.medical_data %}
+                  <i class="material-icons">healing</i>Dati medici
+                {% else %}
+                  <i class="material-icons">healing</i><del>Dati medici</del>
+                {% endif %}
               </div>
+              {% if doc.0.medical_data %}
               <div class="collapsible-body"><span>
                 <div class="row">
                   <div class="col s12">
@@ -369,6 +388,7 @@
                     <label for="misc">Se s&igrave; quali</label>
                   </div>
               </span></div>
+              {% endif %}
             </li>
           {% endif %}
           {% if doc.0.document_type.custom_data %}

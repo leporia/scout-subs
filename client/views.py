@@ -81,9 +81,9 @@ def index(request):
             medical = None
             vac_file = ""
             health_file = ""
-            if i.document_type.personal_data:
+            if i.personal_data:
                 personal = i.personal_data
-            if i.document_type.medical_data:
+            if i.medical_data:
                 medical = i.medical_data
 
                 if medical.vac_certificate.name:

@@ -155,8 +155,13 @@
               {% if doc.0.document_type.medical_data %}
                 <li>
                   <div class="collapsible-header">
-                    <i class="material-icons">healing</i>Dati medici
+                    {% if doc.0.medical_data %}
+                      <i class="material-icons">healing</i>Dati medici
+                    {% else %}
+                      <i class="material-icons">healing</i><del>Dati medici</del>
+                    {% endif %}
                   </div>
+                  {% if doc.0.medical_data %}
                   <div class="collapsible-body"><span>
                     <div class="row">
                       <div class="col s12">
@@ -279,6 +284,7 @@
                         <label for="misc">Se s&igrave; quali</label>
                       </div>
                   </span></div>
+                  {% endif %}
                 </li>
               {% endif %}
               {% if doc.0.document_type.custom_data %}

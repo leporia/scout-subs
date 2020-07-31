@@ -508,6 +508,9 @@ def doclist(request):
             elif request.POST["action"] == 'archive':
                 if i.status == 'ok':
                     i.status = 'archive'
+                    if i.medical_data:
+                        i.medical_data.delete()
+                        i.medical_data.save()
                     i.save()
                 else:
                     error = True
@@ -603,9 +606,9 @@ def doclist(request):
         medical = None
         vac_file = ""
         health_file = ""
-        if i.document_type.personal_data:
+        if i.personal_data:
             personal = i.personal_data
-        if i.document_type.medical_data:
+        if i.medical_data:
             medical = i.medical_data
             if medical.vac_certificate.name:
                 with open(medical.vac_certificate.name, 'rb') as image_file:
