@@ -31,3 +31,9 @@
   </div>
 {% endif %}
 {% endblock %}
+
+{% block script %}
+$(document).ready(function(){
+    $('.tooltipped').tooltip();
+});
+{% endblock %}

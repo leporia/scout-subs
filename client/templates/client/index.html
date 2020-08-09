@@ -373,25 +373,31 @@
 
 {% block script %}
 $(document).ready(function(){
-    $('.collapsible').collapsible();
-    $('.tap-target').tapTarget();
-    $('.modal').modal();
     $('.tooltipped').tooltip();
-    {% if empty %}
-      $('.tap-target').tapTarget('open');
+    {% if user.is_authenticated %}
+    {% if user.is_staff or perms.client.approved %}
+      $('.collapsible').collapsible();
+      $('.tap-target').tapTarget();
+      $('.modal').modal();
+      {% if empty %}
+        $('.tap-target').tapTarget('open');
+      {% endif %}
+    {% endif %}
     {% endif %}
 });
-
-$('*').click(function(event) {
-    if (this === event.target) {
-      $('.tap-target').tapTarget('close');
+{% if user.is_authenticated %}
+  {% if user.is_staff or perms.client.approved %}
+    $('*').click(function(event) {
+        if (this === event.target) {
+          $('.tap-target').tapTarget('close');
+        }
+    });
+    function send(id) {
+      var form = document.getElementById('form')
+      var action = document.getElementById('action')
+      action.setAttribute('value', id);
+      form.submit()
     }
-});
-
-function send(id) {
-  var form = document.getElementById('form')
-  var action = document.getElementById('action')
-  action.setAttribute('value', id);
-  form.submit()
-}
+  {% endif %}
+{% endif %}
 {% endblock %}

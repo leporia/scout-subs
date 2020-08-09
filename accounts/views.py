@@ -11,15 +11,18 @@ from django.http import HttpResponseRedirect
 
 from client.models import UserCode
 
-import dateparser, os
+import dateparser
+import os
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
 
 @sensitive_variables("raw_passsword")
 def signup(request):
+    # signup form with terms
     if request.method == 'POST':
         if "terms_accept" not in request.POST:
+            # if terms not accepted return error and form again
             form = UserCreationForm()
             context = {
                 "form": form,
@@ -27,6 +30,7 @@ def signup(request):
                 "error_text": "Accettare i termini e condizioni prego"
             }
             return render(request, 'accounts/signup.html', context)
+        # terms accepted create user in db
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
@@ -35,8 +39,9 @@ def signup(request):
             user = authenticate(username=username, password=raw_password)
             login(request, user)
             return HttpResponseRedirect('/')
-    else:
-        form = UserCreationForm()
+
+    # create empty form to be filled
+    form = UserCreationForm()
     context = {
         "form": form,
     }
@@ -46,18 +51,25 @@ def signup(request):
 @login_required
 def personal(request):
     context = {}
+    # additional user informations
     usercode = UserCode.objects.filter(user=request.user)[0]
+    # medical info
     medic = usercode.medic
+    # values for multiple choice box
+    # TODO remove multiple choice
     branca_default = ""
     branca_castorini = ""
     branca_lupetti = ""
     branca_esploratori = ""
     branca_pionieri = ""
     branca_rover = ""
+
+    # variables for throwing errors to the user
     error = False
     error_text = ""
 
     if request.method == "POST":
+        # requested download
         if request.POST['action'] == "download_vac":
             if medic.vac_certificate != None:
                 filename = os.path.basename(medic.vac_certificate.name)
@@ -76,6 +88,7 @@ def personal(request):
                 filename = filename + ".jpg"
                 return FileResponse(medic.health_care_certificate.file, as_attachment=True, filename=filename)
 
+        # set all attributes
         request.user.first_name = request.POST["first_name"]
         request.user.last_name = request.POST["last_name"]
         request.user.email = request.POST["email"]
@@ -114,19 +127,22 @@ def personal(request):
         medic.misc = request.POST["misc"]
         medic.save()
 
-        #if "branca" in request.POST:
+        # if "branca" in request.POST:
         #    if request.POST["branca"] != "":
         #        request.user.groups.clear()
         #        request.user.groups.add(
         #            Group.objects.get(name=request.POST["branca"]))
-        
+
+        # check if user uploaded a file
         if "vac_certificate" in request.FILES:
             myfile = request.FILES['vac_certificate']
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
+                # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50)
-                medic.vac_certificate.save(request.user.username+"_"+myfile.name, im_io)
+                medic.vac_certificate.save(
+                    request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
                 error = True
@@ -137,14 +153,16 @@ def personal(request):
             try:
                 im = Image.open(myfile)
                 im_io = BytesIO()
+                # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50)
-                medic.health_care_certificate.save(request.user.username+"_"+myfile.name, im_io)
+                medic.health_care_certificate.save(
+                    request.user.username+"_"+myfile.name, im_io)
                 medic.save()
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
 
-
+        # user requested file delete
         if request.POST["delete_vac"] == 'vac':
             medic.vac_certificate = None
             medic.save()
@@ -153,9 +171,11 @@ def personal(request):
             medic.health_care_certificate = None
             medic.save()
 
+        # if there wasn't any error redirect to clear POST
         if not error:
             return HttpResponseRedirect("")
 
+    # check if user is in a group and set multiple choice to that
     if len(request.user.groups.values_list('name', flat=True)) == 0:
         branca_default = "selected"
     else:
@@ -174,6 +194,7 @@ def personal(request):
         else:
             branca_default = "selected"
 
+    # set checkbox status
     rega = ""
     if medic.rega:
         rega = "checked='checked'"
@@ -184,6 +205,7 @@ def personal(request):
     if medic.misc_bool:
         misc = "checked='checked'"
 
+    # set file name for uploaded files
     if (medic.vac_certificate != None):
         vac_name = os.path.basename(medic.vac_certificate.name)
         vac_name = vac_name[vac_name.find("_")+1:]
@@ -196,6 +218,7 @@ def personal(request):
     else:
         card_name = ''
 
+    # fill context
     context = {
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
@@ -244,6 +267,8 @@ def personal(request):
 
     return render(request, 'accounts/index.html', context)
 
+
+# simple terms page, only static html
 def terms(request):
     context = {}
     return render(request, 'accounts/terms.html', context)
