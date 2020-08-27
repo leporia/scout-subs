@@ -84,6 +84,11 @@
                 <br>
                 <br>
               {% endif %}
+              <ul class="collection">
+                <li class="collection-item">
+                  <i class="material-icons left">confirmation_number</i>{{doc.0.code}}
+                </li>
+              </ul>
               <ul class="collapsible">
               {% if doc.0.document_type.personal_data %}
                 <li>

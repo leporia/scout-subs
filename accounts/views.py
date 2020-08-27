@@ -77,7 +77,13 @@ def personal(request):
                 if filename.rfind('.') != -1:
                     filename = filename[:filename.rfind('.')]
                 filename = filename + ".jpg"
-                return FileResponse(medic.vac_certificate.file, as_attachment=True, filename=filename)
+
+                # encode in JPEG
+                im = Image.open(medic.vac_certificate.file)
+                im_io = BytesIO()
+                im.save(im_io, 'JPEG', quality=90)
+                im_io.seek(0)
+                return FileResponse(im_io, as_attachment=True, filename=filename)
 
         if request.POST['action'] == "download_health":
             if medic.health_care_certificate != None:
@@ -86,7 +92,13 @@ def personal(request):
                 if filename.rfind('.') != -1:
                     filename = filename[:filename.rfind('.')]
                 filename = filename + ".jpg"
-                return FileResponse(medic.health_care_certificate.file, as_attachment=True, filename=filename)
+
+                # encode in JPEG
+                im = Image.open(medic.vac_certificate.file)
+                im_io = BytesIO()
+                im.save(im_io, 'JPEG', quality=90)
+                im_io.seek(0)
+                return FileResponse(im_io, as_attachment=True, filename=filename)
 
         # set all attributes
         request.user.first_name = request.POST["first_name"]
@@ -140,7 +152,7 @@ def personal(request):
                 im = Image.open(myfile)
                 im_io = BytesIO()
                 # compress image in WEBP
-                im.save(im_io, 'WEBP', quality=50)
+                im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.vac_certificate.save(
                     request.user.username+"_"+myfile.name, im_io)
                 medic.save()
@@ -154,7 +166,7 @@ def personal(request):
                 im = Image.open(myfile)
                 im_io = BytesIO()
                 # compress image in WEBP
-                im.save(im_io, 'WEBP', quality=50)
+                im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.health_care_certificate.save(
                     request.user.username+"_"+myfile.name, im_io)
                 medic.save()
