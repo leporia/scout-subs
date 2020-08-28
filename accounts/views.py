@@ -147,28 +147,52 @@ def personal(request):
 
         # check if user uploaded a file
         if "vac_certificate" in request.FILES:
-            myfile = request.FILES['vac_certificate']
+            files = request.FILES.getlist('vac_certificate')
+            name = files[0].name
             try:
-                im = Image.open(myfile)
+                # if multiple files concatenate pictures
+                if len(files) == 1:
+                    im = Image.open(files[0])
+                else:
+                    im = Image.open(files.pop(0))
+                    for f in files:
+                        i = Image.open(f)
+                        dst = Image.new('RGB', (im.width + i.width, max(im.height, i.height)), (255, 255, 255))
+                        dst.paste(im, (0, 0))
+                        dst.paste(i, (im.width, 0))
+                        im = dst
+
                 im_io = BytesIO()
                 # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.vac_certificate.save(
-                    request.user.username+"_"+myfile.name, im_io)
+                    request.user.username+"_"+name, im_io)
                 medic.save()
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
 
         if "health_care_certificate" in request.FILES:
-            myfile = request.FILES['health_care_certificate']
+            files = request.FILES.getlist('health_care_certificate')
+            name = files[0].name
             try:
-                im = Image.open(myfile)
+                # if multiple files concatenate pictures
+                if len(files) == 1:
+                    im = Image.open(files[0])
+                else:
+                    im = Image.open(files.pop(0))
+                    for f in files:
+                        i = Image.open(f)
+                        dst = Image.new('RGB', (im.width + i.width, max(im.height, i.height)), (255, 255, 255))
+                        dst.paste(im, (0, 0))
+                        dst.paste(i, (im.width, 0))
+                        im = dst
+
                 im_io = BytesIO()
                 # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.health_care_certificate.save(
-                    request.user.username+"_"+myfile.name, im_io)
+                    request.user.username+"_"+name, im_io)
                 medic.save()
             except UnidentifiedImageError:
                 error = True

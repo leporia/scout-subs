@@ -253,7 +253,7 @@
               <div class="file-field input-field">
                 <div class="btn teal">
                   <span><i class="material-icons left">file_upload</i>File</span>
-                  <input type="file" name="vac_certificate" id="vac_certificate">
+                  <input type="file" name="vac_certificate" id="vac_certificate" multiple>
                 </div>
                 <div class="file-path-wrapper">
                   <input id="vac_file" value="{{vac_certificate}}" class="file-path" type="text" placeholder="Certificato di vacinazione">
@@ -273,7 +273,7 @@
               <div class="file-field input-field">
                 <div class="btn teal">
                   <span><i class="material-icons left">file_upload</i>File</span>
-                  <input type="file" name="health_care_certificate" id="health_care_certificate">
+                  <input type="file" name="health_care_certificate" id="health_care_certificate" multiple>
                 </div>
                 <div class="file-path-wrapper">
                   <input id="health_care_file" value="{{health_care_certificate}}" class="file-path" type="text" placeholder="Tessera cassa malati">
@@ -354,16 +354,22 @@ $(document).ready(function() {
   {% endif %}
 
   document.getElementById("vac_certificate").onchange = function() {
-    if(this.files[0].size > 1048576*10){
-      M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
-      this.value = "";
+    for (i=0; i < this.files.length; i++) {
+      if(this.files[i].size > 1048576*10) {
+        M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
+        this.value = "";
+        break;
+      }
     }
   };
 
   document.getElementById("health_care_certificate").onchange = function() {
-    if(this.files[0].size > 1048576*10){
-      M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
-      this.value = "";
+    for (i=0; i < this.files.length; i++) {
+      if(this.files[i].size > 1048576*10) {
+        M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
+        this.value = "";
+        break;
+      }
     }
   };
 
