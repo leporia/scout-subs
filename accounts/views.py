@@ -94,7 +94,7 @@ def personal(request):
                 filename = filename + ".jpg"
 
                 # encode in JPEG
-                im = Image.open(medic.vac_certificate.file)
+                im = Image.open(medic.health_care_certificate.file)
                 im_io = BytesIO()
                 im.save(im_io, 'JPEG', quality=90)
                 im_io.seek(0)
@@ -157,12 +157,15 @@ def personal(request):
                     im = Image.open(files.pop(0))
                     for f in files:
                         i = Image.open(f)
-                        dst = Image.new('RGB', (im.width + i.width, max(im.height, i.height)), (255, 255, 255))
+                        dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                         dst.paste(im, (0, 0))
-                        dst.paste(i, (im.width, 0))
+                        dst.paste(i, (0, im.height))
                         im = dst
 
                 im_io = BytesIO()
+                # resize image if larger than max value
+                if im.height > 16383:
+                    im = im.resize((round(im.width/im.height*16383), 16383))
                 # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.vac_certificate.save(
@@ -171,6 +174,9 @@ def personal(request):
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
+            except IOError:
+                error = True
+                error_text = "Il file è un immagine troppo grande"
 
         if "health_care_certificate" in request.FILES:
             files = request.FILES.getlist('health_care_certificate')
@@ -183,12 +189,15 @@ def personal(request):
                     im = Image.open(files.pop(0))
                     for f in files:
                         i = Image.open(f)
-                        dst = Image.new('RGB', (im.width + i.width, max(im.height, i.height)), (255, 255, 255))
+                        dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                         dst.paste(im, (0, 0))
-                        dst.paste(i, (im.width, 0))
+                        dst.paste(i, (0, im.height))
                         im = dst
 
                 im_io = BytesIO()
+                # resize image if larger than max value
+                if im.height > 16383:
+                    im = im.resize((round(im.width/im.height*16383), 16383))
                 # compress image in WEBP
                 im.save(im_io, 'WEBP', quality=50, method=4)
                 medic.health_care_certificate.save(
@@ -197,6 +206,9 @@ def personal(request):
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
+            except IOError:
+                error = True
+                error_text = "Il file è un immagine troppo grande"
 
         # user requested file delete
         if request.POST["delete_vac"] == 'vac':
