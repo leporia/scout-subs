@@ -49,12 +49,9 @@ def index(request):
                 context = {'doc': document}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
-                # build response
-                filename = document.document_type.name + ".pdf"
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
-                response['Content-Length'] = len(pdf)
-                return response
+                result = BytesIO(pdf)
+                result.seek(0)
+                return FileResponse(result, filename=document.document_type.name+".pdf")
             elif request.POST["action"][0] == 'a':
                 # sign autosign doc
                 if document.status == "autosign":
