@@ -114,7 +114,12 @@ def personal(request):
         usercode.home_phone = request.POST["home_phone"]
         usercode.phone = request.POST["phone"]
         usercode.school = request.POST["school"]
-        usercode.year = request.POST["year"]
+        if request.POST["year"].isdigit():
+            usercode.year = request.POST["year"]
+        else:
+            error = True
+            error_text = "L'anno scolastico deve essere un numero"
+
         usercode.save()
 
         medic.emer_name = request.POST["emer_name"]
