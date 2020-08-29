@@ -221,7 +221,7 @@ def ulist(request):
                 # render context
                 html = template.render(context)
                 # render pdf using wkhtmltopdf
-                pdf = pdfkit.from_string(html, False)
+                pdf = pdfkit.from_string(html, False, options={"window-status":"done"})
                 result = BytesIO(pdf)
                 result.seek(0)
                 return FileResponse(result, filename=document.user.username+"_"+document.document_type.name+".pdf")
