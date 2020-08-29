@@ -221,7 +221,7 @@ def ulist(request):
                 # render context
                 html = template.render(context)
                 # render pdf using wkhtmltopdf
-                pdf = pdfkit.from_string(html, False)
+                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
                 result = BytesIO(pdf)
                 result.seek(0)
 
@@ -602,7 +602,7 @@ def doclist(request):
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
-                pdf = pdfkit.from_string(html, False)
+                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
                 result = BytesIO(pdf)
                 result.seek(0)
 
