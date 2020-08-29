@@ -19,6 +19,7 @@ from io import BytesIO
 import os
 import base64
 from PIL import Image, UnidentifiedImageError
+import zipfile
 
 
 # custom staff check function for non primary group staff members
@@ -604,7 +605,7 @@ def doclist(request):
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
                 result.seek(0)
-                return FileResponse(result, filename=document.user.username+"_"+document.document_type.name+".pdf")
+                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
 
         # get selected documents and check if user has permission to view
         selected = []
@@ -614,6 +615,8 @@ def doclist(request):
                 if docc.group.name in parent_groups:
                     selected.append(docc)
 
+        # create list of pdfs
+        files = []
         # execute action on selected documents
         for i in selected:
             if request.POST["action"] == 'delete' and settings.DEBUG:
@@ -638,6 +641,48 @@ def doclist(request):
                 else:
                     error = True
                     error_text = "Non puoi dearchiviare un documento non archiviato"
+            elif request.POST["action"] == "download":
+                vac_file = ""
+                health_file = ""
+                sign_doc_file = ""
+
+                # prepare pictures in base64
+                if i.medical_data:
+                    if i.medical_data.vac_certificate.name:
+                        with open(i.medical_data.vac_certificate.name, 'rb') as image_file:
+                            vac_file = base64.b64encode(
+                                image_file.read()).decode()
+
+                    if i.medical_data.health_care_certificate.name:
+                        with open(i.medical_data.health_care_certificate.name, 'rb') as image_file:
+                            health_file = base64.b64encode(
+                                image_file.read()).decode()
+                if i.signed_doc:
+                    with open(i.signed_doc.name, 'rb') as image_file:
+                        sign_doc_file = base64.b64encode(
+                            image_file.read()).decode()
+
+                template = get_template('server/download_doc.html')
+                doc = [i, KeyVal.objects.filter(
+                    container=i), i.personal_data, i.medical_data, i.user.groups.values_list('name', flat=True)[0]]
+                context = {'doc': doc, 'vac': vac_file,
+                           'health': health_file, 'sign_doc_file': sign_doc_file}
+                # render context
+                html = template.render(context)
+                # render pdf using wkhtmltopdf
+                pdf = pdfkit.from_string(html, False)
+                filename = i.user.username+"_"+i.document_type.name+".pdf"
+                files.append((filename, pdf))
+
+        if request.POST["action"] == "download":
+            mem_zip = BytesIO()
+
+            with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
+                for f in files:
+                    zf.writestr(f[0], f[1])
+
+            mem_zip.seek(0)
+            return FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
 
         # get filter values
         hidden = "filter_hidden" in request.POST
