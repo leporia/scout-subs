@@ -881,6 +881,7 @@ def docpreview(request):
 
         # get document
         document = Document.objects.filter(code=code)[0]
+        parent_group = document.user.groups.values_list('name', flat=True)[0]
 
         # prepare images in base64
         vac_file = ""
