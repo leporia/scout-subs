@@ -2,7 +2,7 @@ from random import randint
 from django.contrib.auth.models import Group, Permission, User
 from client.models import UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render
@@ -53,6 +53,7 @@ def index(request):
                 filename = document.document_type.name + ".pdf"
                 response = HttpResponse(pdf, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                response['Content-Length'] = len(pdf)
                 return response
             elif request.POST["action"][0] == 'a':
                 # sign autosign doc

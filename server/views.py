@@ -221,11 +221,12 @@ def ulist(request):
                 # render context
                 html = template.render(context)
                 # render pdf using wkhtmltopdf
-                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
+                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000', 'no-stop-slow-scripts':False})
                 # build response
                 filename = document.user.username + "_" + document.document_type.name + ".pdf"
                 response = HttpResponse(pdf, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                response['Content-Length'] = len(pdf)
                 return response
 
         # deapprove user
@@ -603,11 +604,12 @@ def doclist(request):
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
-                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
+                pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000', 'no-stop-slow-scripts':False})
                 # build response
                 filename = document.user.username + "_" + document.document_type.name + ".pdf"
                 response = HttpResponse(pdf, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                response['Content-Length'] = len(pdf)
                 return response
 
         # get selected documents and check if user has permission to view
