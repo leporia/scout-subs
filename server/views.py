@@ -2,7 +2,7 @@ from django.shortcuts import render
 from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.db.models.deletion import ProtectedError
 from django.template.loader import get_template
 from django.conf import settings
@@ -222,10 +222,11 @@ def ulist(request):
                 html = template.render(context)
                 # render pdf using wkhtmltopdf
                 pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
-                result = BytesIO(pdf)
-                result.seek(0)
-
-                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+                # build response
+                filename = document.user.username + "_" + document.document_type.name + ".pdf"
+                response = HttpResponse(pdf, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                return response
 
         # deapprove user
         elif request.POST["action"][0] == 'd':
@@ -603,10 +604,11 @@ def doclist(request):
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False, options={'javascript-delay':'1000'})
-                result = BytesIO(pdf)
-                result.seek(0)
-
-                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+                # build response
+                filename = document.user.username + "_" + document.document_type.name + ".pdf"
+                response = HttpResponse(pdf, content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                return response
 
         # get selected documents and check if user has permission to view
         selected = []
