@@ -8,290 +8,286 @@
 </head>
 <body>
 <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
-<ul class="collapsible">
-  <li class="active">
-  <div class="collapsible-header">
-      {% if doc.0.status == "wait" %}
-          <i class="material-icons">timelapse</i>
-      {% elif doc.0.status == "ok" %}
-          <i class="material-icons">check</i>
-      {% elif doc.0.status == "archive" %}
-          <i class="material-icons">archive</i>
-      {% elif doc.0.status == "autosign" %}
-        <i class="material-icons">assignment_turned_in</i>
-      {% endif %}
-      {{doc.0.document_type.name}}
-      <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
-  </div>
-  <div class="collapsible-body"><span>
-    <ul class="collapsible">
-      {% if doc.0.status == 'ok' or doc.0.status == 'archive' %}
-      <li>
-        <div class="collapsible-header">
-          <i class="material-icons">confirmation_number</i>{{doc.0.code}}
-        </div>
-      </li>
-      {% endif %}
-      <li>
-        <div class="collapsible-header">
-          <i class="material-icons">send</i>{{doc.0.compilation_date}}
-        </div>
-      </li>
-    {% if doc.0.document_type.personal_data %}
-      <li class="active">
-        <div class="collapsible-header">
-          <i class="material-icons">person</i>Dati personali
-        </div>
-        <div class="collapsible-body"><span>
-          <div class="row">
-            <div class="input-field col l4 s12">
-              <input value="{{doc.0.user.first_name}}" id="first_name" type="text" >
-              <label for="first_name">Nome</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.0.user.last_name}}" id="last_name" type="text" >
-              <label for="last_name">Cognome</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.born_date}}" id="birth_date" type="text">
-              <label for="birth_date">Data di nascita</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.4}}" id="branca" type="text">
-              <label for="branca">Branca</label>
-            </div>
-            <div class="input-field col l8 s12">
-              <input value="{{doc.2.parent_name}}" id="parent_name" type="text" >
-              <label for="parent_name">Nome dei genitori</label>
-            </div>
-            <div class="input-field col l12 s12">
-              <input value="{{doc.2.via}}" id="via" type="text" >
-              <label for="via">Via e numero</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.cap}}" name="cap" id="cap" type="text" >
-              <label for="cap">CAP</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.country}}" name="country" id="country" type="text" >
-              <label for="country">Paese</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.nationality}}" name="nationality" id="nationality" type="text" >
-              <label for="nationality">Nazionalit&agrave;</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.phone}}" name="phone" id="phone" type="text" >
-              <label for="phone">Cellulare</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.home_phone}}" name="home_phone" id="home_phone" type="text" >
-              <label for="home_phone">Telefono di casa</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.email}}" name="email" id="email" type="text" >
-              <label for="email">Email</label>
-            </div>
-            <div class="input-field col l8 s12">
-              <input value="{{doc.2.school}}" name="school" id="school" type="text" >
-              <label for="school">Scuola frequentata</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.2.year}}" name="year" id="year" type="text" >
-              <label for="year">Classe</label>
-            </div>
-          </div>
-        </span></div>
-      </li>
+  <ul class="collapsible">
+    <li>
+      <div class="collapsible-header">
+          {% if doc.0.status == "wait" %}
+              <i class="material-icons">timelapse</i>
+          {% elif doc.0.status == "ok" %}
+              <i class="material-icons">check</i>
+          {% elif doc.0.status == "archive" %}
+              <i class="material-icons">archive</i>
+          {% elif doc.0.status == "autosign" %}
+            <i class="material-icons">assignment_turned_in</i>
+          {% endif %}
+          {{doc.0.document_type.name}}
+          <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
+      </div>
+    </li>
+    {% if doc.0.status == 'ok' or doc.0.status == 'archive' %}
+    <li>
+      <div class="collapsible-header">
+        <i class="material-icons">confirmation_number</i>{{doc.0.code}}
+      </div>
+    </li>
     {% endif %}
-    {% if doc.0.document_type.medical_data %}
-      <li class="active">
-        <div class="collapsible-header">
-          <i class="material-icons">healing</i>Dati medici
+    <li>
+      <div class="collapsible-header">
+        <i class="material-icons">send</i>{{doc.0.compilation_date}}
+      </div>
+    </li>
+  {% if doc.0.document_type.personal_data %}
+    <li class="active">
+      <div class="collapsible-header">
+        <i class="material-icons">person</i>Dati personali
+      </div>
+      <div class="collapsible-body"><span>
+        <div class="row">
+          <div class="input-field col l4 s12">
+            <input value="{{doc.0.user.first_name}}" id="first_name" type="text" >
+            <label for="first_name">Nome</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.0.user.last_name}}" id="last_name" type="text" >
+            <label for="last_name">Cognome</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.born_date}}" id="birth_date" type="text">
+            <label for="birth_date">Data di nascita</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.4}}" id="branca" type="text">
+            <label for="branca">Branca</label>
+          </div>
+          <div class="input-field col l8 s12">
+            <input value="{{doc.2.parent_name}}" id="parent_name" type="text" >
+            <label for="parent_name">Nome dei genitori</label>
+          </div>
+          <div class="input-field col l12 s12">
+            <input value="{{doc.2.via}}" id="via" type="text" >
+            <label for="via">Via e numero</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.cap}}" name="cap" id="cap" type="text" >
+            <label for="cap">CAP</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.country}}" name="country" id="country" type="text" >
+            <label for="country">Paese</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.nationality}}" name="nationality" id="nationality" type="text" >
+            <label for="nationality">Nazionalit&agrave;</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.phone}}" name="phone" id="phone" type="text" >
+            <label for="phone">Cellulare</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.home_phone}}" name="home_phone" id="home_phone" type="text" >
+            <label for="home_phone">Telefono di casa</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.email}}" name="email" id="email" type="text" >
+            <label for="email">Email</label>
+          </div>
+          <div class="input-field col l8 s12">
+            <input value="{{doc.2.school}}" name="school" id="school" type="text" >
+            <label for="school">Scuola frequentata</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.2.year}}" name="year" id="year" type="text" >
+            <label for="year">Classe</label>
+          </div>
         </div>
-        <div class="collapsible-body"><span>
-          <div class="row">
-            <div class="col s12">
-              <h6>Persona di contatto in caso di necessit&agrave;</h6>
-            </div>
+      </span></div>
+    </li>
+  {% endif %}
+  {% if doc.0.document_type.medical_data %}
+    <li class="active">
+      <div class="collapsible-header">
+        <i class="material-icons">healing</i>Dati medici
+      </div>
+      <div class="collapsible-body"><span>
+        <div class="row">
+          <div class="col s12">
+            <h6>Persona di contatto in caso di necessit&agrave;</h6>
           </div>
-          <div class="row">
-            <div class="input-field col l6 s12">
-              <input name="emer_name" value="{{doc.3.emer_name}}" id="emer_name" type="text" >
-              <label for="emer_name">Nome e cognome</label>
-            </div>
-            <div class="input-field col l3 s12">
-              <input name="emer_relative" value="{{doc.3.emer_relative}}" id="emer_relative" type="text" >
-              <label for="emer_releative">Parentela</label>
-            </div>
-            <div class="input-field col l3 s12">
-              <input name="cell_phone" value="{{doc.3.cell_phone}}" id="cellphone" type="text" >
-              <label for="cell_phone">Cellulare</label>
-            </div>
-            <div class="input-field col l9 s12">
-              <input value="{{doc.3.address}}" name="address" id="address" type="text" >
-              <label for="address">Indirizzo completo</label>
-            </div>
-            <div class="input-field col l3 s12">
-              <input value="{{doc.3.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
-              <label for="emer_phone">Telefono di casa</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Assicurazione</h6>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col l4 s12">
-              <input value="{{doc.3.health_care}}" name="health_care" id="health_care" type="text" >
-              <label for="health_care">Cassa Malati</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.3.injuries}}" name="injuries" id="injuries" type="text" >
-              <label for="injuries">Infortuni</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <input value="{{doc.3.rc}}" name="rc" id="rc" type="text" >
-              <label for="rc">Responsabilit&agrave; civile</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="switch col s12">
-              &Egrave; sostenitore REGA&nbsp;&nbsp;
-              <label>
-                No
-                <input name="rega" type="checkbox" {% if doc.3.rega %}checked="checked"{%endif%}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Medico di famiglia</h6>
-            </div>
-            <div class="input-field col l6 s12">
-              <input value="{{doc.3.medic_name}}" name="medic_name" id="medic_name" type="text" >
-              <label for="medic_name">Nome e cognome</label>
-            </div>
-            <div class="input-field col l6 s12">
-              <input value="{{doc.3.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
-              <label for="medic_phone">Telefono studio</label>
-            </div>
-            <div class="input-field col l12 s12">
-              <input value="{{doc.3.medic_address}}" name="medic_address" id="medic_address" type="text" >
-              <label for="medic_address">Indirizzo completo</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col s12">
-              <h6>Scheda medica personale</h6>
-            </div>
-            <div class="input-field col s12">
-              <input value="{{doc.3.sickness}}" name="sickness" id="sickness" type="text">
-              <label for="sickness">Principali malattie avute</label>
-            </div>
-            <div class="input-field col l8 s12">
-              <input value="{{doc.3.vaccine}}" name="vaccine" id="vaccine" type="text">
-              <label for="vaccine">Vacinazioni fatte</label>
-            </div>
-            <div class="input-field col l4 s12">
-              <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-              <input value="{{doc.3.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
-            </div>
-            <div class="input-field col s12">
-              <input value="{{doc.3.allergy}}" name="allergy" id="allergy" type="text">
-              <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
-            </div>
-            <div class="switch col s12">
-              Deve assumere regolarmente medicamenti&nbsp;&nbsp;
-              <label>
-                No
-                <input name="drugs_bool" type="checkbox" {% if doc.3.drugs_bool %}checked="checked"{%endif%}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-            <div class="input-field col s12">
-              <input value="{{doc.3.drugs}}" name="drugs" id="drugs" type="text">
-              <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
-            </div>
-            <div class="switch col s12">
-              Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
-              <label>
-                No
-                <input name="misc_bool" type="checkbox" {% if doc.3.misc_bool %}checked="checked"{%endif%}>
-                <span class="lever"></span>
-                Si
-              </label>
-            </div>
-            <div class="input-field col s12">
-              <input value="{{doc.3.misc}}" name="misc" id="misc" type="text">
-              <label for="misc">Se s&igrave; quali</label>
-            </div>
-        </span></div>
-      </li>
-    {% endif %}
-    {% if doc.0.document_type.custom_data %}
-      <li class="active">
-        <div class="collapsible-header">
-          <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
         </div>
-        <div class="collapsible-body"><span>
-          <table class="striped">
-          <tbody>
-          {% for key in doc.1 %}
-            <tr>
-            <td>{{key.key}}</td>
-            <td>{{key.value}}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-          </table>
-        </span></div>
-      </li>
-    {% endif %}
-    {% if doc.0.document_type.medical_data %}
-      <li class="active">
-        <div class="collapsible-header">
-          <i class="material-icons">attach_file</i>Allegati
+        <div class="row">
+          <div class="input-field col l6 s12">
+            <input name="emer_name" value="{{doc.3.emer_name}}" id="emer_name" type="text" >
+            <label for="emer_name">Nome e cognome</label>
+          </div>
+          <div class="input-field col l3 s12">
+            <input name="emer_relative" value="{{doc.3.emer_relative}}" id="emer_relative" type="text" >
+            <label for="emer_releative">Parentela</label>
+          </div>
+          <div class="input-field col l3 s12">
+            <input name="cell_phone" value="{{doc.3.cell_phone}}" id="cellphone" type="text" >
+            <label for="cell_phone">Cellulare</label>
+          </div>
+          <div class="input-field col l9 s12">
+            <input value="{{doc.3.address}}" name="address" id="address" type="text" >
+            <label for="address">Indirizzo completo</label>
+          </div>
+          <div class="input-field col l3 s12">
+            <input value="{{doc.3.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+            <label for="emer_phone">Telefono di casa</label>
+          </div>
         </div>
-        <div class="collapsible-body"><span>
-          <div class="row">
-            <div class="col s12">
-              <div class="card">
-                <div class="card-image">
-                  {% if vac %}<img src="data:;base64,{{ vac }}">{% endif %}
-                </div>
+        <div class="row">
+          <div class="col s12">
+            <h6>Assicurazione</h6>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col l4 s12">
+            <input value="{{doc.3.health_care}}" name="health_care" id="health_care" type="text" >
+            <label for="health_care">Cassa Malati</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.3.injuries}}" name="injuries" id="injuries" type="text" >
+            <label for="injuries">Infortuni</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <input value="{{doc.3.rc}}" name="rc" id="rc" type="text" >
+            <label for="rc">Responsabilit&agrave; civile</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="switch col s12">
+            &Egrave; sostenitore REGA&nbsp;&nbsp;
+            <label>
+              No
+              <input name="rega" type="checkbox" {% if doc.3.rega %}checked="checked"{%endif%}>
+              <span class="lever"></span>
+              Si
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12">
+            <h6>Medico di famiglia</h6>
+          </div>
+          <div class="input-field col l6 s12">
+            <input value="{{doc.3.medic_name}}" name="medic_name" id="medic_name" type="text" >
+            <label for="medic_name">Nome e cognome</label>
+          </div>
+          <div class="input-field col l6 s12">
+            <input value="{{doc.3.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+            <label for="medic_phone">Telefono studio</label>
+          </div>
+          <div class="input-field col l12 s12">
+            <input value="{{doc.3.medic_address}}" name="medic_address" id="medic_address" type="text" >
+            <label for="medic_address">Indirizzo completo</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12">
+            <h6>Scheda medica personale</h6>
+          </div>
+          <div class="input-field col s12">
+            <input value="{{doc.3.sickness}}" name="sickness" id="sickness" type="text">
+            <label for="sickness">Principali malattie avute</label>
+          </div>
+          <div class="input-field col l8 s12">
+            <input value="{{doc.3.vaccine}}" name="vaccine" id="vaccine" type="text">
+            <label for="vaccine">Vacinazioni fatte</label>
+          </div>
+          <div class="input-field col l4 s12">
+            <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
+            <input value="{{doc.3.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
+          </div>
+          <div class="input-field col s12">
+            <input value="{{doc.3.allergy}}" name="allergy" id="allergy" type="text">
+            <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
+          </div>
+          <div class="switch col s12">
+            Deve assumere regolarmente medicamenti&nbsp;&nbsp;
+            <label>
+              No
+              <input name="drugs_bool" type="checkbox" {% if doc.3.drugs_bool %}checked="checked"{%endif%}>
+              <span class="lever"></span>
+              Si
+            </label>
+          </div>
+          <div class="input-field col s12">
+            <input value="{{doc.3.drugs}}" name="drugs" id="drugs" type="text">
+            <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
+          </div>
+          <div class="switch col s12">
+            Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
+            <label>
+              No
+              <input name="misc_bool" type="checkbox" {% if doc.3.misc_bool %}checked="checked"{%endif%}>
+              <span class="lever"></span>
+              Si
+            </label>
+          </div>
+          <div class="input-field col s12">
+            <input value="{{doc.3.misc}}" name="misc" id="misc" type="text">
+            <label for="misc">Se s&igrave; quali</label>
+          </div>
+      </span></div>
+    </li>
+  {% endif %}
+  {% if doc.0.document_type.custom_data %}
+    <li class="active">
+      <div class="collapsible-header">
+        <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
+      </div>
+      <div class="collapsible-body"><span>
+        <table class="striped">
+        <tbody>
+        {% for key in doc.1 %}
+          <tr>
+          <td>{{key.key}}</td>
+          <td>{{key.value}}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+      </span></div>
+    </li>
+  {% endif %}
+  {% if doc.0.document_type.medical_data %}
+    <li class="active">
+      <div class="collapsible-header">
+        <i class="material-icons">attach_file</i>Allegati
+      </div>
+      <div class="collapsible-body"><span>
+        <div class="row">
+          <div class="col s12">
+            <div class="card">
+              <div class="card-image">
+                {% if vac %}<img src="data:;base64,{{ vac }}">{% endif %}
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col s12">
-              <div class="card">
-                <div class="card-image">
-                  {% if health %}<img src="data:;base64,{{ health }}">{% endif %}
-                </div>
+        </div>
+        <div class="row">
+          <div class="col s12">
+            <div class="card">
+              <div class="card-image">
+                {% if health %}<img src="data:;base64,{{ health }}">{% endif %}
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col s12">
-              <div class="card">
-                <div class="card-image">
-                  {% if sign_doc_file %}<img src="data:;base64,{{ sign_doc_file }}">{% endif %}
-                </div>
+        </div>
+        <div class="row">
+          <div class="col s12">
+            <div class="card">
+              <div class="card-image">
+                {% if sign_doc_file %}<img src="data:;base64,{{ sign_doc_file }}">{% endif %}
               </div>
             </div>
           </div>
-        </span></div>
-      </li>
-    {% endif %}
-    </ul>
-  </span></div>
-  </li>
-</ul>
+        </div>
+      </span></div>
+    </li>
+  {% endif %}
+  </ul>
 </form>
 </main>
 </body>
