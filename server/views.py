@@ -25,6 +25,7 @@ import threading
 import random
 
 progress = {}
+lock = threading.Lock()
 
 # custom staff check function for non primary group staff members
 def isStaff(user):
@@ -788,30 +789,47 @@ def doclist(request):
         'settings': settings,
     }
 
+    # check if download multiple documents
     if request.method == "POST":
         if request.POST["action"] == "download" and len(selected) > 0:
+            # generate job id
             code = request.user.username + "_" + str(random.randint(100, 999))
-            progress[code] = [0, len(selected), False, request.user, None]
+            while code in progress.keys():
+                code = request.user.username + "_" + str(random.randint(100, 999))
+
+            # create job status object
+            with lock:
+                progress[code] = [0, len(selected), False, request.user, None]
+            # run job
             threading.Thread(target=zip_documents, args=(selected, code)).start()
+            # pass job id
             context["task_id"] = code
 
     return render(request, 'server/doc_list.html', context)
 
 def get_progress(request):
+    # check if asked for a job
     if 'job' in request.GET:
         job_id = request.GET['job']
     else:
         return HttpResponse(json.dumps({"error": True}))
 
+    # check if job is valid
     if not job_id in progress.keys():
         return HttpResponse(json.dumps({"error": "Lavoro non esistente. Provare a richiedere di nuovo il lavoro."}))
 
+    # if user wants to download result
     if 'download' in request.GET:
-        if progress[job_id][3] == request.user:
-            data = progress[job_id][4]
-            del progress[job_id]
-            return data
-    data = progress[job_id][:3]
+        with lock:
+            # if user is authorized and job is completed
+            if request.GET['download'] == "true" and progress[job_id][3] == request.user:
+                data = progress[job_id][4]
+                del progress[job_id]
+                return data
+
+    # otherwise return status
+    with lock:
+        data = progress[job_id][:3]
     return HttpResponse(json.dumps(data))
 
 def zip_documents(docs, code):
@@ -847,18 +865,22 @@ def zip_documents(docs, code):
         # render pdf using wkhtmltopdf
         pdf = pdfkit.from_string(html, False)
         filename = i.user.username+"_"+i.document_type.name+".pdf"
+        # append file
         files.append((filename, pdf))
-        progress[code][0] += 1
+        with lock:
+            progress[code][0] += 1
 
+    # zip documents
     mem_zip = BytesIO()
-
     with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
         for f in files:
             zf.writestr(f[0], f[1])
 
     mem_zip.seek(0)
-    progress[code][4] = FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
-    progress[code][2] = True
+    # save result
+    with lock:
+        progress[code][4] = FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
+        progress[code][2] = True
 
 @user_passes_test(isStaff)
 def upload_doc(request):

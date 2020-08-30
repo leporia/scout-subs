@@ -551,10 +551,9 @@ function update() {
       if (data[0] == data[1]) {
         if (data[2]) {
           bar.className = "indeterminate";
-          var url = '{% url "progress" %}' + '?job=' + '{{task_id}}' + '&download=true';
-          box.innerHTML = "Il download dovrebbe partire automaticamente. Nel caso non succedesse cliccare il seguente <a id='downloadLink' href=" + url + ">link</a>";
+          url = '{% url "progress" %}' + '?job=' + '{{task_id}}' + '&download=true';
+          box.innerHTML = "Il download dovrebbe partire automaticamente. Nel caso non succedesse cliccare il seguente <a id='downloadLink' href=" + url + ">link</a><br>Clicca lo sfondo per chiudere la finestra";
           document.getElementById('downloadLink').click();
-
         } else {
           bar.style.width = "100%";
           box.innerHTML = "Impacchettamento documenti...";
