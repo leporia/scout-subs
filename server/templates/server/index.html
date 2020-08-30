@@ -10,7 +10,7 @@
 {% block content %}
 <div class="row">
   {% if user.is_staff %}
-  <div class="col l4 s12">
+  <div class="col l5 s12">
     <div class="card large">
       <div class="card-content">
         <p>
@@ -31,14 +31,27 @@
         </p>
       </div>
       <div class="card-action">
+        <div class="hide-on-med-and-down">
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'ulist' %}">Lista utenti</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'uapprove' %}">Approva utente</a>
+          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'request' %}">Richiedi dati</a>
+        </div>
+
+        <div class="hide-on-large-only">
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'ulist' %}">Lista utenti</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'uapprove' %}">Approva utente</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'request' %}">Richiedi dati</a>
+        </div>
       </div>
     </div>
   </div>
   {% endif %}
   {% if user.is_staff %}
-  <div class="col l8 s12">
+  <div class="col l7 s12">
   {% else %}
   <div class="col s12">
   {% endif %}
@@ -62,14 +75,14 @@
         </ul>
       </div>
       <div class="card-action">
-        <div class="hide-on-small-only">
+        <div class="hide-on-med-and-down">
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
           <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docupload' %}">Carica firma</a>
         </div>
 
-        <div class="hide-on-med-and-up">
+        <div class="hide-on-large-only">
           <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
           <br>
           <br>

@@ -1,0 +1,52 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}Admin - Richiesta dati{% endblock %}
+
+{% block nav %}
+  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a href="{% url 'request'%}" class="breadcrumb hide-on-med-and-down">Richiesta dati</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+      <form id="form" action="{% url 'request'%}" method="post">
+        {% csrf_token %}
+        <div class="card-content">
+          <div class="input-field col s12">
+            <select name="request">
+              <option value="" disabled selected>Scegli</option>
+              <option value="email_all">Email (tutti gli utenti)</option>
+              <option value="email_non_staff">Email (solo non capi)</option>
+            </select>
+            <label>Richiesta dati</label>
+          </div>
+          <textarea id="data" class="materialize-textarea">{{data}}</textarea>
+        </div>
+        <div class="card-action">
+          <a class="waves-effect waves-light btn red lighten-1" href="#" onclick="document.getElementById('form').submit()">Invia</a>
+          <a class="waves-effect waves-light btn red lighten-1" onclick="copy()">Copia risultato</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+document.addEventListener('DOMContentLoaded', function() {
+  var elems = document.querySelectorAll('select');
+  var options = {};
+  var instances = M.FormSelect.init(elems, options);
+});
+
+function copy() {
+  var copyText = document.getElementById("data");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+  document.execCommand("copy");
+}
+{% endblock%}

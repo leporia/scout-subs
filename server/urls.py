@@ -1,4 +1,4 @@
-from django.urls import path, re_path, include
+from django.urls import path
 
 from . import views
 
@@ -14,4 +14,5 @@ urlpatterns = [
     path('docupload', views.upload_doc, name='docupload'),
     path('docpreview', views.docpreview, name='docpreview'),
     path('progress', views.get_progress, name='progress'),
+    path('request', views.data_request, name='request'),
 ]

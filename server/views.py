@@ -10,6 +10,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.db import SessionStore
+from django import template
 
 import dateparser
 from datetime import datetime
@@ -32,7 +33,6 @@ def isStaff(user):
     if user.has_perm("client.staff"):
         return True
     return False
-
 
 @user_passes_test(isStaff)
 def index(request):
@@ -239,10 +239,25 @@ def ulist(request):
                     content_type=content_type, codename="approved")
                 user.user_permissions.remove(permission)
                 return HttpResponseRedirect("ulist")
+        # make user "capo"
+        elif request.POST["action"][0] == 'c':
+            user = User.objects.get(id=request.POST["action"][1:])
+            capi = Group.objects.get(name="capi")
+            # check if user has permission to modify
+            if user.groups.all()[0] == group:
+                if "capi" in user.groups.values_list('name', flat=True):
+                    # remove group
+                    user.groups.remove(capi)
+                else:
+                    # add group
+                    user.groups.add(capi)
+            return HttpResponseRedirect("ulist")
 
     # list users with their documents
-    users = User.objects.filter(
-        groups__name=parent_group).order_by("first_name")
+    users = list(User.objects.filter(
+        groups__name=parent_group).filter(groups__name="capi").order_by("first_name"))
+    users += list(User.objects.filter(
+        groups__name=parent_group).exclude(groups__name="capi").order_by("first_name"))
     out = []
     for user in users:
         # list only approved users
@@ -267,7 +282,7 @@ def ulist(request):
                 with open(usercode.medic.health_care_certificate.name, 'rb') as image_file:
                     health_file = base64.b64encode(image_file.read()).decode()
         out.append([user, usercode, parent_group,
-                    documents, vac_file, health_file])
+                    documents, vac_file, health_file, "capi" in user.groups.values_list('name',flat = True)])
     context = {'users': out}
     return render(request, 'server/user_list.html', context)
 
@@ -869,6 +884,7 @@ def zip_documents(docs, session_key):
     session['status'] = True
     session.save()
 
+
 @user_passes_test(isStaff)
 def upload_doc(request):
     # setup group based on staff primary or not
@@ -991,3 +1007,25 @@ def docpreview(request):
                    'health': health_file, 'sign_doc_file': sign_doc_file}
 
     return render(request, 'server/download_doc.html', context)
+
+
+@user_passes_test(isStaff)
+def data_request(request):
+    context = {}
+    parent_group = request.user.groups.values_list('name', flat=True)[0]
+    if request.method == "POST":
+        if request.POST["request"] == "email_all":
+            users = User.objects.filter(groups__name=parent_group)
+            data = ""
+            for user in users:
+                data += user.email + ", "
+            data = data[:-2]
+            context["data"] = data
+        elif request.POST["request"] == "email_non_staff":
+            users = User.objects.filter(groups__name=parent_group).exclude(groups__name="capi")
+            data = ""
+            for user in users:
+                data += user.email + ", "
+            data = data[:-2]
+            context["data"] = data
+    return render(request, 'server/data_request.html', context)

@@ -45,7 +45,9 @@
     <li>
       <div class="collapsible-header list">
         {% if user.0.is_staff %}
-          <i class="material-icons">grade</i>
+          <i class="material-icons">star</i>
+        {% elif user.6 %}
+          <i class="material-icons">star_border</i>
         {% endif %}
         {{user.0.first_name}} {{user.0.last_name}}
       </div>
@@ -64,7 +66,16 @@
             <a onclick="send('d{{user.0.id}}')" class="modal-close waves-effect waves-green btn-flat">Deapprova</a>
           </div>
         </div>
-        <a class="waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+        <div class="hide-on-med-and-down">
+          <a class="waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <a class="waves-effect waves-light btn red lighten-1" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+        </div>
+        <div style="margin-bottom: 0px;" class="hide-on-large-only row">
+          <a class="col s12 waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <br>
+          <br>
+          <a class="col s12 waves-effect waves-light btn red lighten-1" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+        </div>
         <br><br>
         {% endif %}
         <ul class="collection">
