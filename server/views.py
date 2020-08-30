@@ -791,7 +791,7 @@ def doclist(request):
     if request.method == "POST":
         if request.POST["action"] == "download" and len(selected) > 0:
             code = request.user.username + "_" + str(random.randint(100, 999))
-            progress[code] = [0, 0, False, request.user, None]
+            progress[code] = [0, len(selected), False, request.user, None]
             threading.Thread(target=zip_documents, args=(selected, code)).start()
             context["task_id"] = code
 
@@ -816,10 +816,6 @@ def get_progress(request):
 
 def zip_documents(docs, code):
     files = []
-    total = len(docs)
-    status = 0
-    progress[code][0] = status
-    progress[code][1] = total
     for i in docs:
         vac_file = ""
         health_file = ""
@@ -852,8 +848,7 @@ def zip_documents(docs, code):
         pdf = pdfkit.from_string(html, False)
         filename = i.user.username+"_"+i.document_type.name+".pdf"
         files.append((filename, pdf))
-        status += 1
-        progress[code][0] = status
+        progress[code][0] += 1
 
     mem_zip = BytesIO()
 
