@@ -36,7 +36,7 @@
         </li>
         <li><a class="tooltipped modal-trigger" href="#modal2" data-position="top" data-tooltip="Archivia selezionati"><i class="material-icons">archive</i></a></li>
         <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Scarica selezionati" Onclick="send('download')"><i class="material-icons">file_download</i></a></li>
+        <li><a class="tooltipped modal-trigger" href="#modal3" data-position="top" data-tooltip="Scarica selezionati" Onclick="send('download')"><i class="material-icons">file_download</i></a></li>
         {% if settings.DEBUG %}
           <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
           <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
@@ -62,6 +62,17 @@
   <div class="modal-footer">
     <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
     <a onclick="send('archive')" class="modal-close waves-effect waves-green btn-flat">Archivia documenti</a>
+  </div>
+</div>
+
+<div id="modal3" class="modal">
+  <div class="modal-content">
+    <h5>Preparazione dei documenti</h5>
+    <div class="progress">
+        <div id="progress_bar" class="indeterminate"></div>
+        <div class="determinate" style="width: 0%"></div>
+    </div>
+    <p id="progress_text"></p>
   </div>
 </div>
 
@@ -464,6 +475,11 @@ $(document).ready(function(){
     {% if error %}
       M.toast({html: '{{ error_text}}', classes: 'orange'})
     {% endif %}
+    {% if task_id %}
+      $('#modal3').modal('open');
+      update();
+      document.getElementById('progress_bar').className = "determinate";
+    {% endif %}
 });
 
 $('.chips').chips();
@@ -521,6 +537,37 @@ $('#chips_groups').chips({
     {% endfor %}
   ]
 });
+
+function update() {
+  var box = document.getElementById('progress_text');
+  var bar = document.getElementById('progress_bar');
+  {% if task_id %}
+    var url = '{% url "progress" %}' + '?job=' + '{{task_id}}';
+  {% else %}
+    var url = '{% url "progress" %}';
+  {% endif %}
+  fetch(url).then(function(response) {
+    response.json().then(function(data) {
+      if (data[0] == data[1]) {
+        if (data[2]) {
+          bar.className = "indeterminate";
+          var url = '{% url "progress" %}' + '?job=' + '{{task_id}}' + '&download=true';
+          box.innerHTML = "Il download dovrebbe partire automaticamente. Nel caso non succedesse cliccare il seguente <a id='downloadLink' href=" + url + ">link</a>";
+          document.getElementById('downloadLink').click();
+
+        } else {
+          bar.style.width = "100%";
+          box.innerHTML = "Impacchettamento documenti...";
+          setTimeout(update, 500, url);
+        }
+      } else {
+        box.innerHTML = data[0] + "/" + data[1];
+        bar.style.width = data[0]/data[1]*100 + "%";
+        setTimeout(update, 500, url);
+      }
+    });
+  });
+}
 
 function send(id) {
   var form = document.getElementById('selection')

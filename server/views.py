@@ -20,7 +20,11 @@ import os
 import base64
 from PIL import Image, UnidentifiedImageError
 import zipfile
+import json
+import threading
+import random
 
+progress = {}
 
 # custom staff check function for non primary group staff members
 def isStaff(user):
@@ -152,7 +156,6 @@ def docapprove(request):
         data = data.split("\n")
         # check if code valid
         for i in range(len(data)):
-            print(Document.objects.filter(code=data[i])[0].group.name)
             if not data[i].isdigit():
                 data[i] = data[i] + " - Formato errato"
             elif int(data[i]) < 100000 or int(data[i]) > 999999:
@@ -615,8 +618,6 @@ def doclist(request):
                 if docc.group.name in parent_groups:
                     selected.append(docc)
 
-        # create list of pdfs
-        files = []
         # execute action on selected documents
         for i in selected:
             if request.POST["action"] == 'delete' and settings.DEBUG:
@@ -641,48 +642,10 @@ def doclist(request):
                 else:
                     error = True
                     error_text = "Non puoi dearchiviare un documento non archiviato"
-            elif request.POST["action"] == "download":
-                vac_file = ""
-                health_file = ""
-                sign_doc_file = ""
 
-                # prepare pictures in base64
-                if i.medical_data:
-                    if i.medical_data.vac_certificate.name:
-                        with open(i.medical_data.vac_certificate.name, 'rb') as image_file:
-                            vac_file = base64.b64encode(
-                                image_file.read()).decode()
-
-                    if i.medical_data.health_care_certificate.name:
-                        with open(i.medical_data.health_care_certificate.name, 'rb') as image_file:
-                            health_file = base64.b64encode(
-                                image_file.read()).decode()
-                if i.signed_doc:
-                    with open(i.signed_doc.name, 'rb') as image_file:
-                        sign_doc_file = base64.b64encode(
-                            image_file.read()).decode()
-
-                template = get_template('server/download_doc.html')
-                doc = [i, KeyVal.objects.filter(
-                    container=i), i.personal_data, i.medical_data, i.user.groups.values_list('name', flat=True)[0]]
-                context = {'doc': doc, 'vac': vac_file,
-                           'health': health_file, 'sign_doc_file': sign_doc_file}
-                # render context
-                html = template.render(context)
-                # render pdf using wkhtmltopdf
-                pdf = pdfkit.from_string(html, False)
-                filename = i.user.username+"_"+i.document_type.name+".pdf"
-                files.append((filename, pdf))
-
-        if request.POST["action"] == "download":
-            mem_zip = BytesIO()
-
-            with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
-                for f in files:
-                    zf.writestr(f[0], f[1])
-
-            mem_zip.seek(0)
-            return FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
+        if len(selected) == 0:
+            error = True
+            error_text = "Seleziona almeno un documento"
 
         # get filter values
         hidden = "filter_hidden" in request.POST
@@ -824,8 +787,83 @@ def doclist(request):
         'error_text': error_text,
         'settings': settings,
     }
+
+    if request.method == "POST":
+        if request.POST["action"] == "download" and len(selected) > 0:
+            code = request.user.username + "_" + str(random.randint(100, 999))
+            progress[code] = [0, 0, False, request.user, None]
+            threading.Thread(target=zip_documents, args=(selected, code)).start()
+            context["task_id"] = code
+
     return render(request, 'server/doc_list.html', context)
 
+def get_progress(request):
+    if 'job' in request.GET:
+        job_id = request.GET['job']
+    else:
+        return HttpResponse(json.dumps({"error": True}))
+
+    if not job_id in progress.keys():
+        return HttpResponse(json.dumps({"error": "Lavoro non esistente. Provare a richiedere di nuovo il lavoro."}))
+
+    if 'download' in request.GET:
+        if progress[job_id][3] == request.user:
+            data = progress[job_id][4]
+            del progress[job_id]
+            return data
+    data = progress[job_id][:3]
+    return HttpResponse(json.dumps(data))
+
+def zip_documents(docs, code):
+    files = []
+    total = len(docs)
+    status = 0
+    progress[code][0] = status
+    progress[code][1] = total
+    for i in docs:
+        vac_file = ""
+        health_file = ""
+        sign_doc_file = ""
+
+        # prepare pictures in base64
+        if i.medical_data:
+            if i.medical_data.vac_certificate.name:
+                with open(i.medical_data.vac_certificate.name, 'rb') as image_file:
+                    vac_file = base64.b64encode(
+                        image_file.read()).decode()
+
+            if i.medical_data.health_care_certificate.name:
+                with open(i.medical_data.health_care_certificate.name, 'rb') as image_file:
+                    health_file = base64.b64encode(
+                        image_file.read()).decode()
+        if i.signed_doc:
+            with open(i.signed_doc.name, 'rb') as image_file:
+                sign_doc_file = base64.b64encode(
+                    image_file.read()).decode()
+
+        template = get_template('server/download_doc.html')
+        doc = [i, KeyVal.objects.filter(
+            container=i), i.personal_data, i.medical_data, i.user.groups.values_list('name', flat=True)[0]]
+        context = {'doc': doc, 'vac': vac_file,
+                    'health': health_file, 'sign_doc_file': sign_doc_file}
+        # render context
+        html = template.render(context)
+        # render pdf using wkhtmltopdf
+        pdf = pdfkit.from_string(html, False)
+        filename = i.user.username+"_"+i.document_type.name+".pdf"
+        files.append((filename, pdf))
+        status += 1
+        progress[code][0] = status
+
+    mem_zip = BytesIO()
+
+    with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
+        for f in files:
+            zf.writestr(f[0], f[1])
+
+    mem_zip.seek(0)
+    progress[code][4] = FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
+    progress[code][2] = True
 
 @user_passes_test(isStaff)
 def upload_doc(request):
