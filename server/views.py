@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.backends.db import SessionStore
 
 import dateparser
 from datetime import datetime
@@ -23,9 +24,6 @@ import zipfile
 import json
 import threading
 import random
-
-progress = {}
-lock = threading.Lock()
 
 # custom staff check function for non primary group staff members
 def isStaff(user):
@@ -791,49 +789,38 @@ def doclist(request):
 
     # check if download multiple documents
     if request.method == "POST":
-        if request.POST["action"] == "download" and len(selected) > 0:
-            # generate job id
-            code = request.user.username + "_" + str(random.randint(100, 999))
-            while code in progress.keys():
-                code = request.user.username + "_" + str(random.randint(100, 999))
+        if "status" not in request.session:
+            request.session['status'] = True
 
-            # create job status object
-            with lock:
-                progress[code] = [0, len(selected), False, request.user, None]
+        if request.POST["action"] == "download" and len(selected) > 0 and request.session['status']:
+            # save data in session
+            request.session['status'] = False
+            request.session['progress'] = 0
+            request.session['total'] = len(selected)
             # run job
-            threading.Thread(target=zip_documents, args=(selected, code)).start()
-            # pass job id
-            context["task_id"] = code
+            threading.Thread(target=zip_documents, args=(selected, request.session.session_key)).start()
+            # flag the client to check for updates
+            context["task_id"] = "0"
 
     return render(request, 'server/doc_list.html', context)
 
 def get_progress(request):
-    # check if asked for a job
-    if 'job' in request.GET:
-        job_id = request.GET['job']
-    else:
-        return HttpResponse(json.dumps({"error": True}))
-
-    # check if job is valid
-    if not job_id in progress.keys():
-        return HttpResponse(json.dumps({"error": "Lavoro non esistente. Provare a richiedere di nuovo il lavoro."}))
-
     # if user wants to download result
     if 'download' in request.GET:
-        with lock:
-            # if user is authorized and job is completed
-            if request.GET['download'] == "true" and progress[job_id][3] == request.user:
-                data = progress[job_id][4]
-                del progress[job_id]
-                return data
+        # if job is completed
+        if request.session['status']:
+            data = BytesIO(base64.b64decode(request.session['result']))
+            data.seek(0)
+            return FileResponse(data, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
 
     # otherwise return status
-    with lock:
-        data = progress[job_id][:3]
+    data = [request.session['progress'], request.session['total'], request.session['status']]
     return HttpResponse(json.dumps(data))
 
-def zip_documents(docs, code):
+def zip_documents(docs, session_key):
     files = []
+    # get session
+    session = SessionStore(session_key=session_key)
     for i in docs:
         vac_file = ""
         health_file = ""
@@ -867,8 +854,8 @@ def zip_documents(docs, code):
         filename = i.user.username+"_"+i.document_type.name+".pdf"
         # append file
         files.append((filename, pdf))
-        with lock:
-            progress[code][0] += 1
+        session['progress'] += 1
+        session.save()
 
     # zip documents
     mem_zip = BytesIO()
@@ -878,9 +865,9 @@ def zip_documents(docs, code):
 
     mem_zip.seek(0)
     # save result
-    with lock:
-        progress[code][4] = FileResponse(mem_zip, as_attachment=True, filename="documents_" + datetime.now().strftime("%H_%M-%d_%m_%y") + ".zip")
-        progress[code][2] = True
+    session['result'] = base64.b64encode(mem_zip.getvalue()).decode()
+    session['status'] = True
+    session.save()
 
 @user_passes_test(isStaff)
 def upload_doc(request):
