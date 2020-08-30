@@ -11,6 +11,7 @@ from django.template.loader import get_template
 from io import BytesIO
 import pdfkit
 import base64
+from subprocess import check_output
 
 
 def index(request):
@@ -298,5 +299,7 @@ def about(request):
         version = f.read()
         if version.startswith("0"):
             version = "Beta " + version
-    context = {"version": version}
+        commitid = check_output(["git", "rev-parse", "HEAD"]).decode()
+        version = version[:version.find(" $Id: ")]
+    context = {"version": version, "commitid": commitid}
     return render(request, 'client/about.html', context)
