@@ -1,53 +1,34 @@
-{% extends 'registration/base_custom.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin - Documenti{% endblock %}
 
-{% block nav %}
-  <nav class="nav-extended">
-    <div class="nav-wrapper red lighten-1">
-      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-      <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-      <a href="{% url 'doclist' %}" class="breadcrumb hide-on-med-and-down">Documenti</a>
-      <ul class="right">
-          {% if user.is_staff or perms.client.staff %}
-            <li><a href="{% url 'server' %}">Pannello Admin</a></li>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-          {% endif %}
-          {% if user.username != "" %}
-            <li>
-            <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
-            </li>
-          {% else %}
-            <li><a href="{% url 'signup' %}">Registrazione</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-          {% endif %}
-      </ul>
-    </div>
-    <div class="nav-wrapper red lighten-1">
-      <ul>
-        <li>
-          <input id="select-all" type="checkbox" class="filled-in"/>
-          <label for="select-all">
-            <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
-          </label>
-          </a>
-        </li>
-        <li><a class="tooltipped modal-trigger" href="#modal2" data-position="top" data-tooltip="Archivia selezionati"><i class="material-icons">archive</i></a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
-        <li><a class="tooltipped modal-trigger" href="#modal3" data-position="top" data-tooltip="Scarica selezionati" Onclick="send('download')"><i class="material-icons">file_download</i></a></li>
-        {% if settings.DEBUG %}
-          <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
-          <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
-        {% endif %}
-      </ul>
-      <ul class="right">
-        <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
-        <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
-      </ul>
-    </div>
-  </nav>
+{% block breadcrumb %}
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a class="breadcrumb hide-on-med-and-down">Documenti</a>
+{% endblock %}
+{% block toolbar %}
+  <div class="nav-wrapper red lighten-1">
+    <ul>
+      <li>
+        <input id="select-all" type="checkbox" class="filled-in"/>
+        <label for="select-all">
+          <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
+        </label>
+        </a>
+      </li>
+      <li><a class="tooltipped modal-trigger" href="#modal2" data-position="top" data-tooltip="Archivia selezionati"><i class="material-icons">archive</i></a></li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
+      <li><a class="tooltipped modal-trigger" href="#modal3" data-position="top" data-tooltip="Scarica selezionati" Onclick="send('download')"><i class="material-icons">file_download</i></a></li>
+      {% if settings.DEBUG %}
+        <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
+        <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons left">delete</i>DEBUG</a></li>
+      {% endif %}
+    </ul>
+    <ul class="right">
+      <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
+      <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+    </ul>
+  </div>
 {% endblock %}
 
 {% block content %}
@@ -73,6 +54,9 @@
         <div class="determinate" style="width: 0%"></div>
     </div>
     <p id="progress_text"></p>
+    <div id="modal_close_button" class="modal-footer" hidden>
+      <a onclick="resetModal()" class="modal-close waves-effect waves-green btn-flat">Chiudi</a>
+    </div>
   </div>
 </div>
 
@@ -469,8 +453,9 @@
 {%block script%}
 $(document).ready(function(){
     $('.collapsible').collapsible();
-    $('.tooltipped').tooltip();
-    $('.modal').modal();
+    $('#modal1').modal();
+    $('#modal2').modal();
+    $('#modal3').modal({"dismissible": false});
     $('.datepicker').datepicker(options);
     {% if error %}
       M.toast({html: '{{ error_text}}', classes: 'orange'})
@@ -481,6 +466,13 @@ $(document).ready(function(){
       document.getElementById('progress_bar').className = "determinate";
     {% endif %}
 });
+
+function resetModal() {
+  $('#modal3').modal('close');
+  document.getElementById('progress_bar').className = "indeterminate";
+  document.getElementById("modal_close_button").hidden = true;
+  document.getElementById('progress_text').innerHTML = "";
+}
 
 $('.chips').chips();
 $('#chips_type').chips({
@@ -552,7 +544,8 @@ function update() {
         if (data[2]) {
           bar.className = "indeterminate";
           url = '{% url "progress" %}' + '?job=' + '{{task_id}}' + '&download=true';
-          box.innerHTML = "Il download dovrebbe partire automaticamente. Nel caso non succedesse cliccare il seguente <a id='downloadLink' href=" + url + ">link</a><br>Clicca lo sfondo per chiudere la finestra";
+          box.innerHTML = "Il download dovrebbe partire automaticamente. Nel caso non succedesse cliccare il seguente <a id='downloadLink' href=" + url + ">link</a>";
+          document.getElementById("modal_close_button").hidden = false;
           document.getElementById('downloadLink').click();
         } else {
           bar.style.width = "100%";

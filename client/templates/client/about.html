@@ -2,9 +2,8 @@
 
 {% block title %}About{% endblock %}
 
-{%block nav%}
-  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-  <a href="!#" class="breadcrumb hide-on-med-and-down">Informazioni</a>
+{%block breadcrumb%}
+  <a class="breadcrumb hide-on-med-and-down">Informazioni</a>
 {% endblock%}
 
 {% block content %}
@@ -90,7 +89,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block script %}
 {% endblock %}

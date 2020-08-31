@@ -1,39 +1,20 @@
-{% extends 'registration/base_custom.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin - Lista Utenti{% endblock %}
 
-{% block nav %}
-  <nav class="nav-extended">
-    <div class="nav-wrapper red lighten-1">
-      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-      <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-      <a href="#!" class="breadcrumb hide-on-med-and-down">Lista Utenti</a>
-      <ul class="right">
-          {% if user.is_staff or perms.client.staff %}
-            <li><a href="{% url 'server' %}">Pannello Admin</a></li>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-          {% endif %}
-          {% if user.username != "" %}
-            <li>
-            <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
-            </li>
-          {% else %}
-            <li><a href="{% url 'signup' %}">Registrazione</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-          {% endif %}
-      </ul>
-    </div>
-    <div class="nav-wrapper red lighten-1">
-      <form>
-        <div class="input-field">
-          <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
-          <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-        </div>
-      </form>
-    </div>
-  </nav>
+{% block breadcrumb %}
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a class="breadcrumb hide-on-med-and-down">Lista Utenti</a>
+{% endblock %}
+{% block toolbar %}
+  <div class="nav-wrapper red lighten-1">
+    <form>
+      <div class="input-field">
+        <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
+        <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+      </div>
+    </form>
+  </div>
 {% endblock %}
 
 {% block content %}

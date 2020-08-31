@@ -1,10 +1,9 @@
 {% extends 'registration/base_client.html' %}
 
-{% block title %}About{% endblock %}
+{% block title %}Termini e condizioni{% endblock %}
 
-{%block nav%}
-  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-  <a href="!#" class="breadcrumb hide-on-med-and-down">Termini e condizioni</a>
+{%block breadcrumb %}
+  <a class="breadcrumb hide-on-med-and-down">Termini e condizioni</a>
 {% endblock%}
 
 {% block content %}
@@ -21,7 +20,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
-
-{% block script %}
 {% endblock %}

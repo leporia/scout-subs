@@ -1,58 +1,39 @@
-{% extends 'registration/base_custom.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin - Tipo Documenti{% endblock %}
 
-{% block nav %}
-  <nav class="nav-extended">
-    <div class="nav-wrapper red lighten-1">
-      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-      <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-      <a ref="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
-      <ul class="right">
-          {% if user.is_staff or perms.client.staff %}
-            <li><a href="{% url 'server' %}">Pannello Admin</a></li>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <li><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-          {% endif %}
-          {% if user.username != "" %}
-            <li>
-            <a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a>
-            </li>
-          {% else %}
-            <li><a href="{% url 'signup' %}">Registrazione</a></li>
-            <li><a href="{% url 'login' %}">Login</a></li>
-          {% endif %}
-      </ul>
-    </div>
-    <div class="nav-wrapper red lighten-1">
-      <ul>
-        <li>
-          <input id="select-all" type="checkbox" class="filled-in"/>
-          <label for="select-all">
-            <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
-          </label>
-          </a>
-        </li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Mostra selezionati" onclick="send('show')"><i class="material-icons">visibility</i></a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Nascondi selezionati" Onclick="send('hide')"><i class="material-icons">visibility_off</i></a></li>
-        <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons">delete</i></a></li>
-      </ul>
-      <ul class="right">
-        <li class="hide-on-med-and-down">
-          <form>
-            <div class="input-field">
-              <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
-              <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-            </div>
-          </form>
-        </li>
-        <li class="hide-on-med-and-down"><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
-        <li class="hide-on-med-and-down"><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
-        <li class="hide-on-large-only"><a class='dropdown-trigger' href='#' data-target='dropdown1'><i class="material-icons">filter_list</i></a></li>
-      </ul>
-    </div>
-  </nav>
+{% block breadcrumb %}
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
+{% endblock %}
+{% block toolbar %}
+  <div class="nav-wrapper red lighten-1">
+    <ul>
+      <li>
+        <input id="select-all" type="checkbox" class="filled-in"/>
+        <label for="select-all">
+          <a class="tooltipped" data-position="top" data-tooltip="(De)Seleziona tutti" onclick=""><i class="material-icons">select_all</i>
+        </label>
+        </a>
+      </li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Mostra selezionati" onclick="send('show')"><i class="material-icons">visibility</i></a></li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Nascondi selezionati" Onclick="send('hide')"><i class="material-icons">visibility_off</i></a></li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Elimina selezionati" Onclick="send('delete')"><i class="material-icons">delete</i></a></li>
+    </ul>
+    <ul class="right">
+      <li class="hide-on-med-and-down">
+        <form>
+          <div class="input-field">
+            <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
+            <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+          </div>
+        </form>
+      </li>
+      <li class="hide-on-med-and-down"><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
+      <li class="hide-on-med-and-down"><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+      <li class="hide-on-large-only"><a class='dropdown-trigger' href='#' data-target='dropdown1'><i class="material-icons">filter_list</i></a></li>
+    </ul>
+  </div>
   <ul id='dropdown1' class='dropdown-content'>
     <li><a Onclick="send('clear')"><i class="material-icons">clear</i>Pulisci</a></li>
     <li><a href="#modal1" data-target="modal1" class="modal-trigger"><i class="material-icons">filter_list</i>Filtri</a></li>
@@ -224,7 +205,6 @@
 {%block script%}
 $(document).ready(function(){
     $('.collapsible').collapsible();
-    $('.tooltipped').tooltip();
     $('.modal').modal();
     $('.dropdown-trigger').dropdown({constantWidth: false});
     {% if error %}

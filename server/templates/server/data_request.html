@@ -1,11 +1,10 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin - Richiesta dati{% endblock %}
 
-{% block nav %}
-  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+{% block breadcrumb %}
   <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-  <a href="{% url 'request'%}" class="breadcrumb hide-on-med-and-down">Richiesta dati</a>
+  <a class="breadcrumb hide-on-med-and-down">Richiesta dati</a>
 {% endblock %}
 
 {% block content %}

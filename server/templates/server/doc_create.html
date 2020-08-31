@@ -1,12 +1,11 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin - Crea Tipo{% endblock %}
 
-{% block nav %}
-    <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+{% block breadcrumb %}
     <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
     <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
-    <a href="#!" class="breadcrumb hide-on-med-and-down">Crea Tipo</a>
+    <a class="breadcrumb hide-on-med-and-down">Crea Tipo</a>
 {% endblock %}
 
 {% block content %}

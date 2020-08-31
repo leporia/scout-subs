@@ -2,10 +2,6 @@
 
 {% block title %}Home{% endblock %}
 
-{%block nav%}
-  <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
-{% endblock%}
-
 {% block content %}
 <div class="tap-target teal" data-target="add">
   <div class="tap-target-content">
@@ -378,7 +374,6 @@
 
 {% block script %}
 $(document).ready(function(){
-    $('.tooltipped').tooltip();
     {% if user.is_authenticated %}
     {% if user.is_staff or perms.client.approved %}
       $('.collapsible').collapsible();

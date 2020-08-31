@@ -1,9 +1,8 @@
-{% extends 'registration/base.html' %}
+{% extends 'registration/base_admin.html' %}
 
 {% block title %}Admin{% endblock %}
 
-{% block nav %}
-    <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb">Home</a>
+{% block breadcrumb %}
     <a href="#!" class="breadcrumb hide-on-med-and-down">Admin</a>
 {% endblock %}
 
