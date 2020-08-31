@@ -31,19 +31,19 @@
       </div>
       <div class="card-action">
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'ulist' %}">Lista utenti</a>
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'uapprove' %}">Approva utente</a>
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'request' %}">Richiedi dati</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'ulist' %}">Lista utenti</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'uapprove' %}">Approva utente</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'request' %}">Richiedi dati</a>
         </div>
 
         <div class="hide-on-large-only">
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'ulist' %}">Lista utenti</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'ulist' %}">Lista utenti</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'uapprove' %}">Approva utente</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'uapprove' %}">Approva utente</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'request' %}">Richiedi dati</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'request' %}">Richiedi dati</a>
         </div>
       </div>
     </div>
@@ -69,29 +69,29 @@
                   <i class="material-icons left">assignment_turned_in</i>
                 {% endif %}
                 {{doctype.0.name}}
-                <span class="new badge red lighten-1" data-badge-caption="">{{doctype.1}}</span>
+                <span class="new badge {{color}}" data-badge-caption="">{{doctype.1}}</span>
           {% endfor %}
         </ul>
       </div>
       <div class="card-action">
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
-          <a class="waves-effect waves-light btn red lighten-1" href="{% url 'docupload' %}">Carica firma</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'doctype' %}">Lista tipo doc</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'doclist' %}">Lista documenti</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'docapprove' %}">Approva documento</a>
+          <a class="waves-effect waves-light btn {{color}}" href="{% url 'docupload' %}">Carica firma</a>
         </div>
 
         <div class="hide-on-large-only">
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'doctype' %}">Lista tipo doc</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'doctype' %}">Lista tipo doc</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'doclist' %}">Lista documenti</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'doclist' %}">Lista documenti</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'docapprove' %}">Approva documento</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'docapprove' %}">Approva documento</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" href="{% url 'docupload' %}">Carica firma</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'docupload' %}">Carica firma</a>
         </div>
       </div>
     </div>

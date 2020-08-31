@@ -27,7 +27,7 @@
           </div>
           <div class="row">
             <div class="file-field input-field col s12">
-              <div class="btn red lighten-1">
+              <div class="btn {{color}}">
                 <span><i class="material-icons left">file_upload</i>File</span>
                 <input type="file" name="doc_sign" id="doc_sign" onchange="loadFile(event)">
               </div>
@@ -38,8 +38,8 @@
           </div>
         </div>
         <div class="card-action">
-          <a id="send_button" class="waves-effect waves-light btn red lighten-1" href="#" onclick="confirm()">Approva</a>
-          <a class="right waves-effect waves-light btn red lighten-1" onclick="send()">Anteprima documento</a>
+          <a id="send_button" class="waves-effect waves-light btn {{color}}" href="#" onclick="confirm()">Approva</a>
+          <a class="right waves-effect waves-light btn {{color}}" onclick="send()">Anteprima documento</a>
         </div>
       </form>
     </div>

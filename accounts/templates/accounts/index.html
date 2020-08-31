@@ -6,7 +6,7 @@
   <a class="breadcrumb hide-on-med-and-down">Account</a>
 {% endblock %}
 {% block toolbar %}
-  <div class="nav-content teal">
+  <div class="nav-content {{color}}">
     <ul class="tabs tabs-transparent">
       <li class="tab"><a class="active" href="#personal">Info Personali</a></li>
       <li class="tab"><a href="#medic">Info Mediche</a></li>
@@ -91,7 +91,7 @@
             </div>
           </div>
             <div class="fixed-action-btn">
-              <a class="btn-floating btn-large teal" onclick="send('save')">
+              <a class="btn-floating btn-large {{color}}" onclick="send('save')">
                 <i class="large material-icons">save</i>
               </a>
             </div>
@@ -207,7 +207,7 @@
           </label>
         </div>
         <div class="col s12">
-          <div class="card teal">
+          <div class="card {{color}}">
             <div class="card-content">
               <p style="color:white"><b>In caso dovesse assumere farmaci, avvisare comunque i capi</b></p>
             </div>
@@ -240,7 +240,7 @@
             <div class="card-content">
               Certificato di vacinazione
               <div class="file-field input-field">
-                <div class="btn teal">
+                <div class="btn {{color}}">
                   <span><i class="material-icons left">file_upload</i>File</span>
                   <input type="file" name="vac_certificate" id="vac_certificate" multiple>
                 </div>
@@ -249,8 +249,8 @@
                 </div>
               </div>
               {% if vac_certificate != ''%}
-                <a class="btn teal" onclick="send('download_vac')"><i class="material-icons left">file_download</i>Download</a>
-                <a class="btn teal" onclick="delete_vac()"><i class="material-icons left">delete</i><span>Elimina</span></a>
+                <a class="btn {{color}}" onclick="send('download_vac')"><i class="material-icons left">file_download</i>Download</a>
+                <a class="btn {{color}}" onclick="delete_vac()"><i class="material-icons left">delete</i><span>Elimina</span></a>
               {% endif %}
             </div>
           </div>
@@ -260,7 +260,7 @@
             <div class="card-content">
               Tessera cassa malati
               <div class="file-field input-field">
-                <div class="btn teal">
+                <div class="btn {{color}}">
                   <span><i class="material-icons left">file_upload</i>File</span>
                   <input type="file" name="health_care_certificate" id="health_care_certificate" multiple>
                 </div>
@@ -269,15 +269,15 @@
                 </div>
               </div>
               {% if health_care_certificate != ''%}
-                <a class="btn teal" onclick="send('download_health')"><i class="material-icons left">file_download</i>Download</a>
-                <a class="btn teal" onclick="delete_health()"><i class="material-icons left">delete</i><span>Elimina</span></a>
+                <a class="btn {{color}}" onclick="send('download_health')"><i class="material-icons left">file_download</i>Download</a>
+                <a class="btn {{color}}" onclick="delete_health()"><i class="material-icons left">delete</i><span>Elimina</span></a>
               {% endif %}
             </div>
           </div>
         </div>
       </div>
       <div class="fixed-action-btn">
-        <a class="btn-floating btn-large teal" onclick="send('save')">
+        <a class="btn-floating btn-large {{color}}" onclick="send('save')">
           <i class="large material-icons">save</i>
         </a>
       </div>

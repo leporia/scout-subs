@@ -7,7 +7,7 @@
   <a class="breadcrumb hide-on-med-and-down">Lista Utenti</a>
 {% endblock %}
 {% block toolbar %}
-  <div class="nav-wrapper red lighten-1">
+  <div class="nav-wrapper {{color}}">
     <form>
       <div class="input-field">
         <input autocomplete="off" id="search" type="search" onkeyup="filterResults()" required>
@@ -48,14 +48,14 @@
           </div>
         </div>
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
-          <a class="waves-effect waves-light btn red lighten-1" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+          <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <a class="waves-effect waves-light btn {{color}}" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
         </div>
         <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-          <a class="col s12 waves-effect waves-light btn red lighten-1 modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn red lighten-1" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
         </div>
         <br><br>
         {% endif %}

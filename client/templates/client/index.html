@@ -3,7 +3,7 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="tap-target teal" data-target="add">
+<div class="tap-target {{color}}" data-target="add">
   <div class="tap-target-content">
     <h5 style="color:white">Aggiungi un documento</h5>
     <p style="color:white">Usa questo bottone per creare un nuovo documento</p>
@@ -35,18 +35,18 @@
             <div class="collapsible-body"><span>
               {% if doc.0.status == "wait" %}
                 <div class="hide-on-med-and-down">
-                  <a class="waves-effect waves-light btn teal" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                  <a class="waves-effect waves-light btn teal" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
-                  <a class="waves-effect waves-light btn teal" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                  <a class="col s12 waves-effect waves-light btn teal" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn teal" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn teal" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
                 </div>
                 <br>
                 <br>
@@ -64,18 +64,18 @@
                   </div>
                 </div>
                 <div class="hide-on-med-and-down">
-                  <a class="waves-effect waves-light btn teal modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
-                  <a class="waves-effect waves-light btn teal" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
-                  <a class="waves-effect waves-light btn teal" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
+                  <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                  <a class="col s12 waves-effect waves-light btn teal modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn teal" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn teal" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
                 </div>
                 <br>
                 <br>
@@ -341,7 +341,7 @@
     </ul>
     {% endif %}
     <div class="fixed-action-btn">
-      <a id="add" class="btn-floating btn-large teal" href="{% url 'create'%}">
+      <a id="add" class="btn-floating btn-large {{color}}" href="{% url 'create'%}">
         <i class="large material-icons">add</i>
       </a>
     </div>

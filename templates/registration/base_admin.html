@@ -1,16 +1,42 @@
+{% with color="red lighten-1" %}
+{% with hexcolor="#ef5350" %}
+{% with hexlightcolor="#ef9a9a" %}
 <!DOCTYPE html>
 <html>
 <head>
   {% load static %}
   <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
+  <style>
+    .input-field input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
+      color: {{hexcolor}} !important;
+    }
+
+    .input-field input[type=text]:focus, .materialize-textarea:focus:not([readonly]) {
+      border-bottom: 1px solid {{hexcolor}} !important;
+      box-shadow: 0 1px 0 0 {{hexcolor}} !important;
+    }
+
+    [type="checkbox"].filled-in:checked + span:not(.lever)::after {
+     border: 2px solid {{hexcolor}} !important;
+     background-color: {{hexcolor}} !important;
+    }
+
+    .switch label input[type="checkbox"]:checked + .lever {
+      background-color: {{hexlightcolor}};
+    }
+
+    .switch label input[type="checkbox"]:checked + .lever::after {
+      background-color: {{hexcolor}};
+    }
+  </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta charset="utf-8">
   <title>{% block title %}Scout Brega{% endblock %}</title>
 </head>
 <body>
   <nav class="nav-extended">
-    <div class="nav-wrapper red lighten-1">
+    <div class="nav-wrapper {{color}}">
       <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb hide-on-small-only">Home</a>
       <ul class="left hide-on-med-and-up">
       <li><a href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
@@ -55,3 +81,6 @@
   </script>
 </body>
 </html>
+{% endwith %}
+{% endwith %}
+{% endwith %}

@@ -7,7 +7,7 @@
   <a class="breadcrumb hide-on-med-and-down">Documenti</a>
 {% endblock %}
 {% block toolbar %}
-  <div class="nav-wrapper red lighten-1">
+  <div class="nav-wrapper {{color}}">
     <ul>
       <li>
         <input id="select-all" type="checkbox" class="filled-in"/>
@@ -165,7 +165,7 @@
         </div>
         <div class="collapsible-body"><span>
           {% if doc.0.status == "ok" or doc.0.status == 'archive' %}
-            <a class="waves-effect waves-light btn red lighten-1" onclick="send('k{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('k{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento</a>
             <br>
             <br>
           {% endif %}

@@ -7,7 +7,7 @@
   <a class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
 {% endblock %}
 {% block toolbar %}
-  <div class="nav-wrapper red lighten-1">
+  <div class="nav-wrapper {{color}}">
     <ul>
       <li>
         <input id="select-all" type="checkbox" class="filled-in"/>
@@ -138,7 +138,7 @@
                 <i class="material-icons">assignment_turned_in</i>
             {% endif %}
             {{doctype.0.name}}
-            <span class="new badge red lighten-1" data-badge-caption="">{{doctype.2}}</span>
+            <span class="new badge {{color}}" data-badge-caption="">{{doctype.2}}</span>
         </div>
         <div class="collapsible-body"><span>
           <ul class="collection">
@@ -196,7 +196,7 @@
 </ul>
 </form>
 <div class="fixed-action-btn">
-  <a class="btn-floating btn-large red lighten-1" href="{% url 'doccreate'%}">
+  <a class="btn-floating btn-large {{color}}" href="{% url 'doccreate'%}">
     <i class="large material-icons">add</i>
   </a>
 </div>
