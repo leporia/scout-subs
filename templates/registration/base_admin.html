@@ -8,11 +8,16 @@
   <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <style>
-    .input-field input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
+    input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
       color: {{hexcolor}} !important;
     }
 
-    .input-field input[type=text]:focus, .materialize-textarea:focus:not([readonly]) {
+    input[type=text]:focus, .materialize-textarea:focus:not([readonly]) {
+      border-bottom: 1px solid {{hexcolor}} !important;
+      box-shadow: 0 1px 0 0 {{hexcolor}} !important;
+    }
+
+    input[type=password]:focus, .materialize-textarea:focus:not([readonly]) {
       border-bottom: 1px solid {{hexcolor}} !important;
       box-shadow: 0 1px 0 0 {{hexcolor}} !important;
     }
@@ -28,6 +33,42 @@
 
     .switch label input[type="checkbox"]:checked + .lever::after {
       background-color: {{hexcolor}};
+    }
+
+    .progress .indeterminate {
+      background-color: {{hexcolor}};
+    }
+
+    .progress .determinate {
+      background-color: {{hexcolor}};
+    }
+
+    .progress {
+      background-color: {{hexlightcolor}};
+    }
+
+    .dropdown-content li > a, .dropdown-content li > span {
+      color: {{hexcolor}};
+    }
+
+    .datepicker-date-display {
+      background-color: {{hexcolor}};
+    }
+
+    .datepicker-table td.is-selected {
+      background-color: {{hexcolor}};
+    }
+
+    .datepicker-table td.is-today {
+      color: {{hexcolor}};
+    }
+
+    .datepicker-cancel, .datepicker-today, .datepicker-done {
+      color: black;
+    }
+
+    blockquote {
+      border-left: 5px solid {{hexcolor}};
     }
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -66,7 +107,7 @@
     {% endblock %}
   </nav>
 
-  <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
+  <main id="main" style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
     {% block content %}
     {% endblock %}
   </main>
