@@ -184,7 +184,7 @@ def create(request):
                 id=request.POST["doctype"])
 
             # get list of docs with that type
-            current_docs = Document.objects.filter(document_type=document_type)
+            current_docs = Document.objects.filter(user=request.user).filter(document_type=document_type)
             if len(current_docs) > 0:
                 # if there is already a document with that type abort (user is cheating)
                 return
