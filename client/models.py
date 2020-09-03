@@ -29,6 +29,8 @@ class PersonalData(models.Model):
     home_phone = models.CharField(default="", max_length=250)
     phone = models.CharField(default="", max_length=250)
     email = models.CharField(default="", max_length=250)
+    school = models.CharField(default="", max_length=250)
+    year = models.IntegerField(default=0)
 
 
 class MedicalData(models.Model):
