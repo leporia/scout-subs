@@ -351,9 +351,14 @@
         <div class="card">
           <div class="card-content">
             <p>Il tuo utente non &egrave; ancora stato approvato.</p>
-          </div>
-          <div class="card-action">
-            <a href="{% url 'approve' %}">Come farsi approvare l'utente</a>
+            <br>
+            {% if user_code %}
+              <p>Per approvare l'utente invia il seguente codice al capo branca:</p>
+              <h3 class="center-align">{{user_code}}<h3>
+            {% else %}
+              <p class="hide-on-small-only">Per approvare l'utente inserire prima i propri dati personali e medici cliccando il proprio nome in alto a destra. Torna in seguito su questa pagina per i prossimi passaggi.</p>
+              <p class="hide-on-med-and-up">Per approvare l'utente inserire prima i propri dati personali e medici cliccando <i class="material-icons tiny">person</i>. Torna in seguito su questa pagina per i prossimi passaggi.</p>
+            {% endif %}
           </div>
         </div>
       </div>

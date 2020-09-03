@@ -18,121 +18,113 @@ def index(request):
     context = {}
     # check if user is logged
     if (request.user.is_authenticated):
-        # generate code if user has no code
-        users = UserCode.objects.filter(user=request.user)
-        code = None
-        if (len(users) == 0):
-            while (True):
-                code = randint(100000, 999999)
-                if len(UserCode.objects.filter(code=code)) == 0:
-                    break
-            medic = MedicalData()
-            medic.save()
-            userCode = UserCode(user=request.user, code=code, medic=medic)
-            userCode.save()
+        if not (request.user.is_staff or request.user.has_perm("client.approved")):
+            # generate code if user has no code
+            users = UserCode.objects.filter(user=request.user)
+            code = None
+            if (len(users) == 0):
+                while (True):
+                    code = randint(100000, 999999)
+                    if len(UserCode.objects.filter(code=code)) == 0:
+                        break
+                medic = MedicalData()
+                medic.save()
+                userCode = UserCode(user=request.user, code=code, medic=medic)
+                userCode.save()
 
-        # user action
-        if request.method == "POST":
-            # get document id
-            document = Document.objects.get(id=request.POST["action"][1:])
+            user_code = None
+            usercode = UserCode.objects.filter(user=request.user)[0]
+            if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
+                user_code = "U" + str(usercode.code)
+            context = {"user_code": user_code}
+        else:
+            # user action
+            if request.method == "POST":
+                # get document id
+                document = Document.objects.get(id=request.POST["action"][1:])
 
-            # check if document is valid to modify
-            if document.user != request.user:
-                return
+                # check if document is valid to modify
+                if document.user != request.user:
+                    return
 
-            if document.status == "ok" or document.status == "archive":
-                return
+                if document.status == "ok" or document.status == "archive":
+                    return
 
-            # execute action
-            if request.POST["action"][0] == 'f':
-                # generate approve pdf
-                template = get_template('client/approve_doc_pdf.html')
-                context = {'doc': document}
-                html = template.render(context)
-                pdf = pdfkit.from_string(html, False)
-                result = BytesIO(pdf)
-                result.seek(0)
-                return FileResponse(result, filename=document.document_type.name+".pdf")
-            elif request.POST["action"][0] == 'a':
-                # sign autosign doc
-                if document.status == "autosign":
-                    document.status = "ok"
-                    document.save()
+                # execute action
+                if request.POST["action"][0] == 'f':
+                    # generate approve pdf
+                    template = get_template('client/approve_doc_pdf.html')
+                    context = {'doc': document}
+                    html = template.render(context)
+                    pdf = pdfkit.from_string(html, False)
+                    result = BytesIO(pdf)
+                    result.seek(0)
+                    return FileResponse(result, filename=document.document_type.name+".pdf")
+                elif request.POST["action"][0] == 'a':
+                    # sign autosign doc
+                    if document.status == "autosign":
+                        document.status = "ok"
+                        document.save()
+                        return HttpResponseRedirect("/")
+                elif request.POST["action"][0] == 'd':
+                    # delete doc
+                    document.delete()
                     return HttpResponseRedirect("/")
-            elif request.POST["action"][0] == 'd':
-                # delete doc
-                document.delete()
-                return HttpResponseRedirect("/")
-            elif request.POST["action"][0] == 'e':
-                # edit doc generate context and render edit page
-                document_type = document.document_type
-                context = {
-                    'doctype': document_type,
-                }
-                context['doc'] = document
-                context['personal_data'] = document_type.personal_data
-                context['medical_data'] = document_type.medical_data
-                context['custom_data'] = document_type.custom_data
-                keys = Keys.objects.filter(container=document_type)
-                out_keys = []
-                for i in keys:
-                    out_keys.append([i, KeyVal.objects.filter(
-                        Q(container=document) & Q(key=i.key))[0].value])
-                context['keys'] = out_keys
-                context['custom_message'] = document_type.custom_message
-                context['custom_message_text'] = document_type.custom_message_text
-                return edit_wrapper(request, context)
+                elif request.POST["action"][0] == 'e':
+                    # edit doc generate context and render edit page
+                    document_type = document.document_type
+                    context = {
+                        'doctype': document_type,
+                    }
+                    context['doc'] = document
+                    context['personal_data'] = document_type.personal_data
+                    context['medical_data'] = document_type.medical_data
+                    context['custom_data'] = document_type.custom_data
+                    keys = Keys.objects.filter(container=document_type)
+                    out_keys = []
+                    for i in keys:
+                        out_keys.append([i, KeyVal.objects.filter(
+                            Q(container=document) & Q(key=i.key))[0].value])
+                    context['keys'] = out_keys
+                    context['custom_message'] = document_type.custom_message
+                    context['custom_message_text'] = document_type.custom_message_text
+                    return edit_wrapper(request, context)
 
-        # show only docs of the user and non archived
-        documents = Document.objects.filter(
-            Q(user=request.user) & ~Q(status='archive'))
-        out = []
-        for i in documents:
-            # for every document prepare images in base64
-            personal = None
-            medical = None
-            vac_file = ""
-            health_file = ""
-            if i.personal_data:
-                personal = i.personal_data
-            if i.medical_data:
-                medical = i.medical_data
+            # show only docs of the user and non archived
+            documents = Document.objects.filter(
+                Q(user=request.user) & ~Q(status='archive'))
+            out = []
+            for i in documents:
+                # for every document prepare images in base64
+                personal = None
+                medical = None
+                vac_file = ""
+                health_file = ""
+                if i.personal_data:
+                    personal = i.personal_data
+                if i.medical_data:
+                    medical = i.medical_data
 
-                if medical.vac_certificate.name:
-                    with open(medical.vac_certificate.name, 'rb') as image_file:
-                        vac_file = base64.b64encode(image_file.read()).decode()
+                    if medical.vac_certificate.name:
+                        with open(medical.vac_certificate.name, 'rb') as image_file:
+                            vac_file = base64.b64encode(image_file.read()).decode()
 
-                if medical.health_care_certificate.name:
-                    with open(medical.health_care_certificate.name, 'rb') as image_file:
-                        health_file = base64.b64encode(
-                            image_file.read()).decode()
+                    if medical.health_care_certificate.name:
+                        with open(medical.health_care_certificate.name, 'rb') as image_file:
+                            health_file = base64.b64encode(
+                                image_file.read()).decode()
 
-            doc_group = i.user.groups.values_list('name', flat=True)[0]
+                doc_group = i.user.groups.values_list('name', flat=True)[0]
 
-            out.append([i, KeyVal.objects.filter(container=i),
-                        personal, medical, doc_group, vac_file, health_file])
+                out.append([i, KeyVal.objects.filter(container=i),
+                            personal, medical, doc_group, vac_file, health_file])
 
-        context = {
-            "docs": out,
-            "empty": len(out) == 0,
-        }
+            context = {
+                "docs": out,
+                "empty": len(out) == 0,
+            }
 
     return render(request, 'client/index.html', context)
-
-
-@login_required
-def approve(request):
-    context = {}
-    # if user not approved and has enough data then give instructions how to approve user
-    if not (request.user.is_staff or request.user.has_perm('approved')):
-        usercode = UserCode.objects.filter(user=request.user)[0]
-        okay = False
-        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
-            okay = True
-        context = {'code': 'U' + str(usercode.code), 'okay': okay}
-        return render(request, 'client/approve.html', context)
-    else:
-        return render(request, 'client/index.html', context)
 
 
 @login_required
