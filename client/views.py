@@ -12,6 +12,8 @@ from io import BytesIO
 import pdfkit
 import base64
 from subprocess import check_output
+from datetime import datetime
+import pytz
 
 
 def index(request):
@@ -246,6 +248,10 @@ def edit_wrapper(request, context):
             # check if user has permission
             if document.user != request.user:
                 return
+
+            # update compilation date
+            document.compilation_date = pytz.timezone('Europe/Zurich').localize(datetime.now())
+            document.save(update_fields=["compilation_date"])
 
             # save again all data
             usercode = UserCode.objects.filter(user=document.user)[0]
