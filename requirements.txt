@@ -3,3 +3,4 @@ pillow
 pdfkit
 dateparser
 pytz
+pdf2image

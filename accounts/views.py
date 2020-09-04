@@ -15,7 +15,12 @@ import dateparser
 import os
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
-
+from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError
+)
 
 @sensitive_variables("raw_passsword")
 def signup(request):
@@ -156,11 +161,16 @@ def personal(request):
             name = files[0].name
             try:
                 # if multiple files concatenate pictures
-                if len(files) == 1:
-                    im = Image.open(files[0])
-                else:
-                    im = Image.open(files.pop(0))
-                    for f in files:
+                im = Image.new("RGB", (0, 0), (255, 255, 255))
+                for f in files:
+                    if f.name.endswith(".pdf"):
+                        images = convert_from_bytes(f.read())
+                        for i in images:
+                            dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
+                            dst.paste(im, (0, 0))
+                            dst.paste(i, (0, im.height))
+                            im = dst
+                    else:
                         i = Image.open(f)
                         dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                         dst.paste(im, (0, 0))
@@ -179,6 +189,12 @@ def personal(request):
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
+            except PDFPageCountError:
+                error = True
+                error_text = "Il file non è un pdf valido"
+            except PDFSyntaxError:
+                error = True
+                error_text = "Il file non è un pdf valido"
             except IOError:
                 error = True
                 error_text = "Il file è un immagine troppo grande"
@@ -188,11 +204,16 @@ def personal(request):
             name = files[0].name
             try:
                 # if multiple files concatenate pictures
-                if len(files) == 1:
-                    im = Image.open(files[0])
-                else:
-                    im = Image.open(files.pop(0))
-                    for f in files:
+                im = Image.new("RGB", (0, 0), (255, 255, 255))
+                for f in files:
+                    if f.name.endswith(".pdf"):
+                        images = convert_from_bytes(f.read())
+                        for i in images:
+                            dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
+                            dst.paste(im, (0, 0))
+                            dst.paste(i, (0, im.height))
+                            im = dst
+                    else:
                         i = Image.open(f)
                         dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                         dst.paste(im, (0, 0))
@@ -211,6 +232,12 @@ def personal(request):
             except UnidentifiedImageError:
                 error = True
                 error_text = "Il file non è un immagine valida"
+            except PDFPageCountError:
+                error = True
+                error_text = "Il file non è un pdf valido"
+            except PDFSyntaxError:
+                error = True
+                error_text = "Il file non è un pdf valido"
             except IOError:
                 error = True
                 error_text = "Il file è un immagine troppo grande"
