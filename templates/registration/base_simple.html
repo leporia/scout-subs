@@ -8,6 +8,10 @@
   <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <style>
+    ul.errorlist {
+      display:none;
+    }
+
     input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
       color: {{hexcolor}} !important;
     }

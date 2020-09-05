@@ -8,6 +8,9 @@ from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.debug import sensitive_variables
 from django.http import HttpResponseRedirect
+from django import forms
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 from client.models import UserCode
 
@@ -22,33 +25,61 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 
+# override to remove help text
+class RegisterForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+
+        for fieldname in ['username', 'password1', 'password2']:
+            self.fields[fieldname].help_text = None
+
 @sensitive_variables("raw_passsword")
 def signup(request):
+    out_errors = []
     # signup form with terms
     if request.method == 'POST':
+        # get form object
+        form = RegisterForm(request.POST)
+
+        # check if terms are accepted
         if "terms_accept" not in request.POST:
-            # if terms not accepted return error and form again
-            form = UserCreationForm()
-            context = {
-                "form": form,
-                "error": True,
-                "error_text": "Accettare i termini e condizioni prego"
-            }
-            return render(request, 'accounts/signup.html', context)
-        # terms accepted create user in db
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
+            out_errors.append("Accettare i termini e condizioni prego")
+
+        # if form is valid and terms were accepted save user
+        if form.is_valid() and len(out_errors) == 0:
             form.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
             return HttpResponseRedirect('/')
+        else:
+            # get errors from form and add toasts
+            errors = form.errors.as_data()
+            for field in errors.keys():
+                if field == "username":
+                    out_errors.append("Il nome utente può contenere solo lettere e numeri")
+                else:
+                    password_errors = errors["password2"]
+                    for err in password_errors:
+                        if err.code == "password_mismatch":
+                            out_errors.append("Le due password non sono uguali")
+                        elif err.code == "password_too_similar":
+                            out_errors.append("La password è troppo simile all'username")
+                        elif err.code == "password_too_short":
+                            out_errors.append("La password è troppo corta")
+                        elif err.code == "password_too_common":
+                            out_errors.append("La password è troppo comune")
+                        elif err.code == "password_entirely_numeric":
+                            out_errors.append("La password deve contenere lettere")
 
-    # create empty form to be filled
-    form = UserCreationForm()
+    else:
+        # create empty form to be filled
+        form = RegisterForm()
+
     context = {
         "form": form,
+        "errors": out_errors,
     }
     return render(request, 'accounts/signup.html', context)
 

@@ -11,6 +11,7 @@
           <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
+            <p>La password deve essere di almeno 8 caretteri e contenere lettere</p>
             <br>
             <label>
               <input name="terms_accept" type="checkbox" class="filled-in"/>
@@ -27,9 +28,9 @@
 {% endblock %}
 
 {% block script %}
-{% if error %}
 document.addEventListener('DOMContentLoaded', function() {
-  M.toast({html: '{{ error_text }}', classes: 'orange'})
+{% for error in errors %}
+  M.toast({html: '{{ error }}', classes: 'orange'})
+{% endfor %}
 });
-{% endif %}
 {% endblock %}
