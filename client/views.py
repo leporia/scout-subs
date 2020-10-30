@@ -15,7 +15,6 @@ from subprocess import check_output
 from datetime import datetime
 import pytz
 
-
 def index(request):
     context = {}
     # check if user is logged
@@ -138,8 +137,11 @@ def create(request):
     group = Group.objects.get(name=parent_group)
 
     # get available types for user
-    doctypes = DocumentType.objects.filter(
-        (Q(group_private=False) | Q(group=group)) & Q(enabled=True))
+    filter = (Q(group_private=False) | Q(group=group)) & Q(enabled=True)
+    if not request.user.is_staff and "capi" not in request.user.groups.values_list('name',flat = True):
+        filter = filter & Q(staff_only=False)
+
+    doctypes = DocumentType.objects.filter(filter)
     out = []
     for doc in doctypes:
         # check if user has already that document type
@@ -159,7 +161,15 @@ def create(request):
                 context['next'] = True
                 document_type = DocumentType.objects.get(
                     id=request.POST["doctype"])
+                
                 context['doctype'] = document_type
+
+                # check if there are still free spaces
+                context['no_free_places'] = False
+                if document_type.max_instances != 0:
+                    if len(Document.objects.filter(document_type=document_type)) - len(Document.objects.filter(document_type=document_type, status="archive")) >= document_type.max_instances:
+                        context['no_free_places'] = True
+
                 context['personal_data'] = document_type.personal_data
                 context['medical_data'] = document_type.medical_data
                 context['custom_data'] = document_type.custom_data
@@ -176,6 +186,21 @@ def create(request):
             # get selected type
             document_type = DocumentType.objects.get(
                 id=request.POST["doctype"])
+
+            # check if there are free spaces
+            if document_type.max_instances != 0:
+                if len(Document.objects.filter(document_type=document_type)) - len(Document.objects.filter(document_type=document_type, status="archive")) >= document_type.max_instances:
+                    # there aren't user is cheating
+                    return
+
+            # check if user has permission to use that type
+            if document_type.staff_only and not request.user.is_staff and "capi" not in request.user.groups.values_list('name', flat = True):
+                # user is cheating abort
+                return
+
+            if not document_type.custom_group and document_type.group.name not in request.user.groups.values_list('name', flat=True):
+                # user is cheating abort
+                return
 
             # get list of docs with that type
             current_docs = Document.objects.filter(user=request.user).filter(document_type=document_type)

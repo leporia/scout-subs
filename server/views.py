@@ -64,8 +64,13 @@ def index(request):
     # count documents of that type to show statistics
     docs = []
     for doc in public_types:
-        ref_docs = Document.objects.filter(document_type=doc)
-        docs.append([doc, len(ref_docs)])
+        doc_count = str(len(Document.objects.filter(document_type=doc)))
+        ref_docs_archived = len(Document.objects.filter(document_type=doc, status="archive"))
+        if ref_docs_archived > 0:
+            doc_count += "-" + str(ref_docs_archived)
+        if doc.max_instances != 0:
+            doc_count += "/" + str(doc.max_instances)
+        docs.append([doc, doc_count])
 
     # don't list users if user is staff of not primary
     if request.user.is_staff:
@@ -313,14 +318,37 @@ def doctype(request):
     message_check = 'checked="checked"'
     group_check = 'checked="checked"'
 
+    # if user not staff of primary get only non primary groups
+    if request.user.is_staff:
+        parent_groups = request.user.groups.values_list('name', flat=True)
+    else:
+        parent_groups = request.user.groups.values_list('name', flat=True)[
+            1:]
+
     if request.method == "POST":
         selected = []
-        # if user not staff of primary get only non primary groups
-        if request.user.is_staff:
-            parent_groups = request.user.groups.values_list('name', flat=True)
-        else:
-            parent_groups = request.user.groups.values_list('name', flat=True)[
-                1:]
+
+        # check if request to edit
+        if request.POST["action"][0] == 'e':
+            document_type = DocumentType.objects.get(id=request.POST["action"][1:])
+
+            enabled_check = 'checked="checked"' if document_type.enabled else ""
+            sign_check = 'checked="checked"' if not document_type.auto_sign else ""
+            custom_message_check = 'checked="checked"' if document_type.custom_message else ""
+            staff_only_check = 'checked="checked"' if document_type.staff_only else ""
+            private_check = 'checked="checked"' if document_type.group_private else ""
+
+            context = {
+                'doc': document_type,
+                "group": document_type.group.name,
+                "enabled_check": enabled_check,
+                "private_check": private_check,
+                "sign_check": sign_check,
+                "staff_only_check": staff_only_check,
+                "custom_message_check": custom_message_check,
+            }
+
+            return docedit_wrapper(request, context)
 
         # list all selected types
         for i in request.POST.keys():
@@ -374,13 +402,12 @@ def doctype(request):
         0]
     group = Group.objects.get(name=parent_group)
 
-    # if user not staff of primary group show only public types
-    if request.user.is_staff:
-        public_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=group))
-    else:
-        public_types = DocumentType.objects.filter(
-            Q(group_private=False))
+    # get documents from the list
+    q_obj = Q()
+    for i in parent_groups:
+        q_obj |= Q(group__name=i)
+
+    public_types = DocumentType.objects.filter(q_obj)
 
     # apply filters
     if not public:
@@ -412,8 +439,14 @@ def doctype(request):
     out = []
     for doc in public_types:
         custom_keys = Keys.objects.filter(container=doc)
-        ref_docs = Document.objects.filter(document_type=doc)
-        out.append([doc, custom_keys, len(ref_docs)])
+        doc_count = str(len(Document.objects.filter(document_type=doc)))
+        ref_docs_archived = len(Document.objects.filter(document_type=doc, status="archive"))
+        if ref_docs_archived > 0:
+            doc_count += "-" + str(ref_docs_archived)
+        if doc.max_instances != 0:
+            doc_count += "/" + str(doc.max_instances)
+
+        out.append([doc, custom_keys, doc_count])
 
     context = {
         'docs': out,
@@ -458,8 +491,10 @@ def doccreate(request):
     medical_data = False
     custom_data = False
     custom_group_bool = False
+    staff_only = False
     name = ""
     custom_group = ""
+    max_instances = 0
 
     enabled_check = 'checked="checked"'
     personal_check = 'checked="checked"'
@@ -467,6 +502,7 @@ def doccreate(request):
     medical_check = ""
     custom_check = ""
     custom_message_check = ""
+    staff_only_check = ""
 
     # if type create request sent
     if request.method == "POST":
@@ -478,9 +514,18 @@ def doccreate(request):
         medical_data = "medical_data" in request.POST.keys()
         custom_data = "custom_data" in request.POST.keys()
         custom_message = "custom_message" in request.POST.keys()
+        staff_only = "staff_only" in request.POST.keys()
         custom_message_text = request.POST["custom_message_text"]
         name = request.POST["name"]
         custom_group = request.POST["custom_group"]
+
+        if request.POST["max_instances"]:
+            max_instances = request.POST["max_instances"]
+            if not max_instances.isdigit():
+                context["error"] = "true"
+                context["error_text"] = "Il numero massimo di iscritti deve essere un numero"
+                return render(request, 'server/doc_create.html', context)
+            max_instances = int(max_instances)
 
         # if group not primary and not public throw error
         if group_private == True and not request.user.is_staff:
@@ -510,7 +555,7 @@ def doccreate(request):
 
         # create type
         doctype = DocumentType(
-            custom_group=custom_group_bool, auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data)
+            custom_group=custom_group_bool, auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data, staff_only=staff_only, max_instances=max_instances)
         doctype.save()
 
         # create custom keys
@@ -532,11 +577,121 @@ def doccreate(request):
         "personal_check": personal_check,
         "medical_check": medical_check,
         "custom_check": custom_check,
+        "staff_only_check": staff_only_check,
         "custom_message_check": custom_message_check,
     }
 
     return render(request, 'server/doc_create.html', context)
 
+@user_passes_test(isStaff)
+def docedit(request):
+    # create an edit page with empty context
+    return docedit_wrapper(request, {})
+
+@user_passes_test(isStaff)
+def docedit_wrapper(request, context):
+
+    if request.user.is_staff and "group" in context.keys():
+        base_group = request.user.groups.values_list('name', flat=True)[0]
+        if context["group"] == base_group:
+            context["group"] = ""
+
+    if request.method == "POST":
+        if "action" not in request.POST.keys():
+            # get groups on which the user has control
+            if request.user.is_staff:
+                groups = request.user.groups.values_list('name', flat=True)
+            else:
+                groups = request.user.groups.values_list('name', flat=True)[1:]
+
+            group = Group.objects.get(name=groups[0])
+
+            # get document
+            doc = DocumentType.objects.get(id=request.POST["doc"])
+
+            # check if user can edit type
+            if doc.group.name not in groups:
+                # user is cheating abort
+                return
+
+            # init variables
+            custom_group_bool = False
+            custom_group = ""
+            max_instances = 0
+
+            enabled_check = 'checked="checked"' if doc.enabled else ""
+            sign_check = 'checked="checked"' if not doc.auto_sign else ""
+            custom_message_check = 'checked="checked"' if doc.custom_message else ""
+            staff_only_check = 'checked="checked"' if doc.staff_only else ""
+            private_check = 'checked="checked"' if doc.group_private else ""
+
+            context = {
+                'doc': doc,
+                "group": doc.group.name,
+                "enabled_check": enabled_check,
+                "private_check": private_check,
+                "sign_check": sign_check,
+                "staff_only_check": staff_only_check,
+                "custom_message_check": custom_message_check,
+            }
+
+            if request.user.is_staff:
+                if context["group"] == group.name:
+                    context["group"] = ""
+
+            # gather inserted data
+            enabled = "enabled" in request.POST.keys()
+            auto_sign = "sign" not in request.POST.keys()
+            group_private = "group_private" in request.POST.keys()
+            custom_message = "custom_message" in request.POST.keys()
+            staff_only = "staff_only" in request.POST.keys()
+            custom_message_text = request.POST["custom_message_text"]
+            custom_group = request.POST["custom_group"]
+
+            if request.POST["max_instances"]:
+                max_instances = request.POST["max_instances"]
+                if not max_instances.isdigit():
+                    context["error"] = "true"
+                    context["error_text"] = "Il numero massimo di iscritti deve essere un numero"
+                    return render(request, 'server/doc_edit.html', context)
+                max_instances = int(max_instances)
+
+            # if group not primary and not public throw error
+            if group_private == True and not request.user.is_staff:
+                context["error"] = "true"
+                context["error_text"] = "Non puoi creare un documento non pubblico per un gruppo non primario"
+                return render(request, 'server/doc_edit.html', context)
+
+            # check if custom group permissions not met or non public document
+            if custom_group != "":
+                if group_private == True:
+                    context["error"] = "true"
+                    context["error_text"] = "Non puoi creare un documento non pubblico per un gruppo non primario"
+                    return render(request, 'server/doc_edit.html', context)
+                if custom_group not in groups:
+                    context["error"] = "true"
+                    context["error_text"] = "Non puoi creare un tipo assegnato ad un gruppo di cui non fai parte"
+                    return render(request, 'server/doc_edit.html', context)
+                else:
+                    group = Group.objects.filter(name=custom_group)[0]
+                    custom_group_bool = True
+
+            # edit type
+            doc.custom_group = custom_group_bool
+            doc.auto_sign = auto_sign
+            doc.custom_message = custom_message
+            doc.custom_message_text = custom_message_text
+            doc.enabled = enabled
+            doc.group_private = group_private
+            doc.group = group
+            doc.staff_only = staff_only
+            doc.max_instances = max_instances
+
+            doc.save()
+
+            return HttpResponseRedirect('doctype')
+
+    return render(request, 'server/doc_edit.html', context)
 
 @user_passes_test(isStaff)
 def doclist(request):

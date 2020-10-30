@@ -5,8 +5,8 @@
 {% block content %}
 <div class="tap-target {{color}}" data-target="add">
   <div class="tap-target-content">
-    <h5 style="color:white">Aggiungi un documento</h5>
-    <p style="color:white">Usa questo bottone per creare un nuovo documento</p>
+    <h5 style="color:white">Aggiungi un'iscrizione</h5>
+    <p style="color:white">Usa questo bottone per creare una nuova iscrizione</p>
   </div>
 </div>
 
@@ -36,17 +36,17 @@
               {% if doc.0.status == "wait" %}
                 <div class="hide-on-med-and-down">
                   <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
                   <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
                 </div>
                 <br>
                 <br>
@@ -54,8 +54,8 @@
                 <div id="modal{{doc.0.id}}" class="modal">
                   <div class="modal-content">
                     <h4>Attenzione</h4>
-                    <p>Una volta approvato il documento non potrà più essere modificato.<br>
-                      Sei sicuro di volerlo approvare?
+                    <p>Una volta approvata l'iscrizione non potrà più essere modificata.<br>
+                      Sei sicuro di volerla approvare?
                     </p>
                   </div>
                   <div class="modal-footer">
@@ -64,18 +64,18 @@
                   </div>
                 </div>
                 <div class="hide-on-med-and-down">
-                  <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
+                  <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                  <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica documento</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
                 </div>
                 <br>
                 <br>

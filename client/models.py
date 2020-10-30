@@ -16,6 +16,8 @@ class DocumentType(models.Model):
     custom_data = models.BooleanField(default=False)
     custom_message = models.BooleanField(default=False)
     custom_message_text = models.CharField(default="", max_length=250)
+    staff_only = models.BooleanField(default=False)
+    max_instances = models.IntegerField(default=0)
     name = models.CharField(default="", max_length=250)
 
 

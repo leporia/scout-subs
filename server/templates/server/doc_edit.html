@@ -1,11 +1,11 @@
 {% extends 'registration/base_admin.html' %}
 
-{% block title %}Admin - Crea Tipo{% endblock %}
+{% block title %}Admin - Modifica Tipo{% endblock %}
 
 {% block breadcrumb %}
     <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
     <a href="{% url 'doctype' %}" class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
-    <a class="breadcrumb hide-on-med-and-down">Crea Tipo</a>
+    <a class="breadcrumb hide-on-med-and-down">Modifica Tipo</a>
 {% endblock %}
 
 {% block content %}
@@ -13,11 +13,12 @@
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
-        <form id="form" action="{% url 'doccreate'%}" method="post" class="col s12">
+        <form id="form" action="{% url 'docedit'%}" method="post" class="col s12">
+          <input type="hidden" name="doc" value="{{doc.id}}">
           {% csrf_token %}
           <div class="row">
             <div class="input-field col s12">
-              <input name="name" value="{{name}}" id="name" type="text">
+              <input disabled name="name" value="{{doc.name}}" id="name" type="text">
               <label for="name">Nome</label>
             </div>
           </div>
@@ -51,24 +52,6 @@
             </div>
           </div>
           <div class="row">
-            <div class="input-field col l2 s12">
-              <label>
-                <input name="personal_data" type="checkbox" class="filled-in" {{personal_check}}/>
-                <span style="color:black">Dati personali</span>
-              </label>
-            </div>
-            <div class="input-field col l2 s12">
-              <label>
-                <input name="medical_data" type="checkbox" class="filled-in" {{medical_check}} />
-                <span style="color:black">Dati medici</span>
-              </label>
-            </div>
-            <div class="input-field col l4 s12">
-              <label>
-                <input name="custom_data" type="checkbox" class="filled-in" {{custom_check}}/>
-                <span style="color:black">Parametri personalizzati</span>
-              </label>
-            </div>
             <div class="input-field col l4 s12">
               <label>
                 <input name="custom_message" type="checkbox" class="filled-in" {{custom_message_check}}/>
@@ -79,19 +62,13 @@
           <br>
           <div class="row">
             <div class="input-field col s12">
-              <textarea name="custom" id="param" class="materialize-textarea"></textarea>
-              <label for="param">Lista parametri personalizzati, uno per riga</label>
-            </div>
-          </div>
-          <div class="row">
-            <div class="input-field col s12">
-              <textarea name="custom_message_text" id="message" class="materialize-textarea"></textarea>
+              <textarea name="custom_message_text" id="message" class="materialize-textarea">{{doc.custom_message_text}}</textarea>
               <label for="message">Messaggio personalizzato</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s12">
-              <textarea name="custom_group" id="group" class="materialize-textarea"></textarea>
+              <textarea name="custom_group" id="group" class="materialize-textarea">{{group}}</textarea>
               <label for="group">Gruppo personalizzato</label>
             </div>
           </div>
@@ -105,7 +82,7 @@
           </div>
           <div class="row">
             <div class="input-field col s12">
-              <textarea name="max_instances" id="max_instances" class="materialize-textarea"></textarea>
+              <textarea name="max_instances" id="max_instances" class="materialize-textarea">{{doc.max_instances}}</textarea>
               <label for="max_instances">Numero massimo di partecipanti</label>
             </div>
           </div>

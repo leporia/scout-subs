@@ -1,9 +1,9 @@
 {% extends 'registration/base_client.html' %}
 
-{% block title %}Modifica documento{% endblock %}
+{% block title %}Modifica iscrizione{% endblock %}
 
 {% block breadcrumb %}
-    <a href="#!" class="breadcrumb hide-on-med-and-down">Modifica Documento</a>
+    <a href="#!" class="breadcrumb hide-on-med-and-down">Modifica iscrizione</a>
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
               <select>
                 <option disabled selected>{{doc.document_type.name}}</option>
               </select>
-              <label>Documento</label>
+              <label>Iscrizione</label>
             </div>
           </div>
           {% if personal_data %}
