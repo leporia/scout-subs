@@ -16,5 +16,5 @@ urlpatterns = [
     path('docpreview', views.docpreview, name='docpreview'),
     path('progress', views.get_progress, name='progress'),
     path('request', views.data_request, name='request'),
-    path('media/<int:id>/<str:t>', views.media_request, name='media'),
+    path('media/<int:id>/<str:t>/<str:flag>', views.media_request, name='media'),
 ]

@@ -274,18 +274,17 @@ def ulist(request):
         documents = Document.objects.filter(Q(user=user) & ~Q(
             status='archive') & Q(group__name=parent_group))
 
-        # encode images in base64
+        # generate link for images
         vac_file = ""
         health_file = ""
         sign_doc_file = ""
         if usercode.medic:
             if usercode.medic.vac_certificate.name:
-                with open(usercode.medic.vac_certificate.name, 'rb') as image_file:
-                    vac_file = base64.b64encode(image_file.read()).decode()
+                vac_file = "/server/media/" + str(usercode.id) + "/vac_certificate/usercode"
 
             if usercode.medic.health_care_certificate.name:
-                with open(usercode.medic.health_care_certificate.name, 'rb') as image_file:
-                    health_file = base64.b64encode(image_file.read()).decode()
+                health_file = "/server/media/" + str(usercode.id) + "/health_care_certificate/usercode"
+
         out.append([user, usercode, parent_group,
                     documents, vac_file, health_file, "capi" in user.groups.values_list('name',flat = True)])
     context = {'users': out}
@@ -915,13 +914,13 @@ def doclist(request):
         if i.medical_data:
             medical = i.medical_data
             if medical.vac_certificate.name:
-                vac_file = "/server/media/" + str(i.id) + "/vac_certificate"
+                vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
 
             if medical.health_care_certificate.name:
-                health_file = "/server/media/" + str(i.id) + "/health_care_certificate"
+                health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
 
         if i.signed_doc:
-            sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc"
+            sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
 
         doc_group = i.user.groups.values_list('name', flat=True)[0]
 
@@ -1185,31 +1184,48 @@ def data_request(request):
             context["data"] = data
     return render(request, 'server/data_request.html', context)
 
-def media_request(request, id=0, t=""):
-    doc = Document.objects.get(id=id)
-    doc_group = doc.user.groups.values_list('name', flat=True)[0]
+def media_request(request, id=0, t="", flag=""):
+    if flag == "usercode":
+        usercode = UserCode.objects.get(id=id)
+        if request.user.is_staff:
+            groups = request.user.groups.values_list('name', flat=True)
+            usercode_group = usercode.user.groups.values_list('name', flat=True)[0]
+            if usercode_group not in groups:
+                return
+        else:
+            if usercode.user != request.user:
+                return
 
-    # check if user can view media
-    if request.user.is_staff:
-        # user is staff
-        groups = request.user.groups.values_list('name', flat=True)
-        if doc_group not in groups:
-            return
-    elif request.user.has_perm("client.staff"):
-        # user is psudo-staff
-        groups = request.user.groups.values_list('name', flat=True)[1:]
-        if doc_group not in groups:
-            return
-    else:
-        # is normal user
-        if doc.user != request.user:
-            return
+        if t == "health_care_certificate":
+            image_file = usercode.medic.health_care_certificate
+        elif t == "vac_certificate":
+            image_file = usercode.medic.vac_certificate
 
-    if t == "health_care_certificate":
-        image_file = doc.medical_data.health_care_certificate
-    elif t == "vac_certificate":
-        image_file = doc.medical_data.vac_certificate
-    elif t == "signed_doc":
-        image_file = doc.signed_doc
+    elif flag == "doc":
+        doc = Document.objects.get(id=id)
+        doc_group = doc.user.groups.values_list('name', flat=True)[0]
+
+        # check if user can view media
+        if request.user.is_staff:
+            # user is staff
+            groups = request.user.groups.values_list('name', flat=True)
+            if doc_group not in groups:
+                return
+        elif request.user.has_perm("client.staff"):
+            # user is psudo-staff
+            groups = request.user.groups.values_list('name', flat=True)[1:]
+            if doc_group not in groups:
+                return
+        else:
+            # is normal user
+            if doc.user != request.user:
+                return
+
+        if t == "health_care_certificate":
+            image_file = doc.medical_data.health_care_certificate
+        elif t == "vac_certificate":
+            image_file = doc.medical_data.vac_certificate
+        elif t == "signed_doc":
+            image_file = doc.signed_doc
 
     return FileResponse(image_file, filename=image_file.name)
