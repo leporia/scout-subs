@@ -160,6 +160,9 @@
             {% elif doc.0.status == "autosign" %}
               <i class="material-icons">assignment_turned_in</i>
             {% endif %}
+            {% if settings.DEBUG %}
+              {{doc.0.id}}: 
+            {% endif %}
             {{doc.0.document_type.name}}
             <span class="badge" data-badge-caption="">{{doc.0.user.first_name}} {{doc.0.user.last_name}}</span>
         </div>
@@ -416,7 +419,7 @@
                   <div class="col s12">
                     <div class="card">
                       <div class="card-image">
-                        {% if doc.5 %}<img src="data:;base64,{{ doc.5 }}">{% endif %}
+                        {% if doc.5 %}<img class="lazyload" data-src="{{ doc.5 }}">{% endif %}
                       </div>
                     </div>
                   </div>
@@ -425,7 +428,7 @@
                   <div class="col s12">
                     <div class="card">
                       <div class="card-image">
-                        {% if doc.6 %}<img src="data:;base64,{{ doc.6 }}">{% endif %}
+                        {% if doc.6 %}<img class="lazyload" data-src="{{ doc.6 }}">{% endif %}
                       </div>
                     </div>
                   </div>
@@ -434,7 +437,7 @@
                   <div class="col s12">
                     <div class="card">
                       <div class="card-image">
-                        {% if doc.7 %}<img src="data:;base64,{{ doc.7 }}">{% endif %}
+                        {% if doc.7 %}<img class="lazyload" data-src="{{ doc.7 }}">{% endif %}
                       </div>
                     </div>
                   </div>
@@ -465,6 +468,7 @@ $(document).ready(function(){
       update();
       document.getElementById('progress_bar').className = "determinate";
     {% endif %}
+    lazyload();
 });
 
 function resetModal() {
