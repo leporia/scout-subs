@@ -101,24 +101,24 @@ def index(request):
                 medical = None
                 vac_file = ""
                 health_file = ""
+                sign_doc_file = ""
                 if i.personal_data:
                     personal = i.personal_data
                 if i.medical_data:
                     medical = i.medical_data
-
                     if medical.vac_certificate.name:
-                        with open(medical.vac_certificate.name, 'rb') as image_file:
-                            vac_file = base64.b64encode(image_file.read()).decode()
+                        vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
 
                     if medical.health_care_certificate.name:
-                        with open(medical.health_care_certificate.name, 'rb') as image_file:
-                            health_file = base64.b64encode(
-                                image_file.read()).decode()
+                        health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
+
+                if i.signed_doc:
+                    sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
 
                 doc_group = i.user.groups.values_list('name', flat=True)[0]
 
                 out.append([i, KeyVal.objects.filter(container=i),
-                            personal, medical, doc_group, vac_file, health_file])
+                            personal, medical, doc_group, vac_file, health_file, sign_doc_file])
 
             context = {
                 "docs": out,

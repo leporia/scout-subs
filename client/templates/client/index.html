@@ -310,14 +310,19 @@
               {% if doc.0.document_type.medical_data %}
                 <li>
                   <div class="collapsible-header">
-                    <i class="material-icons">attach_file</i>Allegati
+                    {% if doc.0.medical_data %}
+                      <i class="material-icons">attach_file</i>Allegati
+                    {% else %}
+                      <i class="material-icons">attach_file</i><del>Allegati</del>
+                    {% endif %}
                   </div>
+                  {% if doc.0.medical_data %}
                   <div class="collapsible-body"><span>
                     <div class="row">
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            {% if doc.5 %} <img src="data:;base64,{{ doc.5 }}"> {% endif %}
+                            {% if doc.5 %} <img class="lazyload" data-src="{{ doc.5 }}"> {% endif %}
                           </div>
                         </div>
                       </div>
@@ -326,12 +331,22 @@
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            {% if doc.6 %}<img src="data:;base64,{{ doc.6 }}">{% endif %}
+                            {% if doc.6 %}<img class="lazyload" data-src="{{ doc.6 }}">{% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col s12">
+                        <div class="card">
+                          <div class="card-image">
+                            {% if doc.7 %}<img class="lazyload" data-src="{{ doc.7 }}">{% endif %}
                           </div>
                         </div>
                       </div>
                     </div>
                   </span></div>
+                  {% endif %}
                 </li>
               {% endif %}
               </ul>
@@ -389,6 +404,7 @@ $(document).ready(function(){
       {% endif %}
     {% endif %}
     {% endif %}
+    lazyload();
 });
 {% if user.is_authenticated %}
   {% if user.is_staff or perms.client.approved %}
