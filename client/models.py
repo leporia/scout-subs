@@ -111,3 +111,7 @@ class UserCode(models.Model):
     phone = models.CharField(default="", max_length=250)
     school = models.CharField(default="", max_length=250)
     year = models.IntegerField(default=0)
+
+class GroupSettings(models.Model):
+    group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
+    view_documents = models.BooleanField(default=False)

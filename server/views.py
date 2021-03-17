@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from client.models import UserCode, Keys, DocumentType, Document, KeyVal
+from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
@@ -34,6 +34,14 @@ def isStaff(user):
         return True
     return False
 
+# function to check if "aggiunto" has permission to view documents
+def isCapi_enabled(user):
+    group = user.groups.values_list('name', flat=True)[0]
+    settings = GroupSettings.objects.filter(group__name=group)
+    if len(settings) == 0:
+        return False
+    return settings[0].view_documents
+
 @user_passes_test(isStaff)
 def index(request):
     context = {}
@@ -41,6 +49,31 @@ def index(request):
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
+
+    # check for settings
+    doc_view_check = ""
+    settings = GroupSettings.objects.filter(group__name=group)
+
+    # create settings if non existing
+    if len(settings) == 0:
+        settings = GroupSettings(group=group, view_documents=False)
+    else:
+        settings = settings[0]
+
+    if settings.view_documents:
+        doc_view_check = 'checked="checked"'
+
+    # check if changing settings
+    if request.method == "POST":
+        if "doc_view" in request.POST:
+            settings.view_documents = True
+            settings.save()
+        else:
+            settings.view_documents = False
+            settings.save()
+
+        return HttpResponseRedirect("/server")
+
     # users from younger to older
     users = User.objects.filter(groups__name=parent_group).order_by("-id")
     users_out = []
@@ -82,6 +115,7 @@ def index(request):
         context = {
             'docs': docs,
         }
+    context["doc_view_check"] = doc_view_check
     return render(request, 'server/index.html', context)
 
 
@@ -811,10 +845,6 @@ def doclist(request):
                     error = True
                     error_text = "Non puoi dearchiviare un documento non archiviato"
 
-        if len(selected) == 0:
-            error = True
-            error_text = "Seleziona almeno un documento"
-
         # get filter values
         hidden = "filter_hidden" in request.POST
         wait = "filter_wait" in request.POST
@@ -968,6 +998,244 @@ def doclist(request):
             context["task_id"] = "0"
 
     return render(request, 'server/doc_list.html', context)
+
+@user_passes_test(isCapi_enabled)
+def doclist_readonly(request):
+    context = {}
+
+    # group name and obj
+    parent_group = request.user.groups.values_list('name', flat=True)[
+        0]
+    group = Group.objects.get(name=parent_group)
+
+    # create typezone
+    zurich = pytz.timezone('Europe/Zurich')
+
+    # init error variables for users
+    error = False
+    error_text = ""
+
+    # init checkboxes for filter
+    hidden = False
+    wait = True
+    selfsign = True
+    ok = True
+    signdoc = False
+
+    hidden_check = 'checked="checked"'
+    wait_check = 'checked="checked"'
+    selfsign_check = 'checked="checked"'
+    ok_check = 'checked="checked"'
+    signdoc_check = 'checked="checked"'
+
+    # set default dates for filters
+    newer = zurich.localize(dateparser.parse("1970-01-01"))
+    older = zurich.localize(datetime.now())
+
+    # init chips values
+    owner = []
+    types = []
+    groups = []
+    chips_owner = []
+    chips_types = []
+    chips_groups = []
+
+    if request.method == "POST":
+        # if download request
+        if request.POST["action"][0] == 'k':
+            document = Document.objects.get(id=request.POST["action"][1:])
+            # check if user has permission to view doc
+            if document.group.name == parent_group:
+                vac_file = ""
+                health_file = ""
+                sign_doc_file = ""
+
+                # prepare images in base64
+                if document.medical_data:
+                    if document.medical_data.vac_certificate.name:
+                        with open(document.medical_data.vac_certificate.name, 'rb') as image_file:
+                            vac_file = base64.b64encode(
+                                image_file.read()).decode()
+
+                    if document.medical_data.health_care_certificate.name:
+                        with open(document.medical_data.health_care_certificate.name, 'rb') as image_file:
+                            health_file = base64.b64encode(
+                                image_file.read()).decode()
+
+                if document.signed_doc:
+                    with open(document.signed_doc.name, 'rb') as image_file:
+                        sign_doc_file = base64.b64encode(
+                            image_file.read()).decode()
+
+                # build with template and render
+                template = get_template('server/download_doc.html')
+                doc = [document, KeyVal.objects.filter(
+                    container=document), document.personal_data, document.medical_data, parent_group]
+                context = {'doc': doc, 'vac': vac_file,
+                           'health': health_file, 'sign_doc_file': sign_doc_file}
+                html = template.render(context)
+                pdf = pdfkit.from_string(html, False)
+                result = BytesIO(pdf)
+                result.seek(0)
+                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+
+        # get selected documents and check if user has permission to view
+        selected = []
+        for i in request.POST.keys():
+            if i.isdigit():
+                docc = Document.objects.get(id=i)
+                if docc.group.name == parent_group:
+                    selected.append(docc)
+
+        # get filter values
+        hidden = "filter_hidden" in request.POST
+        wait = "filter_wait" in request.POST
+        selfsign = "filter_selfsign" in request.POST
+        ok = "filter_ok" in request.POST
+        signdoc = "filter_signdoc" in request.POST
+        newer = zurich.localize(dateparser.parse(request.POST["newer"]))
+        older = zurich.localize(dateparser.parse(
+            request.POST["older"]) + timedelta(days=1))
+        owner = request.POST["owner"].split("^|")
+        types = request.POST["type"].split("^|")
+        groups = request.POST["groups"].split("^|")
+
+        # clear filters
+        if request.POST["action"] == 'clear':
+            hidden = False
+            wait = True
+            selfsign = True
+            ok = True
+            signdoc = False
+            newer = zurich.localize(dateparser.parse("1970-01-01"))
+            older = zurich.localize(datetime.now())
+            owner = []
+            types = []
+            groups = []
+
+    # filter documents based on group of staff
+    documents = Document.objects.filter(group__name=parent_group)
+
+    # filter documents
+    if not hidden:
+        documents = documents.filter(~Q(status="archive"))
+        hidden_check = ""
+    if not wait:
+        documents = documents.filter(~Q(status="wait"))
+        wait_check = ""
+    if not selfsign:
+        documents = documents.filter(~Q(status="autosign"))
+        selfsign_check = ""
+    if not ok:
+        documents = documents.filter(~Q(status="ok"))
+        ok_check = ""
+    if not signdoc:
+        signdoc_check = ""
+
+    # filter date range
+    documents = documents.filter(compilation_date__range=[newer, older])
+
+    # filter types, owner, groups using chips
+    if len(types) > 0:
+        if types[0] != "":
+            q_obj = Q()
+            for t in types:
+                q_obj |= Q(document_type__name=t)
+                chips_types.append(t)
+
+            documents = documents.filter(q_obj)
+
+    if len(owner) > 0:
+        if owner[0] != "":
+            q_obj = Q()
+            for u in owner:
+                user = u.split("(")[0][:-1]
+                q_obj |= Q(user__username=user)
+                chips_owner.append(u)
+
+            documents = documents.filter(q_obj)
+
+    if len(groups) > 0:
+        if groups[0] != "":
+            q_obj = Q()
+            for g in groups:
+                q_obj |= Q(group__name=g)
+                chips_groups.append(g)
+
+            documents = documents.filter(q_obj)
+
+    out = []
+    for i in documents:
+        # filter for confirmed with attachment documents and approved
+        if signdoc:
+            if i.status == "ok" and not i.signed_doc:
+                continue
+
+        # prepare images in base64
+        personal = None
+        medical = None
+        vac_file = ""
+        health_file = ""
+        sign_doc_file = ""
+        if i.personal_data:
+            personal = i.personal_data
+        if i.medical_data:
+            medical = i.medical_data
+            if medical.vac_certificate.name:
+                vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
+
+            if medical.health_care_certificate.name:
+                health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
+
+        if i.signed_doc:
+            sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
+
+        doc_group = i.user.groups.values_list('name', flat=True)[0]
+
+        out.append([i, KeyVal.objects.filter(container=i), personal,
+                    medical, doc_group, vac_file, health_file, sign_doc_file])
+
+    # get types and users for chips autocompletation
+    auto_types = DocumentType.objects.filter(
+        Q(group_private=False) | Q(group=group))
+    users = User.objects.filter(groups__name=parent_group)
+
+    context = {
+        "types": auto_types,
+        "users": users,
+        "groups": [parent_group],
+        "docs": out,
+        "hidden_check": hidden_check,
+        "wait_check": wait_check,
+        "selfsign_check": selfsign_check,
+        "ok_check": ok_check,
+        "signdoc_check": signdoc_check,
+        "newer": newer,
+        "older": older,
+        "chips_owner": chips_owner,
+        "chips_type": chips_types,
+        "chips_groups": chips_groups,
+        'error': error,
+        'error_text': error_text,
+        'settings': settings,
+    }
+
+    # check if download multiple documents
+    if request.method == "POST":
+        if "status" not in request.session:
+            request.session['status'] = True
+
+        if request.POST["action"] == "download" and len(selected) > 0 and request.session['status']:
+            # save data in session
+            request.session['status'] = False
+            request.session['progress'] = 0
+            request.session['total'] = len(selected)
+            # run job
+            threading.Thread(target=zip_documents, args=(selected, request.session.session_key)).start()
+            # flag the client to check for updates
+            context["task_id"] = "0"
+
+    return render(request, 'server/doc_list_readonly.html', context)
 
 def get_progress(request):
     # if user wants to download result
