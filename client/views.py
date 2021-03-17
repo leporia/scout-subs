@@ -132,12 +132,10 @@ def index(request):
 def create(request):
     context = {}
     # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
+    parent_groups = request.user.groups.values_list('name', flat=True)
 
     # get available types for user
-    filter = (Q(group_private=False) | Q(group=group)) & Q(enabled=True)
+    filter = (Q(group_private=False) | Q(group__name__in=parent_groups)) & Q(enabled=True)
     if not request.user.is_staff and "capi" not in request.user.groups.values_list('name',flat = True):
         filter = filter & Q(staff_only=False)
 
@@ -318,11 +316,19 @@ def edit_wrapper(request, context):
 def about(request):
     # very simple about page, get version from text file
     version = ""
+
     with open("version.txt", 'r') as f:
         version = f.read()
-        if version.startswith("0"):
-            version = "Beta " + version
-        commitid = check_output(["git", "rev-parse", "HEAD"]).decode()
-        version = version[:version.find(" $Id: ")]
+
+    # parse file
+    version = version[version.find("=")+1:]
+    version = version.replace("\n", " ").replace("=", " ")
+
+    if version.startswith("0"):
+        version = "Beta " + version
+
+    # get commitid using git command, a bit hacky but works
+    commitid = check_output(["git", "rev-parse", "HEAD"]).decode()
+
     context = {"version": version, "commitid": commitid}
     return render(request, 'client/about.html', context)
