@@ -799,6 +799,7 @@ def doclist(request):
                     if i.medical_data:
                         i.medical_data.delete()
                         i.medical_data.save()
+                        i.medical_data = None
                     i.save()
                 else:
                     error = True
