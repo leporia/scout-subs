@@ -33,6 +33,7 @@ class PersonalData(models.Model):
     email = models.CharField(default="", max_length=250)
     school = models.CharField(default="", max_length=250)
     year = models.IntegerField(default=0)
+    avs_number = models.CharField(default="", max_length=250)
 
 
 class MedicalData(models.Model):
@@ -111,3 +112,4 @@ class UserCode(models.Model):
     phone = models.CharField(default="", max_length=250)
     school = models.CharField(default="", max_length=250)
     year = models.IntegerField(default=0)
+    avs_number = models.CharField(default="", max_length=250)

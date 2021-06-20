@@ -221,7 +221,7 @@ def create(request):
             # copy personal data and medical data
             if document_type.personal_data:
                 personal_data = PersonalData(email=request.user.email, parent_name=usercode.parent_name, via=usercode.via, cap=usercode.cap, country=usercode.country,
-                                             nationality=usercode.nationality, born_date=usercode.born_date, home_phone=usercode.home_phone, phone=usercode.phone, school=usercode.school, year=usercode.year)
+                                             nationality=usercode.nationality, born_date=usercode.born_date, home_phone=usercode.home_phone, phone=usercode.phone, school=usercode.school, year=usercode.year, avs_number=usercode.avs_number)
                 personal_data.save()
 
             if document_type.medical_data:
@@ -281,7 +281,7 @@ def edit_wrapper(request, context):
 
             if document.document_type.personal_data:
                 personal_data = PersonalData(email=request.user.email, parent_name=usercode.parent_name, via=usercode.via, cap=usercode.cap, country=usercode.country,
-                                             nationality=usercode.nationality, born_date=usercode.born_date, home_phone=usercode.home_phone, phone=usercode.phone, school=usercode.school, year=usercode.year)
+                                             nationality=usercode.nationality, born_date=usercode.born_date, home_phone=usercode.home_phone, phone=usercode.phone, school=usercode.school, year=usercode.year, avs_number=usercode.avs_number)
                 personal_data.save()
                 old_data = document.personal_data
                 document.personal_data = personal_data

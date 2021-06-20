@@ -150,6 +150,7 @@ def personal(request):
         usercode.home_phone = request.POST["home_phone"]
         usercode.phone = request.POST["phone"]
         usercode.school = request.POST["school"]
+        usercode.avs_number = request.POST["avs_number"]
         if request.POST["year"].isdigit():
             usercode.year = request.POST["year"]
         else:
@@ -344,6 +345,7 @@ def personal(request):
         'phone': usercode.phone,
         'school': usercode.school,
         'year': usercode.year,
+        'avs_number': usercode.avs_number,
         'branca_default': branca_default,
         'branca_castorini': branca_castorini,
         'branca_lupetti': branca_lupetti,
