@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.conf import settings
+from django.core.mail import send_mail
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
@@ -1007,6 +1009,22 @@ def doclist_readonly(request):
     parent_group = request.user.groups.values_list('name', flat=True)[
         0]
     group = Group.objects.get(name=parent_group)
+
+    # send alert
+    users = User.objects.filter(groups__name=parent_group).filter(is_staff=True)
+    user_emails = []
+
+    for i in users:
+        user_emails.append(i.email)
+
+    send_mail(
+        'Attenzione! ' + request.user.username + ' ha visionato i documenti della branca',
+        "Questo messaggio è stato inviato automaticamente dal sistema di iscrizioni digitali. Ti è arrivata questa mail perchè hai abilitato la possibilità ai tuoi aggiunti di visionare i documenti e un tuo aggiunto ha visionato dei documenti. L'utente con username " + request.user.username + " e con nome registrato " + request.user.first_name + " " + request.user.last_name + " ha visionato dei documenti.",
+        settings.DEFAULT_FROM_EMAIL,
+        user_emails,
+        fail_silently=False,
+    )
+
 
     # create typezone
     zurich = pytz.timezone('Europe/Zurich')
