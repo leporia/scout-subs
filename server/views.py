@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from client.models import UserCode, Keys, DocumentType, Document, KeyVal
+from client.models import MedicalData, UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
 from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.db import SessionStore
 from django import template
 
+import csv
 import dateparser
 from datetime import datetime
 from datetime import timedelta
@@ -331,6 +332,10 @@ def doctype(request):
         if request.POST["action"][0] == 'e':
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
 
+            # check if user has permission on the document
+            if document_type.group.name not in parent_groups:
+                return
+
             enabled_check = 'checked="checked"' if document_type.enabled else ""
             sign_check = 'checked="checked"' if not document_type.auto_sign else ""
             custom_message_check = 'checked="checked"' if document_type.custom_message else ""
@@ -348,6 +353,132 @@ def doctype(request):
             }
 
             return docedit_wrapper(request, context)
+
+        # check if request to download
+        elif request.POST["action"][0] == 'd':
+            document_type = DocumentType.objects.get(id=request.POST["action"][1:])
+
+            # check if user has permission on the document
+            if document_type.group.name not in parent_groups:
+                return
+
+            docs = Document.objects.filter(document_type=document_type)
+            
+            # get time for filename
+            current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
+
+            response = HttpResponse()
+            response['Content-Disposition'] = 'attachment; filename="' + document_type.name.replace(' ', '_') + '_export_' + current_time + '.csv"'
+
+            writer = csv.writer(response)
+
+            # csv header
+            writer.writerow(["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
+
+            for doc in docs:
+                writer.writerow([
+                    doc.user.first_name,
+                    doc.user.last_name,
+                    doc.user.email,
+                    doc.status,
+                    doc.compilation_date,
+                    doc.personal_data.parent_name,
+                    doc.personal_data.via,
+                    doc.personal_data.cap,
+                    doc.personal_data.country,
+                    doc.personal_data.nationality,
+                    doc.personal_data.born_date,
+                    doc.personal_data.home_phone,
+                    doc.personal_data.phone,
+                    doc.personal_data.school,
+                    doc.personal_data.year,
+                    doc.personal_data.avs_number
+                ])
+
+            return response
+
+        #check if request to download with medic data
+        elif request.POST["action"][0] == 'm':
+            document_type = DocumentType.objects.get(id=request.POST["action"][1:])
+
+            # check if user has permission on the document
+            if document_type.group.name not in parent_groups:
+                return
+
+            docs = Document.objects.filter(document_type=document_type)
+            
+            # get time for filename
+            current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
+
+            response = HttpResponse()
+            response['Content-Disposition'] = 'attachment; filename="' + document_type.name.replace(' ', '_') + '_export_medic_' + current_time + '.csv"'
+
+            writer = csv.writer(response)
+
+            # csv header
+            writer.writerow(["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
+
+            for doc in docs:
+                if doc.medical_data:
+                    writer.writerow([
+                        doc.user.first_name,
+                        doc.user.last_name,
+                        doc.user.email,
+                        doc.status,
+                        doc.compilation_date,
+                        doc.personal_data.parent_name,
+                        doc.personal_data.via,
+                        doc.personal_data.cap,
+                        doc.personal_data.country,
+                        doc.personal_data.nationality,
+                        doc.personal_data.born_date,
+                        doc.personal_data.home_phone,
+                        doc.personal_data.phone,
+                        doc.personal_data.school,
+                        doc.personal_data.year,
+                        doc.personal_data.avs_number,
+                        doc.medical_data.emer_name,
+                        doc.medical_data.emer_relative,
+                        doc.medical_data.emer_phone,
+                        doc.medical_data.cell_phone,
+                        doc.medical_data.address,
+                        doc.medical_data.health_care,
+                        doc.medical_data.injuries,
+                        doc.medical_data.rc,
+                        doc.medical_data.rega,
+                        doc.medical_data.medic_name,
+                        doc.medical_data.medic_phone,
+                        doc.medical_data.medic_address,
+                        doc.medical_data.sickness,
+                        doc.medical_data.vaccine,
+                        doc.medical_data.tetanus_date,
+                        doc.medical_data.allergy,
+                        doc.medical_data.drugs_bool,
+                        doc.medical_data.drugs,
+                        doc.medical_data.misc_bool,
+                        doc.medical_data.misc
+                    ])
+                else:
+                    writer.writerow([
+                        doc.user.first_name,
+                        doc.user.last_name,
+                        doc.user.email,
+                        doc.status,
+                        doc.compilation_date,
+                        doc.personal_data.parent_name,
+                        doc.personal_data.via,
+                        doc.personal_data.cap,
+                        doc.personal_data.country,
+                        doc.personal_data.nationality,
+                        doc.personal_data.born_date,
+                        doc.personal_data.home_phone,
+                        doc.personal_data.phone,
+                        doc.personal_data.school,
+                        doc.personal_data.year,
+                        doc.personal_data.avs_number,
+                    ])
+
+            return response
 
         # list all selected types
         for i in request.POST.keys():
@@ -1168,6 +1299,7 @@ def docpreview(request):
 def data_request(request):
     context = {}
     parent_group = request.user.groups.values_list('name', flat=True)[0]
+
     if request.method == "POST":
         if request.POST["request"] == "email_all":
             users = User.objects.filter(groups__name=parent_group)
@@ -1183,6 +1315,96 @@ def data_request(request):
                 data += user.email + ", "
             data = data[:-2]
             context["data"] = data
+        elif request.POST["request"] == "data_user":
+            users = User.objects.filter(groups__name=parent_group)
+
+            # get time for filename
+            current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
+
+            response = HttpResponse()
+            response['Content-Disposition'] = 'attachment; filename="data_export_' + current_time + '.csv"'
+
+            writer = csv.writer(response)
+
+            # csv header
+            writer.writerow(["Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
+
+            for user in users:
+                usercode = UserCode.objects.filter(user=user)[0]
+                writer.writerow([
+                    user.first_name,
+                    user.last_name,
+                    user.email,
+                    usercode.parent_name,
+                    usercode.via,
+                    usercode.cap,
+                    usercode.country,
+                    usercode.nationality,
+                    usercode.born_date,
+                    usercode.home_phone,
+                    usercode.phone,
+                    usercode.school,
+                    usercode.year,
+                    usercode.avs_number
+                ])
+
+            return response
+
+        elif request.POST["request"] == "data_user_medic":
+            users = User.objects.filter(groups__name=parent_group)
+
+            # get time for filename
+            current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
+
+            response = HttpResponse()
+            response['Content-Disposition'] = 'attachment; filename="data_export_' + current_time + '.csv"'
+
+            writer = csv.writer(response)
+
+            # csv header
+            writer.writerow(["Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
+
+            for user in users:
+                usercode = UserCode.objects.filter(user=user)[0]
+                medic = usercode.medic
+                writer.writerow([
+                    user.first_name,
+                    user.last_name,
+                    user.email,
+                    usercode.parent_name,
+                    usercode.via,
+                    usercode.cap,
+                    usercode.country,
+                    usercode.nationality,
+                    usercode.born_date,
+                    usercode.home_phone,
+                    usercode.phone,
+                    usercode.school,
+                    usercode.year,
+                    usercode.avs_number,
+                    medic.emer_name,
+                    medic.emer_relative,
+                    medic.emer_phone,
+                    medic.cell_phone,
+                    medic.address,
+                    medic.health_care,
+                    medic.injuries,
+                    medic.rc,
+                    medic.rega,
+                    medic.medic_name,
+                    medic.medic_phone,
+                    medic.medic_address,
+                    medic.sickness,
+                    medic.vaccine,
+                    medic.tetanus_date,
+                    medic.allergy,
+                    medic.drugs_bool,
+                    medic.drugs,
+                    medic.misc_bool,
+                    medic.misc
+                ])
+
+            return response
     return render(request, 'server/data_request.html', context)
 
 def media_request(request, id=0, t="", flag=""):
