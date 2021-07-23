@@ -56,6 +56,23 @@
   {% endif %}
     <div class="card large">
       <div class="card-content">
+        <form id="form" action="{% url 'server'%}" method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col s12">
+              <div id="select_switch" class="switch col s12">
+                Documenti visibili ad aggiunti<br class="hide-on-med-and-up">
+                <label>
+                  No
+                  <input onclick="execute_confirm()" name="doc_view" type="checkbox" {{doc_view_check}}>
+                  <span class="lever"></span>
+                  Si
+                </label>
+              </div>
+              <a style="display: none" id="send_button" class="waves-effect waves-light btn green" onclick="form.submit()"><i class="material-icons left">check</i> Applica</a>
+            </div>
+          </div>
+        </form>
         <ul class="collection">
           {% for doctype in docs %}
             <li class="collection-item">
@@ -97,4 +114,18 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block script %}
+function execute_confirm() {
+  var selection = document.getElementById('select_switch')
+  var button = document.getElementById('send_button')
+  selection.style.display = "none"
+  button.style.display = "inline-block"
+  {% if doc_view_check == 'checked="checked"'%}
+    button.innerHTML = "Applica (gli aggiunti <b>NON</b> potranno vedere i documenti)"
+  {% else %}
+    button.innerHTML = "Applica (gli aggiunti <b>POTRANNO</b> vedere i documenti)"
+  {% endif %}
+}
 {% endblock %}

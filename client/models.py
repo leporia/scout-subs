@@ -113,3 +113,7 @@ class UserCode(models.Model):
     school = models.CharField(default="", max_length=250)
     year = models.IntegerField(default=0)
     avs_number = models.CharField(default="", max_length=250)
+
+class GroupSettings(models.Model):
+    group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
+    view_documents = models.BooleanField(default=False)

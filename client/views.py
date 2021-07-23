@@ -1,6 +1,6 @@
 from random import randint
 from django.contrib.auth.models import Group, Permission, User
-from client.models import UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
+from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -17,6 +17,7 @@ import pytz
 
 def index(request):
     context = {}
+    group_view = False
     # check if user is logged
     if (request.user.is_authenticated):
         if not (request.user.is_staff or request.user.has_perm("client.approved")):
@@ -39,6 +40,19 @@ def index(request):
                 user_code = "U" + str(usercode.code)
             context = {"user_code": user_code}
         else:
+            # get user group
+            group = request.user.groups.values_list('name', flat=True)[0]
+
+            # get group settings
+            settings = GroupSettings.objects.filter(group__name=group)
+
+            # check if settings exists
+            if len(settings) == 0:
+                group_view = False
+            else:
+                # set settings value
+                group_view = settings[0].view_documents
+
             # user action
             if request.method == "POST":
                 # get document id
@@ -123,6 +137,7 @@ def index(request):
             context = {
                 "docs": out,
                 "empty": len(out) == 0,
+                "group_view": group_view,
             }
 
     return render(request, 'client/index.html', context)

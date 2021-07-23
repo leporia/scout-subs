@@ -17,6 +17,18 @@
 
 {% if user.is_authenticated %}
   {% if user.is_staff or perms.client.approved %}
+    <div id="modal_capi" class="modal">
+      <div class="modal-content">
+        <h4>Attenzione</h4>
+        <p>Il tuo capo branca verrà notificato dell'accesso alla pagina dei documenti.<br>
+          Sei sicuro di voler continuare?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+        <a href="{% url 'doclistro' %}" class="modal-close waves-effect waves-green btn-flat">Continua</a>
+      </div>
+    </div>
     {% if not empty %}
     <ul class="collapsible">
         {% for doc in docs %}
