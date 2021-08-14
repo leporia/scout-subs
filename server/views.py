@@ -40,11 +40,13 @@ def isStaff(user):
 
 # function to check if "aggiunto" has permission to view documents
 def isCapi_enabled(user):
-    group = user.groups.values_list('name', flat=True)[0]
+    groups = user.groups.values_list('name', flat=True)
+    group = groups[0]
     settings = GroupSettings.objects.filter(group__name=group)
-    if len(settings) == 0:
+    if len(settings) != 0 and "capi" in groups:
+        return settings[0].view_documents
+    else:
         return False
-    return settings[0].view_documents
 
 @user_passes_test(isStaff)
 def index(request):

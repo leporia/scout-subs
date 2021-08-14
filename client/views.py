@@ -41,15 +41,14 @@ def index(request):
             context = {"user_code": user_code}
         else:
             # get user group
-            group = request.user.groups.values_list('name', flat=True)[0]
+            groups = request.user.groups.values_list('name', flat=True)
+            group = groups[0]
 
             # get group settings
             settings = GroupSettings.objects.filter(group__name=group)
 
-            # check if settings exists
-            if len(settings) == 0:
-                group_view = False
-            else:
+            # check if settings exists and user is in group capi
+            if len(settings) != 0 and "capi" in groups:
                 # set settings value
                 group_view = settings[0].view_documents
 
