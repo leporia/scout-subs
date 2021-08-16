@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <title></title>
 </head>
-<body>
-  <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
+<body style="background: white;">
+  <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px; background: white;">
     <br><br><br><br>
     <br><br><br><br>
     <div class="row">
@@ -17,11 +17,20 @@
       <h4 class="center">{{doc.document_type.name}}</h4>
     </div>
     <div class="row">
-      <div class="col s6 offset-s3">
+      <div class="col s8 offset-s2">
         <p>Con la presente firma approvo il documento con codice {{doc.code}} accettando
         tutte le clausole apposte su di esso. <br>
-        Inoltre comprovo come veritieri e completi tutti i dati apposti sul documento. <br>
-        Nel caso in cui il documento comprendesse i dati medici autorizza i capi, in caso di emergenza, a intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
+        Comprovo come veritieri e completi tutti i dati apposti sul documento.
+        {% if doc.document_type.medical_data %}
+          <br>
+          Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
+        {% endif %}
+        {% if doc.document_type.custom_message %}
+          <br>
+          <br>
+          Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
+          {{doc.document_type.custom_message_text}}
+        {% endif %}
         </p>
       </div>
     </div>
@@ -32,14 +41,14 @@
     <div class="row">
       <div class="col s4 offset-s1">
         <div class="input-field">
-          <input type="text">
-          <span class="helper-text">Data e luogo</span>
+          <input type="text" style="border-bottom: 1px solid black">
+          <span class="helper-text" style="color: black">Data e luogo</span>
         </div>
       </div>
       <div class="col s4 offset-s2">
         <div class="input-field">
-          <input type="text">
-          <span class="helper-text">Firma</span>
+          <input type="text" style="border-bottom: 1px solid black">
+          <span class="helper-text" style="color: black">Firma</span>
         </div>
       </div>
     </div>

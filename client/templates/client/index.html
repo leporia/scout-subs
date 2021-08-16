@@ -66,8 +66,22 @@
                 <div id="modal{{doc.0.id}}" class="modal">
                   <div class="modal-content">
                     <h4>Attenzione</h4>
-                    <p>Una volta approvata l'iscrizione non potrà più essere modificata.<br>
-                      Sei sicuro di volerla approvare?
+                    <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
+                    Comprovo come veritieri e completi tutti i dati apposti sul documento.
+                    {% if doc.0.document_type.medical_data %}
+                      <br>
+                      Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
+                    {% endif %}
+                    {% if doc.0.document_type.custom_message %}
+                      <br>
+                      <br>
+                      Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
+                      {{doc.0.document_type.custom_message_text}}
+                    {% endif %}
+                    <br>
+                    <br>
+                    <b>Una volta approvata l'iscrizione non potrà più essere modificata o annullata.<br>
+                    Sei sicuro di volerla approvare?</b>
                     </p>
                   </div>
                   <div class="modal-footer">
