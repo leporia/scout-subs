@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from client.models import MedicalData, UserCode, Keys, DocumentType, Document, KeyVal
+from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.conf import settings
 from django.core.mail import send_mail
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, KeyVal
@@ -13,7 +13,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.db import SessionStore
-from django import template
 
 import csv
 import dateparser
@@ -22,13 +21,11 @@ from datetime import timedelta
 import pytz
 import pdfkit
 from io import BytesIO
-import os
 import base64
 from PIL import Image, UnidentifiedImageError
 import zipfile
 import json
 import threading
-import random
 
 # custom staff check function for non primary group staff members
 def isStaff(user):
@@ -182,11 +179,6 @@ def docapprove(request):
     context = {}
     data = []
 
-    # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
-
     # if user not staff of primary has only controll of non primary groups
     if request.user.is_staff:
         groups = request.user.groups.values_list('name', flat=True)
@@ -317,7 +309,6 @@ def ulist(request):
         # generate link for images
         vac_file = ""
         health_file = ""
-        sign_doc_file = ""
         if usercode.medic:
             if usercode.medic.vac_certificate.name:
                 vac_file = "/server/media/" + str(usercode.id) + "/vac_certificate/usercode"
@@ -565,11 +556,6 @@ def doctype(request):
             custom = True
             message = True
             group_bool = True
-
-    # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
 
     # get documents from the list
     q_obj = Q()
@@ -1459,9 +1445,6 @@ def zip_documents(docs, session_key):
 @user_passes_test(isStaff)
 def upload_doc(request):
     # setup group based on staff primary or not
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
     if request.user.is_staff:
         groups = request.user.groups.values_list('name', flat=True)
     else:

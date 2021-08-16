@@ -1,16 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
-from django.views import generic
-from django.contrib.auth.models import Group
-from django.core.files.storage import FileSystemStorage
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.debug import sensitive_variables
 from django.http import HttpResponseRedirect
-from django import forms
-from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 
 from client.models import UserCode
 
@@ -18,9 +12,8 @@ import dateparser
 import os
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
-from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image import convert_from_bytes
 from pdf2image.exceptions import (
-    PDFInfoNotInstalledError,
     PDFPageCountError,
     PDFSyntaxError
 )
@@ -28,7 +21,7 @@ from pdf2image.exceptions import (
 # override to remove help text
 class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
-        super(UserCreationForm, self).__init__(*args, **kwargs)
+        super(RegisterForm, self).__init__(*args, **kwargs)
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None

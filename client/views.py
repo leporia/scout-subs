@@ -1,8 +1,7 @@
 from random import randint
-from django.contrib.auth.models import Group, Permission, User
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
-from django.http import HttpResponseRedirect, FileResponse, HttpResponse
+from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render
@@ -10,7 +9,6 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from io import BytesIO
 import pdfkit
-import base64
 from subprocess import check_output
 from datetime import datetime
 import pytz
@@ -231,7 +229,6 @@ def create(request):
             if document_type.auto_sign:
                 status = "autosign"
 
-            keys = []
             # copy personal data and medical data
             if document_type.personal_data:
                 personal_data = PersonalData(email=request.user.email, parent_name=usercode.parent_name, via=usercode.via, cap=usercode.cap, country=usercode.country,
