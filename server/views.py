@@ -403,10 +403,15 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
+            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
+
+            if document_type.custom_data:
+                header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
+
+            writer.writerow(header)
 
             for doc in docs:
-                writer.writerow([
+                write_data = [
                     doc.user.first_name,
                     doc.user.last_name,
                     doc.user.email,
@@ -423,7 +428,12 @@ def doctype(request):
                     doc.personal_data.school,
                     doc.personal_data.year,
                     doc.personal_data.avs_number
-                ])
+                ]
+
+                if document_type.custom_data:
+                    write_data += KeyVal.objects.filter(container=doc).values_list("value", flat=True)
+
+                writer.writerow(write_data)
 
             return response
 
@@ -446,11 +456,15 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
+            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"]
+
+            if document_type.custom_data:
+                header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
+
+            writer.writerow(header)
 
             for doc in docs:
-                if doc.medical_data:
-                    writer.writerow([
+                write_data = [
                         doc.user.first_name,
                         doc.user.last_name,
                         doc.user.email,
@@ -466,7 +480,10 @@ def doctype(request):
                         doc.personal_data.phone,
                         doc.personal_data.school,
                         doc.personal_data.year,
-                        doc.personal_data.avs_number,
+                        doc.personal_data.avs_number
+                ]
+                if doc.medical_data:
+                    write_data += [
                         doc.medical_data.emer_name,
                         doc.medical_data.emer_relative,
                         doc.medical_data.emer_phone,
@@ -487,26 +504,12 @@ def doctype(request):
                         doc.medical_data.drugs,
                         doc.medical_data.misc_bool,
                         doc.medical_data.misc
-                    ])
-                else:
-                    writer.writerow([
-                        doc.user.first_name,
-                        doc.user.last_name,
-                        doc.user.email,
-                        doc.status,
-                        doc.compilation_date,
-                        doc.personal_data.parent_name,
-                        doc.personal_data.via,
-                        doc.personal_data.cap,
-                        doc.personal_data.country,
-                        doc.personal_data.nationality,
-                        doc.personal_data.born_date,
-                        doc.personal_data.home_phone,
-                        doc.personal_data.phone,
-                        doc.personal_data.school,
-                        doc.personal_data.year,
-                        doc.personal_data.avs_number,
-                    ])
+                    ]
+
+                if document_type.custom_data:
+                    write_data += KeyVal.objects.filter(container=doc).values_list("value", flat=True)
+
+                writer.writerow(write_data)
 
             return response
 
@@ -1599,11 +1602,12 @@ def data_request(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
+            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
 
             for user in users:
                 usercode = UserCode.objects.filter(user=user)[0]
                 writer.writerow([
+                    "U"+str(usercode.code),
                     user.first_name,
                     user.last_name,
                     user.email,
@@ -1634,12 +1638,13 @@ def data_request(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
+            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
 
             for user in users:
                 usercode = UserCode.objects.filter(user=user)[0]
                 medic = usercode.medic
                 writer.writerow([
+                    "U"+str(usercode.code),
                     user.first_name,
                     user.last_name,
                     user.email,
