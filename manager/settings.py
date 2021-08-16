@@ -25,6 +25,11 @@ SECRET_KEY = 'b4ns!4$%k2w%h=a&p+w6*a4(t_rkna4ax8^s66vzxtrr&b!lb#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+
 ALLOWED_HOSTS = []
 
 # Email
