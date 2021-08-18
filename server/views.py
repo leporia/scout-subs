@@ -137,10 +137,10 @@ def uapprove(request):
 
         # parse text to array
         data = request.POST["codes"]
-        data.replace("\r", "")
         data = data.split("\n")
         # check if format is right
         for i in range(len(data)):
+            data[i] = data[i].replace("\r", "")
             if not data[i].startswith("U"):
                 data[i] = data[i] + " - Formato errato"
             elif not data[i][1:].isdigit():
@@ -159,10 +159,10 @@ def uapprove(request):
                 else:
                     if user.groups.values_list('name', flat=True)[0] == parent_group:
                         # if user already in group do nothing
-                        data[i] = data[i] + " - Ok"
+                        data[i] = data[i] + " - Già approvato"
                     else:
                         # if user in another group notify staff of group change
-                        user.groups.clear()
+                        user.groups.remove(Group.objects.get(name=user.groups.values_list('name', flat=True)[0]))
                         user.groups.add(group)
                         data[i] = data[i] + " - Ok, cambio branca"
 
