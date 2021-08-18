@@ -67,7 +67,7 @@ def index(request):
         doc_view_check = 'checked="checked"'
 
     # check if changing settings
-    if request.method == "POST":
+    if request.method == "POST" and request.user.is_staff:
         if "doc_view" in request.POST:
             settings.view_documents = True
             settings.save()
@@ -255,7 +255,7 @@ def ulist(request):
                 # get template and build context
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(
-                    container=document), document.personal_data, document.medical_data, parent_group]
+                    container=document), document.personal_data, document.medical_data, document.user.groups.values_list('name', flat=True)[0]]
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 # render context
@@ -928,7 +928,7 @@ def doclist(request):
                 # build with template and render
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(
-                    container=document), document.personal_data, document.medical_data, parent_group]
+                    container=document), document.personal_data, document.medical_data, document.user.groups.values_list('name', flat=True)[0]]
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
@@ -1053,6 +1053,7 @@ def doclist(request):
             documents = documents.filter(q_obj)
 
     out = []
+    users = []
     for i in documents:
         # filter for confirmed with attachment documents and approved
         if signdoc:
@@ -1082,11 +1083,14 @@ def doclist(request):
 
         out.append([i, KeyVal.objects.filter(container=i), personal,
                     medical, doc_group, vac_file, health_file, sign_doc_file])
+        users.append(i.user)
 
     # get types and users for chips autocompletation
-    auto_types = DocumentType.objects.filter(
-        Q(group_private=False) | Q(group=group))
-    users = User.objects.filter(groups__name=parent_group)
+    if request.user.is_staff:
+        auto_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=group))
+    else:
+        auto_types = DocumentType.objects.filter(Q(group_private=False))
 
     context = {
         "types": auto_types,
@@ -1212,7 +1216,7 @@ def doclist_readonly(request):
                 # build with template and render
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(
-                    container=document), document.personal_data, document.medical_data, parent_group]
+                    container=document), document.personal_data, document.medical_data, document.user.groups.values_list('name', flat=True)[0]]
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
