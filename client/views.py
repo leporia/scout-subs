@@ -93,49 +93,27 @@ def index(request):
                     context['personal_data'] = document_type.personal_data
                     context['medical_data'] = document_type.medical_data
                     context['custom_data'] = document_type.custom_data
-                    keys = Keys.objects.filter(container=document_type)
-                    out_keys = []
-                    for i in keys:
-                        out_keys.append([i, KeyVal.objects.filter(
-                            Q(container=document) & Q(key=i.key))[0].value])
-                    context['keys'] = out_keys
+                    context['keys'] = KeyVal.objects.filter(container=document)
                     context['custom_message'] = document_type.custom_message
                     context['custom_message_text'] = document_type.custom_message_text
                     return edit_wrapper(request, context)
 
             # show only docs of the user and non archived
             documents = Document.objects.filter(
-                Q(user=request.user) & ~Q(status='archive'))
-            out = []
-            for i in documents:
-                # for every document prepare images in base64
-                personal = None
-                medical = None
-                vac_file = ""
-                health_file = ""
-                sign_doc_file = ""
-                if i.personal_data:
-                    personal = i.personal_data
-                if i.medical_data:
-                    medical = i.medical_data
-                    if medical.vac_certificate.name:
-                        vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
+                Q(user=request.user) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
 
-                    if medical.health_care_certificate.name:
-                        health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
-
-                if i.signed_doc:
-                    sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
-
-                doc_group = i.user.groups.values_list('name', flat=True)[0]
-
-                out.append([i, KeyVal.objects.filter(container=i),
-                            personal, medical, doc_group, vac_file, health_file, sign_doc_file])
+            vac_file = ["/server/media/", "/vac_certificate/doc"]
+            health_file = ["/server/media/", "/health_care_certificate/doc"]
+            sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
             context = {
-                "docs": out,
-                "empty": len(out) == 0,
+                "docs": documents,
+                "base_group": groups[0].name,
+                "empty": len(documents) == 0,
                 "group_view": group_view,
+                "vac_file": vac_file,
+                "health_file": health_file,
+                "sign_doc_file": sign_doc_file
             }
 
     return render(request, 'client/index.html', context)
@@ -152,14 +130,10 @@ def create(request):
     if not request.user.is_staff and "capi" not in request.user.groups.values_list('name',flat = True):
         filter = filter & Q(staff_only=False)
 
-    doctypes = DocumentType.objects.filter(filter)
-    out = []
-    for doc in doctypes:
-        # check if user has already that document type
-        if len(Document.objects.filter(Q(user=request.user) & Q(document_type=doc))) == 0:
-            out.append(doc)
+    # remove from the list documents from already used types
+    doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(user=request.user).select_related("document_type").values_list("document_type", flat=True))
 
-    context['docs'] = out
+    context['docs'] = DocumentType.objects.filter(id__in=doctypes)
     if request.method == "POST":
         if request.POST["action"] == "details":
             # user has to select a document type
@@ -184,11 +158,7 @@ def create(request):
                 context['personal_data'] = document_type.personal_data
                 context['medical_data'] = document_type.medical_data
                 context['custom_data'] = document_type.custom_data
-                keys = Keys.objects.filter(container=document_type)
-                out_keys = []
-                for i in keys:
-                    out_keys.append([i, ""])
-                context['keys'] = out_keys
+                context['keys'] = Keys.objects.filter(container=document_type)
                 context['custom_message'] = document_type.custom_message
                 context['custom_message_text'] = document_type.custom_message_text
         elif request.POST["action"] == "save":
@@ -258,8 +228,7 @@ def create(request):
                 for i in request.POST.keys():
                     if i == "doctype" or i == "csrfmiddlewaretoken" or i == "action":
                         continue
-                    key = KeyVal(container=document, key=Keys.objects.get(
-                        id=i).key, value=request.POST[i])
+                    key = KeyVal(container=document, key=Keys.objects.get(id=i).key, value=request.POST[i])
                     key.save()
 
             return HttpResponseRedirect('/')
@@ -315,8 +284,7 @@ def edit_wrapper(request, context):
                 for i in request.POST.keys():
                     if i == "doc" or i == "csrfmiddlewaretoken":
                         continue
-                    key = KeyVal.objects.filter(Q(container=document) & Q(
-                        key=Keys.objects.get(id=i).key))[0]
+                    key = KeyVal.objects.get(id=i)
                     key.value = request.POST[i]
                     key.save()
 

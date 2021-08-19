@@ -3,6 +3,7 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+{% load app_filter %}
 <div class="tap-target {{color}}" data-target="add">
   <div class="tap-target-content">
     <h5 style="color:white">Aggiungi un'iscrizione</h5>
@@ -34,49 +35,49 @@
         {% for doc in docs %}
             <li>
             <div class="collapsible-header">
-                {% if doc.0.status == "wait" %}
+                {% if doc.status == "wait" %}
                   <i class="material-icons">timelapse</i>
-                {% elif doc.0.status == "ok" %}
+                {% elif doc.status == "ok" %}
                   <i class="material-icons">check</i>
-                {% elif doc.0.status == "autosign" %}
+                {% elif doc.status == "autosign" %}
                   <i class="material-icons">assignment_turned_in</i>
                 {% endif %}
-                {{doc.0.document_type.name}}
-              <span class="badge" data-badge-caption="">{{doc.0.compilation_date}}</span>
+                {{doc.document_type.name}}
+              <span class="badge" data-badge-caption="">{{doc.compilation_date}}</span>
             </div>
             <div class="collapsible-body"><span>
-              {% if doc.0.status == "wait" %}
+              {% if doc.status == "wait" %}
                 <div class="hide-on-med-and-down">
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.0.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
                 </div>
                 <br>
                 <br>
-              {% elif doc.0.status == "autosign" %}
-                <div id="modal{{doc.0.id}}" class="modal">
+              {% elif doc.status == "autosign" %}
+                <div id="modal{{doc.id}}" class="modal">
                   <div class="modal-content">
                     <h4>Attenzione</h4>
                     <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
                     Comprovo come veritieri e completi tutti i dati apposti sul documento.
-                    {% if doc.0.document_type.medical_data %}
+                    {% if doc.document_type.medical_data %}
                       <br>
                       Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
                     {% endif %}
-                    {% if doc.0.document_type.custom_message %}
+                    {% if doc.document_type.custom_message %}
                       <br>
                       <br>
                       Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
-                      {{doc.0.document_type.custom_message_text}}
+                      {{doc.document_type.custom_message_text}}
                     {% endif %}
                     <br>
                     <br>
@@ -86,33 +87,33 @@
                   </div>
                   <div class="modal-footer">
                     <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
-                    <a onclick="send('a{{doc.0.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
+                    <a onclick="send('a{{doc.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
                   </div>
                 </div>
                 <div class="hide-on-med-and-down">
-                  <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
-                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
+                  <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
                 </div>
                 <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                  <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.0.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.0.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
                   <br>
                   <br>
-                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.0.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
+                  <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
                 </div>
                 <br>
                 <br>
               {% endif %}
               <ul class="collection">
                 <li class="collection-item">
-                  <i class="material-icons left">confirmation_number</i>{{doc.0.code}}
+                  <i class="material-icons left">confirmation_number</i>{{doc.code}}
                 </li>
               </ul>
               <ul class="collapsible">
-              {% if doc.0.document_type.personal_data %}
+              {% if doc.document_type.personal_data %}
                 <li>
                   <div class="collapsible-header">
                     <i class="material-icons">person</i>Dati personali
@@ -120,79 +121,79 @@
                   <div class="collapsible-body"><span>
                     <div class="row">
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.0.user.first_name}}" id="first_name" type="text" >
+                        <input disabled value="{{doc.user.first_name}}" id="first_name" type="text" >
                         <label for="first_name">Nome</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.0.user.last_name}}" id="last_name" type="text" >
+                        <input disabled value="{{doc.user.last_name}}" id="last_name" type="text" >
                         <label for="last_name">Cognome</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.born_date}}" id="birth_date" type="text">
+                        <input disabled value="{{doc.personal_data.born_date}}" id="birth_date" type="text">
                         <label for="birth_date">Data di nascita</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.4}}" id="branca" type="text">
+                        <input disabled value="{{base_group}}" id="branca" type="text">
                         <label for="branca">Branca</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.parent_name}}" id="parent_name" type="text" >
+                        <input disabled value="{{doc.personal_data.parent_name}}" id="parent_name" type="text" >
                         <label for="parent_name">Nome dei genitori</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.avs_number}}" id="avs_number" type="text">
+                        <input disabled value="{{doc.personal_data.avs_number}}" id="avs_number" type="text">
                         <label for="avs_number">Numero AVS</label>
                       </div>
                       <div class="input-field col l12 s12">
-                        <input value="{{doc.2.via}}" disabled id="via" type="text" >
+                        <input value="{{doc.personal_data.via}}" disabled id="via" type="text" >
                         <label for="via">Via e numero</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.cap}}" name="cap" id="cap" type="text" >
+                        <input disabled value="{{doc.personal_data.cap}}" name="cap" id="cap" type="text" >
                         <label for="cap">CAP</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.country}}" name="country" id="country" type="text" >
+                        <input disabled value="{{doc.personal_data.country}}" name="country" id="country" type="text" >
                         <label for="country">Paese</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.nationality}}" name="nationality" id="nationality" type="text" >
+                        <input disabled value="{{doc.personal_data.nationality}}" name="nationality" id="nationality" type="text" >
                         <label for="nationality">Nazionalit&agrave;</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.phone}}" name="phone" id="phone" type="text" >
+                        <input disabled value="{{doc.personal_data.phone}}" name="phone" id="phone" type="text" >
                         <label for="phone">Cellulare</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.home_phone}}" name="home_phone" id="home_phone" type="text" >
+                        <input disabled value="{{doc.personal_data.home_phone}}" name="home_phone" id="home_phone" type="text" >
                         <label for="home_phone">Telefono di casa</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.email}}" name="email" id="email" type="text" >
+                        <input disabled value="{{doc.personal_data.email}}" name="email" id="email" type="text" >
                         <label for="email">Email</label>
                       </div>
                       <div class="input-field col l8 s12">
-                        <input disabled value="{{doc.2.school}}" name="school" id="school" type="text" >
+                        <input disabled value="{{doc.personal_data.school}}" name="school" id="school" type="text" >
                         <label for="school">Scuola frequentata</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.2.year}}" name="year" id="year" type="text" >
+                        <input disabled value="{{doc.personal_data.year}}" name="year" id="year" type="text" >
                         <label for="year">Classe</label>
                       </div>
                     </div>
                   </span></div>
                 </li>
               {% endif %}
-              {% if doc.0.document_type.medical_data %}
+              {% if doc.document_type.medical_data %}
                 <li>
                   <div class="collapsible-header">
-                    {% if doc.0.medical_data %}
+                    {% if doc.medical_data %}
                       <i class="material-icons">healing</i>Dati medici
                     {% else %}
                       <i class="material-icons">healing</i><del>Dati medici</del>
                     {% endif %}
                   </div>
-                  {% if doc.0.medical_data %}
+                  {% if doc.medical_data %}
                   <div class="collapsible-body"><span>
                     <div class="row">
                       <div class="col s12">
@@ -201,23 +202,23 @@
                     </div>
                     <div class="row">
                       <div class="input-field col l6 s12">
-                        <input disabled name="emer_name" value="{{doc.3.emer_name}}" id="emer_name" type="text" >
+                        <input disabled name="emer_name" value="{{doc.medical_data.emer_name}}" id="emer_name" type="text" >
                         <label for="emer_name">Nome e cognome</label>
                       </div>
                       <div class="input-field col l3 s12">
-                        <input disabled name="emer_relative" value="{{doc.3.emer_relative}}" id="emer_relative" type="text" >
+                        <input disabled name="emer_relative" value="{{doc.medical_data.emer_relative}}" id="emer_relative" type="text" >
                         <label for="emer_releative">Parentela</label>
                       </div>
                       <div class="input-field col l3 s12">
-                        <input disabled name="cell_phone" value="{{doc.3.cell_phone}}" id="cellphone" type="text" >
+                        <input disabled name="cell_phone" value="{{doc.medical_data.cell_phone}}" id="cellphone" type="text" >
                         <label for="cell_phone">Cellulare</label>
                       </div>
                       <div class="input-field col l9 s12">
-                        <input disabled value="{{doc.3.address}}" name="address" id="address" type="text" >
+                        <input disabled value="{{doc.medical_data.address}}" name="address" id="address" type="text" >
                         <label for="address">Indirizzo completo</label>
                       </div>
                       <div class="input-field col l3 s12">
-                        <input disabled value="{{doc.3.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+                        <input disabled value="{{doc.medical_data.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
                         <label for="emer_phone">Telefono di casa</label>
                       </div>
                     </div>
@@ -228,15 +229,15 @@
                     </div>
                     <div class="row">
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.3.health_care}}" name="health_care" id="health_care" type="text" >
+                        <input disabled value="{{doc.medical_data.health_care}}" name="health_care" id="health_care" type="text" >
                         <label for="health_care">Cassa Malati</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.3.injuries}}" name="injuries" id="injuries" type="text" >
+                        <input disabled value="{{doc.medical_data.injuries}}" name="injuries" id="injuries" type="text" >
                         <label for="injuries">Infortuni</label>
                       </div>
                       <div class="input-field col l4 s12">
-                        <input disabled value="{{doc.3.rc}}" name="rc" id="rc" type="text" >
+                        <input disabled value="{{doc.medical_data.rc}}" name="rc" id="rc" type="text" >
                         <label for="rc">Responsabilit&agrave; civile</label>
                       </div>
                     </div>
@@ -245,7 +246,7 @@
                         &Egrave; sostenitore REGA&nbsp;&nbsp;
                         <label>
                           No
-                          <input disabled name="rega" type="checkbox" {% if doc.3.rega %}checked="checked"{%endif%}>
+                          <input disabled name="rega" type="checkbox" {% if doc.medical_data.rega %}checked="checked"{%endif%}>
                           <span class="lever"></span>
                           Si
                         </label>
@@ -256,15 +257,15 @@
                         <h6>Medico di famiglia</h6>
                       </div>
                       <div class="input-field col l6 s12">
-                        <input disabled value="{{doc.3.medic_name}}" name="medic_name" id="medic_name" type="text" >
+                        <input disabled value="{{doc.medical_data.medic_name}}" name="medic_name" id="medic_name" type="text" >
                         <label for="medic_name">Nome e cognome</label>
                       </div>
                       <div class="input-field col l6 s12">
-                        <input disabled value="{{doc.3.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+                        <input disabled value="{{doc.medical_data.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
                         <label for="medic_phone">Telefono studio</label>
                       </div>
                       <div class="input-field col l12 s12">
-                        <input disabled value="{{doc.3.medic_address}}" name="medic_address" id="medic_address" type="text" >
+                        <input disabled value="{{doc.medical_data.medic_address}}" name="medic_address" id="medic_address" type="text" >
                         <label for="medic_address">Indirizzo completo</label>
                       </div>
                     </div>
@@ -273,52 +274,52 @@
                         <h6>Scheda medica personale</h6>
                       </div>
                       <div class="input-field col s12">
-                        <input disabled value="{{doc.3.sickness}}" name="sickness" id="sickness" type="text">
+                        <input disabled value="{{doc.medical_data.sickness}}" name="sickness" id="sickness" type="text">
                         <label for="sickness">Principali malattie avute</label>
                       </div>
                       <div class="input-field col l8 s12">
-                        <input disabled value="{{doc.3.vaccine}}" name="vaccine" id="vaccine" type="text">
+                        <input disabled value="{{doc.medical_data.vaccine}}" name="vaccine" id="vaccine" type="text">
                         <label for="vaccine">Vacinazioni fatte</label>
                       </div>
                       <div class="input-field col l4 s12">
                         <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-                        <input disabled value="{{doc.3.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
+                        <input disabled value="{{doc.medical_data.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
                       </div>
                       <div class="input-field col s12">
-                        <input disabled value="{{doc.3.allergy}}" name="allergy" id="allergy" type="text">
+                        <input disabled value="{{doc.medical_data.allergy}}" name="allergy" id="allergy" type="text">
                         <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
                       </div>
                       <div class="switch col s12">
                         Deve assumere regolarmente medicamenti&nbsp;&nbsp;
                         <label>
                           No
-                          <input disabled name="drugs_bool" type="checkbox" {% if doc.3.drugs_bool %}checked="checked"{%endif%}>
+                          <input disabled name="drugs_bool" type="checkbox" {% if doc.medical_data.drugs_bool %}checked="checked"{%endif%}>
                           <span class="lever"></span>
                           Si
                         </label>
                       </div>
                       <div class="input-field col s12">
-                        <input disabled value="{{doc.3.drugs}}" name="drugs" id="drugs" type="text">
+                        <input disabled value="{{doc.medical_data.drugs}}" name="drugs" id="drugs" type="text">
                         <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
                       </div>
                       <div class="switch col s12">
                         Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
                         <label>
                           No
-                          <input disabled name="misc_bool" type="checkbox" {% if doc.3.misc_bool %}checked="checked"{%endif%}>
+                          <input disabled name="misc_bool" type="checkbox" {% if doc.medical_data.misc_bool %}checked="checked"{%endif%}>
                           <span class="lever"></span>
                           Si
                         </label>
                       </div>
                       <div class="input-field col s12">
-                        <input disabled value="{{doc.3.misc}}" name="misc" id="misc" type="text">
+                        <input disabled value="{{doc.medical_data.misc}}" name="misc" id="misc" type="text">
                         <label for="misc">Se s&igrave; quali</label>
                       </div>
                   </span></div>
                   {% endif %}
                 </li>
               {% endif %}
-              {% if doc.0.document_type.custom_data %}
+              {% if doc.document_type.custom_data %}
                 <li>
                   <div class="collapsible-header">
                     <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
@@ -326,7 +327,7 @@
                   <div class="collapsible-body"><span>
                     <table class="striped">
                     <tbody>
-                    {% for key in doc.1 %}
+                    {% for key in doc|doc_key %}
                       <tr>
                       <td>{{key.key}}</td>
                       <td>{{key.value}}</td>
@@ -337,22 +338,26 @@
                   </span></div>
                 </li>
               {% endif %}
-              {% if doc.0.document_type.medical_data %}
                 <li>
                   <div class="collapsible-header">
-                    {% if doc.0.medical_data %}
-                      <i class="material-icons">attach_file</i>Allegati
-                    {% else %}
-                      <i class="material-icons">attach_file</i><del>Allegati</del>
-                    {% endif %}
+                    <i class="material-icons">attach_file</i>Allegati
                   </div>
-                  {% if doc.0.medical_data %}
                   <div class="collapsible-body"><span>
                     <div class="row">
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            {% if doc.5 %} <img class="lazyload" data-src="{{ doc.5 }}"> {% endif %}
+                            {% if doc.signed_doc %} <img class="lazyload" data-src="{{ sign_doc_file.0 }}{{ doc.id }}{{ sign_doc_file.1 }}"> {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% if doc.medical_data %}
+                    <div class="row">
+                      <div class="col s12">
+                        <div class="card">
+                          <div class="card-image">
+                            {% if doc.medical_data.health_care_certificate %}<img class="lazyload" data-src="{{ health_file.0 }}{{ doc.id }}{{ health_file.1}}">{% endif %}
                           </div>
                         </div>
                       </div>
@@ -361,24 +366,14 @@
                       <div class="col s12">
                         <div class="card">
                           <div class="card-image">
-                            {% if doc.6 %}<img class="lazyload" data-src="{{ doc.6 }}">{% endif %}
+                            {% if doc.medical_data.vac_certificate %}<img class="lazyload" data-src="{{ vac_file.0 }}{{ doc.id }}{{ vac_file.1}}">{% endif %}
                           </div>
                         </div>
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col s12">
-                        <div class="card">
-                          <div class="card-image">
-                            {% if doc.7 %}<img class="lazyload" data-src="{{ doc.7 }}">{% endif %}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    {% endif %}
                   </span></div>
-                  {% endif %}
                 </li>
-              {% endif %}
               </ul>
             </span></div>
             </li>
