@@ -48,54 +48,58 @@ def isCapi_enabled(user):
 @user_passes_test(isStaff)
 def index(request):
     context = {}
-    # primary group name + object
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
-
-    # check for settings
-    doc_view_check = ""
-    settings = GroupSettings.objects.filter(group__name=group)
-
-    # create settings if non existing
-    if len(settings) == 0:
-        settings = GroupSettings(group=group, view_documents=False)
-    else:
-        settings = settings[0]
-
-    if settings.view_documents:
-        doc_view_check = 'checked="checked"'
-
-    # check if changing settings
-    if request.method == "POST" and request.user.is_staff:
-        if "doc_view" in request.POST:
-            settings.view_documents = True
-            settings.save()
-        else:
-            settings.view_documents = False
-            settings.save()
-
-        return HttpResponseRedirect("/server")
-
-    # users from younger to older
-    users = User.objects.filter(groups__name=parent_group).order_by("-id")
-    users_out = []
-
-    # only send part of the user data, only if user is approved
-    for user in users:
-        if not user.has_perm("client.approved") and not user.is_staff:
-            continue
-
-        users_out.append([user.username, user.first_name,
-                          user.last_name])
 
     # if user is staff of not primary show only public types
     if request.user.is_staff:
+        groups = request.user.groups.all()
+
         public_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=group) & Q(enabled=True)).order_by("-id")
+            Q(group_private=False) | Q(group=groups[0]) & Q(enabled=True)).order_by("-id")
     else:
+        groups = request.user.groups.all()[1:]
+
         public_types = DocumentType.objects.filter(
             Q(group_private=False) & Q(enabled=True)).order_by("-id")
+
+    # check for settings
+    group_check = []
+    for i in groups:
+        if i.name == "capi":
+            continue
+
+        doc_view_check = ""
+        settings = GroupSettings.objects.filter(group=i)
+
+        # create settings if non existing
+        if len(settings) == 0:
+            settings = GroupSettings(group=i, view_documents=False)
+        else:
+            settings = settings[0]
+
+        if settings.view_documents:
+            doc_view_check = 'checked="checked"'
+        
+        group_check.append([i.name, doc_view_check])
+
+    # check if changing settings
+    if request.method == "POST" and request.user.is_staff:
+        for i in groups:
+            settings = GroupSettings.objects.filter(group=i)
+
+            # create settings if non existing
+            if len(settings) == 0:
+                settings = GroupSettings(group=i, view_documents=False)
+            else:
+                settings = settings[0]
+
+            if i.name in request.POST:
+                settings.view_documents = True
+                settings.save()
+            else:
+                settings.view_documents = False
+                settings.save()
+
+        return HttpResponseRedirect("/server")
 
     # count documents of that type to show statistics
     docs = []
@@ -108,17 +112,12 @@ def index(request):
             doc_count += "/" + str(doc.max_instances)
         docs.append([doc, doc_count])
 
-    # don't list users if user is staff of not primary
-    if request.user.is_staff:
-        context = {
-            'docs': docs,
-            'users': users_out,
-        }
-    else:
-        context = {
-            'docs': docs,
-        }
-    context["doc_view_check"] = doc_view_check
+    context = {
+        'docs': docs,
+        'groups': group_check,
+        'doc_view_check': doc_view_check,
+    }
+
     return render(request, 'server/index.html', context)
 
 
@@ -318,6 +317,7 @@ def ulist(request):
 
         out.append([user, usercode, parent_group,
                     documents, vac_file, health_file, "capi" in user.groups.values_list('name',flat = True)])
+
     context = {'users': out}
     return render(request, 'server/user_list.html', context)
 
@@ -1134,24 +1134,27 @@ def doclist_readonly(request):
     context = {}
 
     # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
+    groups = request.user.groups.all()
+    if request.user.is_staff:
+        groups_view = []
+    elif request.user.has_perm("client.staff"):
+        groups_view = list(map(lambda x: x.group, GroupSettings.objects.filter(group=groups[0]).filter(view_documents=True)))
+    else:
+        groups_view = list(map(lambda x: x.group, GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)))
 
-    # send alert
-    users = User.objects.filter(groups__name=parent_group).filter(is_staff=True)
-    user_emails = []
+    perm = Permission.objects.get(codename='staff')
 
-    for i in users:
-        user_emails.append(i.email)
+    for i in groups_view:
+        # get all users that are part of the group and are administrators but not request.user
+        emails = User.objects.filter(groups__name=i).filter(Q(is_staff=True) | Q(user_permissions=perm)).filter(~Q(id=request.user.id)).values_list("email", flat=True)
 
-    send_mail(
-        'Attenzione! ' + request.user.username + ' ha visionato i documenti della branca',
-        "Questo messaggio è stato inviato automaticamente dal sistema di iscrizioni digitali. Ti è arrivata questa mail perchè hai abilitato la possibilità ai tuoi aggiunti di visionare i documenti e un tuo aggiunto ha visionato dei documenti. L'utente con username " + request.user.username + " e con nome registrato " + request.user.first_name + " " + request.user.last_name + " ha visionato dei documenti.",
-        settings.DEFAULT_FROM_EMAIL,
-        user_emails,
-        fail_silently=False,
-    )
+        send_mail(
+            'Attenzione! ' + request.user.username + ' ha visionato i documenti del gruppo "' + i.name + '"',
+            "Questo messaggio è stato inviato automaticamente dal sistema di iscrizioni digitali. Ti è arrivata questa mail perchè hai abilitato la possibilità a persone del gruppo capi di visionare i documenti. L'utente con username " + request.user.username + " e con nome registrato " + request.user.first_name + " " + request.user.last_name + " ha visionato dei documenti.",
+            settings.DEFAULT_FROM_EMAIL,
+            emails,
+            fail_silently=False,
+        )
 
 
     # create typezone
@@ -1191,7 +1194,7 @@ def doclist_readonly(request):
         if request.POST["action"][0] == 'k':
             document = Document.objects.get(id=request.POST["action"][1:])
             # check if user has permission to view doc
-            if document.group.name == parent_group:
+            if document.group in groups_view:
                 vac_file = ""
                 health_file = ""
                 sign_doc_file = ""
@@ -1230,7 +1233,7 @@ def doclist_readonly(request):
         for i in request.POST.keys():
             if i.isdigit():
                 docc = Document.objects.get(id=i)
-                if docc.group.name == parent_group:
+                if docc.group in groups_view:
                     selected.append(docc)
 
         # get filter values
@@ -1260,7 +1263,7 @@ def doclist_readonly(request):
             groups = []
 
     # filter documents based on group of staff
-    documents = Document.objects.filter(group__name=parent_group)
+    documents = Document.objects.filter(group__in=groups_view)
 
     # filter documents
     if not hidden:
@@ -1311,6 +1314,7 @@ def doclist_readonly(request):
             documents = documents.filter(q_obj)
 
     out = []
+    users = []
     for i in documents:
         # filter for confirmed with attachment documents and approved
         if signdoc:
@@ -1338,18 +1342,18 @@ def doclist_readonly(request):
 
         doc_group = i.user.groups.values_list('name', flat=True)[0]
 
+        users.append(i.user)
         out.append([i, KeyVal.objects.filter(container=i), personal,
                     medical, doc_group, vac_file, health_file, sign_doc_file])
 
     # get types and users for chips autocompletation
     auto_types = DocumentType.objects.filter(
-        Q(group_private=False) | Q(group=group))
-    users = User.objects.filter(groups__name=parent_group)
+        Q(group_private=False) | Q(group__in=groups_view))
 
     context = {
         "types": auto_types,
         "users": users,
-        "groups": [parent_group],
+        "groups": groups_view,
         "docs": out,
         "hidden_check": hidden_check,
         "wait_check": wait_check,

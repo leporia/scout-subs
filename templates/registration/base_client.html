@@ -86,7 +86,7 @@
       {% endblock %}
       <ul class="right">
         {% if user.is_authenticated %}
-          {% if group_view and not user.is_staff %}
+          {% if group_view %}
             <li class="hide-on-small-only"><a class="modal-trigger" href="#modal_capi">Lista documenti</a></li>
           {% endif %}
           {% if user.is_staff or perms.client.staff %}
@@ -97,7 +97,7 @@
           {% if user.is_staff or perms.client.staff %}
             <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Pannello Admin" class="hide-on-med-and-up"><a href="{% url 'server' %}"><i class="material-icons">build</i></a></li>
           {% endif %}
-          {% if group_view and not user.is_staff %}
+          {% if group_view %}
             <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Lista documenti" class="hide-on-med-and-up"><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i></a></li>
           {% endif %}
           <li class="tooltipped" data-position="bottom" data-tooltip="Informazioni"><a href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>

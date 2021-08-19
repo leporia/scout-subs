@@ -8,27 +8,41 @@
 
 {% block content %}
 <div class="row">
-  {% if user.is_staff %}
   <div class="col l5 s12">
     <div class="card large">
-      <div class="card-content">
-        <p>
-        <table>
-            <tr>
-                <th>Username</th>
-                <th>Nome</th>
-                <th>Cognome</th>
-            </tr>
-            {% for user in users %}
-                <tr>
-                {% for att in user %}
-                    <td>{{att}}</td>
-                {% endfor %}
-                </tr>
-            {% endfor %}
-        </table> 
-        </p>
+      <div class="card-content" style="overflow: auto">
+        <form id="form" action="{% url 'server'%}" method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col s12">
+              <p>
+                Documenti di questo gruppo saranno visibili a persone nel gruppo capi
+              </p>
+            </div>
+          </div>
+          {% for gr in groups %}
+            <div class="row">
+              <div class="col s12">
+                <div id="select_switch" class="switch col s12">
+                  {{gr.0}}<br class="hide-on-med-and-up">
+                  <label>
+                    No
+                    <input name={{gr.0}} type="checkbox" {{gr.1}}>
+                    <span class="lever"></span>
+                    Si
+                  </label>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          <div class="row">
+            <div class="col s12">
+              <a class="waves-effect waves-light btn {{color}}" onclick="form.submit()"><i class="material-icons left">check</i> Applica</a>
+            </div>
+          </div>
+        </form>
       </div>
+      {% if user.is_staff %}
       <div class="card-action">
         <div class="hide-on-med-and-down">
           <a class="waves-effect waves-light btn {{color}}" href="{% url 'ulist' %}">Utenti</a>
@@ -46,35 +60,12 @@
           <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'request' %}">Richiedi dati</a>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
-  {% if user.is_staff %}
   <div class="col l7 s12">
-  {% else %}
-  <div class="col s12">
-  {% endif %}
     <div class="card large">
       <div class="card-content">
-        {% if user.is_staff %}
-        <form id="form" action="{% url 'server'%}" method="post">
-          {% csrf_token %}
-          <div class="row">
-            <div class="col s12">
-              <div id="select_switch" class="switch col s12">
-                Documenti visibili ad aggiunti<br class="hide-on-med-and-up">
-                <label>
-                  No
-                  <input onclick="execute_confirm()" name="doc_view" type="checkbox" {{doc_view_check}}>
-                  <span class="lever"></span>
-                  Si
-                </label>
-              </div>
-              <a style="display: none" id="send_button" class="waves-effect waves-light btn green" onclick="form.submit()"><i class="material-icons left">check</i> Applica</a>
-            </div>
-          </div>
-        </form>
-        {% endif %}
         <ul class="collection">
           {% for doctype in docs %}
             <li class="collection-item">
@@ -116,18 +107,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block script %}
-function execute_confirm() {
-  var selection = document.getElementById('select_switch')
-  var button = document.getElementById('send_button')
-  selection.style.display = "none"
-  button.style.display = "inline-block"
-  {% if doc_view_check == 'checked="checked"'%}
-    button.innerHTML = "Applica (gli aggiunti <b>NON</b> potranno vedere i documenti)"
-  {% else %}
-    button.innerHTML = "Applica (gli aggiunti <b>POTRANNO</b> vedere i documenti)"
-  {% endif %}
-}
 {% endblock %}

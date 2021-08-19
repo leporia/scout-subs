@@ -1,17 +1,16 @@
-from random import randint
+from django.template.loader import get_template
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
-
 from django.shortcuts import render
 
-from django.template.loader import get_template
 from io import BytesIO
 import pdfkit
 from subprocess import check_output
 from datetime import datetime
 import pytz
+from random import randint
 
 def index(request):
     context = {}
@@ -39,16 +38,18 @@ def index(request):
             context = {"user_code": user_code}
         else:
             # get user group
-            groups = request.user.groups.values_list('name', flat=True)
-            group = groups[0]
+            groups = request.user.groups.all()
 
-            # get group settings
-            settings = GroupSettings.objects.filter(group__name=group)
+            # check if any group has enabled RO documents
+            if request.user.is_staff or len(groups.filter(name="capi")) == 0:
+                # if user is staff then not needed
+                gr = []
+            elif request.user.has_perm("client.staff"):
+                gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True).filter(~Q(group=groups[0]))
+            else:
+                gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
 
-            # check if settings exists and user is in group capi
-            if len(settings) != 0 and "capi" in groups:
-                # set settings value
-                group_view = settings[0].view_documents
+            group_view = len(gr) != 0
 
             # user action
             if request.method == "POST":
