@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block content %}
+{% load app_filter %}
 <form id="form" action="{% url 'ulist' %}" method="post">
 {% csrf_token %}
 <input type="hidden" name="action" id="action">
@@ -25,43 +26,43 @@
   {% for user in users %}
     <li>
       <div class="collapsible-header list">
-        {% if user.0.is_staff %}
+        {% if user.user.is_staff %}
           <i class="material-icons">star</i>
-        {% elif user.6 %}
+        {% elif "capi" in user.user|user_groups %}
           <i class="material-icons">star_border</i>
         {% endif %}
-        {{user.0.first_name}} {{user.0.last_name}}
+        {{user.user.first_name}} {{user.user.last_name}}
       </div>
       <div class="collapsible-body"><span>
-        {% if not user.0.is_staff %}
-        <div id="modal{{user.0.id}}" class="modal">
+        {% if not user.user.is_staff %}
+        <div id="modal{{user.user.id}}" class="modal">
           <div class="modal-content">
             <h4>Attenzione</h4>
             <p>
-              Sei sicuro di volerlere deapprovare l'utente {{user.0.first_name}} {{user.0.last_name}}?<br>
+              Sei sicuro di volerlere deapprovare l'utente {{user.user.first_name}} {{user.user.last_name}}?<br>
               Una volta deapprovato l'utente non potrà più creare documenti e per essere riapprovato dovrà essere usato il codice di approvazione.
             </p>
           </div>
           <div class="modal-footer">
             <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
-            <a onclick="send('d{{user.0.id}}')" class="modal-close waves-effect waves-green btn-flat">Deapprova</a>
+            <a onclick="send('d{{user.user.id}}')" class="modal-close waves-effect waves-green btn-flat">Deapprova</a>
           </div>
         </div>
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
-          <a class="waves-effect waves-light btn {{color}}" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+          <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.user.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <a class="waves-effect waves-light btn {{color}}" onclick="send('c{{user.user.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
         </div>
         <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-          <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.0.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
+          <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.user.id}}"><i class="material-icons left">remove_circle_outline</i>Deapprova utente</a>
           <br>
           <br>
-          <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('c{{user.0.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
+          <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('c{{user.user.id}}')"><i class="material-icons left">star_border</i>Capo/non</a>
         </div>
         <br><br>
         {% endif %}
         <ul class="collection">
           <li class="collection-item">
-            <i class="material-icons left">confirmation_number</i>U{{user.1.code}}
+            <i class="material-icons left">confirmation_number</i>U{{user.code}}
           </li>
         </ul>
         <ul class="collapsible">
@@ -72,63 +73,63 @@
             <div class="collapsible-body"><span>
               <div class="row">
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.0.first_name}}" id="first_name" type="text" >
+                  <input disabled value="{{user.user.first_name}}" id="first_name" type="text" >
                   <label for="first_name">Nome</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.0.last_name}}" id="last_name" type="text" >
+                  <input disabled value="{{user.user.last_name}}" id="last_name" type="text" >
                   <label for="last_name">Cognome</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.born_date}}" id="birth_date" type="text">
+                  <input disabled value="{{user.born_date}}" id="birth_date" type="text">
                   <label for="birth_date">Data di nascita</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.2}}" id="branca" type="text">
+                  <input disabled value="{{ user.user|user_primary_group }}" id="branca" type="text">
                   <label for="branca">Branca</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.parent_name}}" id="parent_name" type="text" >
+                  <input disabled value="{{user.parent_name}}" id="parent_name" type="text" >
                   <label for="parent_name">Nome dei genitori</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.avs_number}}" id="avs_number" type="text">
+                  <input disabled value="{{user.avs_number}}" id="avs_number" type="text">
                   <label for="avs_number">Numero AVS</label>
                 </div>
                 <div class="input-field col l12 s12">
-                  <input value="{{user.1.via}}" disabled id="via" type="text" >
+                  <input value="{{user.via}}" disabled id="via" type="text" >
                   <label for="via">Via e numero</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.cap}}" name="cap" id="cap" type="text" >
+                  <input disabled value="{{user.cap}}" name="cap" id="cap" type="text" >
                   <label for="cap">CAP</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.country}}" name="country" id="country" type="text" >
+                  <input disabled value="{{user.country}}" name="country" id="country" type="text" >
                   <label for="country">Paese</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.nationality}}" name="nationality" id="nationality" type="text" >
+                  <input disabled value="{{user.nationality}}" name="nationality" id="nationality" type="text" >
                   <label for="nationality">Nazionalit&agrave;</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.phone}}" name="phone" id="phone" type="text" >
+                  <input disabled value="{{user.phone}}" name="phone" id="phone" type="text" >
                   <label for="phone">Cellulare</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.home_phone}}" name="home_phone" id="home_phone" type="text" >
+                  <input disabled value="{{user.home_phone}}" name="home_phone" id="home_phone" type="text" >
                   <label for="home_phone">Telefono di casa</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.0.email}}" name="email" id="email" type="text" >
+                  <input disabled value="{{user.user.email}}" name="email" id="email" type="text" >
                   <label for="email">Email</label>
                 </div>
                 <div class="input-field col l8 s12">
-                  <input disabled value="{{user.1.school}}" name="school" id="school" type="text" >
+                  <input disabled value="{{user.school}}" name="school" id="school" type="text" >
                   <label for="school">Scuola frequentata</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.year}}" name="year" id="year" type="text" >
+                  <input disabled value="{{user.year}}" name="year" id="year" type="text" >
                   <label for="year">Classe</label>
                 </div>
               </div>
@@ -146,23 +147,23 @@
               </div>
               <div class="row">
                 <div class="input-field col l6 s12">
-                  <input disabled name="emer_name" value="{{user.1.medic.emer_name}}" id="emer_name" type="text" >
+                  <input disabled name="emer_name" value="{{user.medic.emer_name}}" id="emer_name" type="text" >
                   <label for="emer_name">Nome e cognome</label>
                 </div>
                 <div class="input-field col l3 s12">
-                  <input disabled name="emer_relative" value="{{user.1.medic.emer_relative}}" id="emer_relative" type="text" >
+                  <input disabled name="emer_relative" value="{{user.medic.emer_relative}}" id="emer_relative" type="text" >
                   <label for="emer_releative">Parentela</label>
                 </div>
                 <div class="input-field col l3 s12">
-                  <input disabled name="cell_phone" value="{{user.1.medic.cell_phone}}" id="cellphone" type="text" >
+                  <input disabled name="cell_phone" value="{{user.medic.cell_phone}}" id="cellphone" type="text" >
                   <label for="cell_phone">Cellulare</label>
                 </div>
                 <div class="input-field col l9 s12">
-                  <input disabled value="{{user.1.medic.address}}" name="address" id="address" type="text" >
+                  <input disabled value="{{user.medic.address}}" name="address" id="address" type="text" >
                   <label for="address">Indirizzo completo</label>
                 </div>
                 <div class="input-field col l3 s12">
-                  <input disabled value="{{user.1.medic.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+                  <input disabled value="{{user.medic.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
                   <label for="emer_phone">Telefono di casa</label>
                 </div>
               </div>
@@ -173,15 +174,15 @@
               </div>
               <div class="row">
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.medic.health_care}}" name="health_care" id="health_care" type="text" >
+                  <input disabled value="{{user.medic.health_care}}" name="health_care" id="health_care" type="text" >
                   <label for="health_care">Cassa Malati</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.medic.injuries}}" name="injuries" id="injuries" type="text" >
+                  <input disabled value="{{user.medic.injuries}}" name="injuries" id="injuries" type="text" >
                   <label for="injuries">Infortuni</label>
                 </div>
                 <div class="input-field col l4 s12">
-                  <input disabled value="{{user.1.medic.rc}}" name="rc" id="rc" type="text" >
+                  <input disabled value="{{user.medic.rc}}" name="rc" id="rc" type="text" >
                   <label for="rc">Responsabilit&agrave; civile</label>
                 </div>
               </div>
@@ -190,7 +191,7 @@
                   &Egrave; sostenitore REGA&nbsp;&nbsp;
                   <label>
                     No
-                    <input disabled name="rega" type="checkbox" {% if user.1.medic.rega %}checked="checked"{%endif%}>
+                    <input disabled name="rega" type="checkbox" {% if user.medic.rega %}checked="checked"{%endif%}>
                     <span class="lever"></span>
                     Si
                   </label>
@@ -201,15 +202,15 @@
                   <h6>Medico di famiglia</h6>
                 </div>
                 <div class="input-field col l6 s12">
-                  <input disabled value="{{user.1.medic.medic_name}}" name="medic_name" id="medic_name" type="text" >
+                  <input disabled value="{{user.medic.medic_name}}" name="medic_name" id="medic_name" type="text" >
                   <label for="medic_name">Nome e cognome</label>
                 </div>
                 <div class="input-field col l6 s12">
-                  <input disabled value="{{user.1.medic.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+                  <input disabled value="{{user.medic.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
                   <label for="medic_phone">Telefono studio</label>
                 </div>
                 <div class="input-field col l12 s12">
-                  <input disabled value="{{user.1.medic.medic_address}}" name="medic_address" id="medic_address" type="text" >
+                  <input disabled value="{{user.medic.medic_address}}" name="medic_address" id="medic_address" type="text" >
                   <label for="medic_address">Indirizzo completo</label>
                 </div>
               </div>
@@ -218,45 +219,45 @@
                   <h6>Scheda medica personale</h6>
                 </div>
                 <div class="input-field col s12">
-                  <input disabled value="{{user.1.medic.sickness}}" name="sickness" id="sickness" type="text">
+                  <input disabled value="{{user.medic.sickness}}" name="sickness" id="sickness" type="text">
                   <label for="sickness">Principali malattie avute</label>
                 </div>
                 <div class="input-field col l8 s12">
-                  <input disabled value="{{user.1.medic.vaccine}}" name="vaccine" id="vaccine" type="text">
+                  <input disabled value="{{user.medic.vaccine}}" name="vaccine" id="vaccine" type="text">
                   <label for="vaccine">Vacinazioni fatte</label>
                 </div>
                 <div class="input-field col l4 s12">
                   <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-                  <input disabled value="{{user.1.medic.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
+                  <input disabled value="{{user.medic.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
                 </div>
                 <div class="input-field col s12">
-                  <input disabled value="{{user.1.medic.allergy}}" name="allergy" id="allergy" type="text">
+                  <input disabled value="{{user.medic.allergy}}" name="allergy" id="allergy" type="text">
                   <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
                 </div>
                 <div class="switch col s12">
                   Deve assumere regolarmente medicamenti&nbsp;&nbsp;
                   <label>
                     No
-                    <input disabled name="drugs_bool" type="checkbox" {% if user.1.medic.drugs_bool %}checked="checked"{%endif%}>
+                    <input disabled name="drugs_bool" type="checkbox" {% if user.medic.drugs_bool %}checked="checked"{%endif%}>
                     <span class="lever"></span>
                     Si
                   </label>
                 </div>
                 <div class="input-field col s12">
-                  <input disabled value="{{user.1.medic.drugs}}" name="drugs" id="drugs" type="text">
+                  <input disabled value="{{user.medic.drugs}}" name="drugs" id="drugs" type="text">
                   <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
                 </div>
                 <div class="switch col s12">
                   Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
                   <label>
                     No
-                    <input disabled name="misc_bool" type="checkbox" {% if user.1.medic.misc_bool %}checked="checked"{%endif%}>
+                    <input disabled name="misc_bool" type="checkbox" {% if user.medic.misc_bool %}checked="checked"{%endif%}>
                     <span class="lever"></span>
                     Si
                   </label>
                 </div>
                 <div class="input-field col s12">
-                  <input disabled value="{{user.1.medic.misc}}" name="misc" id="misc" type="text">
+                  <input disabled value="{{user.medic.misc}}" name="misc" id="misc" type="text">
                   <label for="misc">Se s&igrave; quali</label>
                 </div>
             </span></div>
@@ -270,7 +271,7 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      {% if user.4 %}<img class="lazyload" data-src="{{ user.4 }}">{% endif %}
+                      {% if user.medic.health_care_certificate %}<img class="lazyload" data-src="{{ health_file.0 }}{{ user.id }}{{ health_file.1}}">{% endif %}
                     </div>
                   </div>
                 </div>
@@ -279,7 +280,7 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      {% if user.5 %}<img class="lazyload" data-src="{{ user.5 }}">{% endif %}
+                      {% if user.medic.vac_certificate %}<img class="lazyload" data-src="{{ vac_file.0 }}{{ user.id }}{{ vac_file.1 }}">{% endif %}
                     </div>
                   </div>
                 </div>
@@ -292,7 +293,7 @@
             </div>
             <div class="collapsible-body"><span>
               <ul class="collapsible">
-                {% for doc in user.3 %}
+                {% for doc in request.user|user_docs:user.user %}
                 <li>
                   <div class="collapsible-header"><a onclick="send('f{{doc.id}}')">{{doc.document_type.name}}</a></div>
                 </li>

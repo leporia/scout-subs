@@ -270,9 +270,7 @@ def ulist(request):
             user = User.objects.get(id=request.POST["action"][1:])
             # check if user has permission to deapprove user
             if user.groups.all()[0] == group:
-                content_type = ContentType.objects.get_for_model(Document)
-                permission = Permission.objects.get(
-                    content_type=content_type, codename="approved")
+                permission = Permission.objects.get(codename="approved")
                 user.user_permissions.remove(permission)
                 return HttpResponseRedirect("ulist")
         # make user "capo"
@@ -290,35 +288,18 @@ def ulist(request):
             return HttpResponseRedirect("ulist")
 
     # list users with their documents
-    users = list(User.objects.filter(
-        groups__name=parent_group).filter(groups__name="capi").order_by("first_name"))
-    users += list(User.objects.filter(
-        groups__name=parent_group).exclude(groups__name="capi").order_by("first_name"))
-    out = []
-    for user in users:
-        # list only approved users
-        if not user.has_perm("client.approved") and not user.is_staff:
-            continue
+    permission = Permission.objects.get(codename="approved")
 
-        usercode = UserCode.objects.filter(user=user)[0]
-        # get all user documents
-        documents = Document.objects.filter(Q(user=user) & ~Q(
-            status='archive') & Q(group__name=parent_group))
+    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).select_related("user", "medic").order_by("user__last_name")
 
-        # generate link for images
-        vac_file = ""
-        health_file = ""
-        if usercode.medic:
-            if usercode.medic.vac_certificate.name:
-                vac_file = "/server/media/" + str(usercode.id) + "/vac_certificate/usercode"
+    vac_file = ["/server/media/", "/vac_certificate/usercode"]
+    health_file = ["/server/media/", "/health_care_certificate/usercode"]
 
-            if usercode.medic.health_care_certificate.name:
-                health_file = "/server/media/" + str(usercode.id) + "/health_care_certificate/usercode"
-
-        out.append([user, usercode, parent_group,
-                    documents, vac_file, health_file, "capi" in user.groups.values_list('name',flat = True)])
-
-    context = {'users': out}
+    context = {
+        'users': usercodes,
+        'vac_file': vac_file,
+        'health_file': health_file,
+    }
     return render(request, 'server/user_list.html', context)
 
 
@@ -385,14 +366,14 @@ def doctype(request):
             return docedit_wrapper(request, context)
 
         # check if request to download
-        elif request.POST["action"][0] == 'd':
+        elif request.POST["action"][0] == 'p':
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
 
             # check if user has permission on the document
             if document_type.group.name not in parent_groups:
                 return
 
-            docs = Document.objects.filter(document_type=document_type)
+            docs = Document.objects.filter(document_type=document_type).select_related("personal_data", "medical_data", "user")
             
             # get time for filename
             current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
@@ -519,25 +500,22 @@ def doctype(request):
                 docc = DocumentType.objects.get(id=i)
                 # check if user has permission
                 if docc.group.name in parent_groups:
-                    selected.append(docc)
+                    # execute action
+                    if request.POST["action"] == 'delete':
+                        try:
+                            docc.delete()
+                        except ProtectedError:
+                            error = True
+                            error_text = "Non puoi eliminare un tipo a cui é collegato uno o piú documenti"
+                    elif request.POST["action"] == 'hide':
+                        docc.enabled = False
+                        docc.save()
+                    elif request.POST["action"] == 'show':
+                        docc.enabled = True
+                        docc.save()
                 else:
                     error = True
                     error_text = "Non puoi modificare un documento non del tuo gruppo"
-
-        # execute action on selected types
-        for i in selected:
-            if request.POST["action"] == 'delete':
-                try:
-                    i.delete()
-                except ProtectedError:
-                    error = True
-                    error_text = "Non puoi eliminare un tipo a cui é collegato uno o piú documenti"
-            elif request.POST["action"] == 'hide':
-                i.enabled = False
-                i.save()
-            elif request.POST["action"] == 'show':
-                i.enabled = True
-                i.save()
 
         # check which filters are applied
         public = "filter_public" in request.POST
@@ -561,9 +539,7 @@ def doctype(request):
             group_bool = True
 
     # get documents from the list
-    q_obj = Q()
-    for i in parent_groups:
-        q_obj |= Q(group__name=i)
+    q_obj = Q(group__name__in=parent_groups)
 
     public_types = DocumentType.objects.filter(q_obj)
 
@@ -945,31 +921,30 @@ def doclist(request):
                 if docc.group.name in parent_groups:
                     selected.append(docc)
 
-        # execute action on selected documents
-        for i in selected:
-            if request.POST["action"] == 'delete' and settings.DEBUG:
-                i.delete()
-            elif request.POST["action"] == 'approve' and settings.DEBUG:
-                i.status = 'ok'
-                i.save()
-            elif request.POST["action"] == 'archive':
-                if i.status == 'ok':
-                    i.status = 'archive'
-                    if i.medical_data:
-                        i.medical_data.delete()
-                        i.medical_data.save()
-                        i.medical_data = None
-                    i.save()
-                else:
-                    error = True
-                    error_text = "Non puoi archiviare un documento non approvato"
-            elif request.POST["action"] == 'unarchive':
-                if i.status == 'archive':
-                    i.status = 'ok'
-                    i.save()
-                else:
-                    error = True
-                    error_text = "Non puoi dearchiviare un documento non archiviato"
+                    # execute action on selected documents
+                    if request.POST["action"] == 'delete' and settings.DEBUG:
+                        docc.delete()
+                    elif request.POST["action"] == 'approve' and settings.DEBUG:
+                        docc.status = 'ok'
+                        docc.save()
+                    elif request.POST["action"] == 'archive':
+                        if docc.status == 'ok':
+                            docc.status = 'archive'
+                            if docc.medical_data:
+                                docc.medical_data.delete()
+                                docc.medical_data.save()
+                                docc.medical_data = None
+                            docc.save()
+                        else:
+                            error = True
+                            error_text = "Non puoi archiviare un documento non approvato"
+                    elif request.POST["action"] == 'unarchive':
+                        if docc.status == 'archive':
+                            docc.status = 'ok'
+                            docc.save()
+                        else:
+                            error = True
+                            error_text = "Non puoi dearchiviare un documento non archiviato"
 
         # get filter values
         hidden = "filter_hidden" in request.POST
@@ -998,9 +973,7 @@ def doclist(request):
             groups = []
 
     # filter documents based on group of staff
-    q_obj = Q()
-    for i in parent_groups:
-        q_obj |= Q(group__name=i)
+    q_obj = Q(group__name__in=parent_groups)
 
     documents = Document.objects.filter(q_obj)
 
@@ -1026,34 +999,26 @@ def doclist(request):
     # filter types, owner, groups using chips
     if len(types) > 0:
         if types[0] != "":
-            q_obj = Q()
-            for t in types:
-                q_obj |= Q(document_type__name=t)
-                chips_types.append(t)
-
+            q_obj = Q(document_type__name__in=types)
+            chips_types += types
             documents = documents.filter(q_obj)
 
     if len(owner) > 0:
         if owner[0] != "":
-            q_obj = Q()
-            for u in owner:
-                user = u.split("(")[0][:-1]
-                q_obj |= Q(user__username=user)
-                chips_owner.append(u)
-
+            q_obj = Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
+            chips_owner += owner
             documents = documents.filter(q_obj)
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj = Q()
-            for g in groups:
-                q_obj |= Q(group__name=g)
-                chips_groups.append(g)
-
+            q_obj = Q(group__name__in=groups)
+            chips_groups += groups
             documents = documents.filter(q_obj)
 
     out = []
     users = []
+
+    # TODO convert this in a query
     for i in documents:
         # filter for confirmed with attachment documents and approved
         if signdoc:
@@ -1287,34 +1252,25 @@ def doclist_readonly(request):
     # filter types, owner, groups using chips
     if len(types) > 0:
         if types[0] != "":
-            q_obj = Q()
-            for t in types:
-                q_obj |= Q(document_type__name=t)
-                chips_types.append(t)
-
+            q_obj = Q(document_type__name__in=types)
+            chips_types += types
             documents = documents.filter(q_obj)
 
     if len(owner) > 0:
         if owner[0] != "":
-            q_obj = Q()
-            for u in owner:
-                user = u.split("(")[0][:-1]
-                q_obj |= Q(user__username=user)
-                chips_owner.append(u)
-
+            q_obj = Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
+            chips_owner += owner
             documents = documents.filter(q_obj)
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj = Q()
-            for g in groups:
-                q_obj |= Q(group__name=g)
-                chips_groups.append(g)
-
+            q_obj = Q(group__name__in=groups)
+            chips_groups += groups
             documents = documents.filter(q_obj)
 
     out = []
     users = []
+    # TODO user query instead of for
     for i in documents:
         # filter for confirmed with attachment documents and approved
         if signdoc:
@@ -1584,19 +1540,15 @@ def data_request(request):
     parent_group = request.user.groups.values_list('name', flat=True)[0]
 
     if request.method == "POST":
-        if request.POST["request"] == "email_all":
-            users = User.objects.filter(groups__name=parent_group)
-            data = ""
-            for user in users:
-                data += user.email + ", "
-            data = data[:-2]
+        if "request" not in request.POST.keys():
+            context["error"] = "Selezionare una richesta"
+        elif request.POST["request"] == "email_all":
+            users_email = User.objects.filter(groups__name=parent_group).values_list("email", flat=True)
+            data = ", ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "email_non_staff":
-            users = User.objects.filter(groups__name=parent_group).exclude(groups__name="capi")
-            data = ""
-            for user in users:
-                data += user.email + ", "
-            data = data[:-2]
+            users_email = User.objects.filter(groups__name=parent_group).exclude(groups__name="capi").values_list("email", flat=True)
+            data = ", ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "data_user":
             users = User.objects.filter(groups__name=parent_group)

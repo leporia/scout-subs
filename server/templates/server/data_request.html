@@ -29,7 +29,7 @@
         </div>
         <div class="card-action">
           <a class="waves-effect waves-light btn {{color}}" href="#" onclick="document.getElementById('form').submit()">Invia</a>
-          <a class="waves-effect waves-light btn {{color}}" onclick="copy()">Copia risultato</a>
+          <a class="waves-effect waves-light btn {{color}}" onclick="copy()" id="copy_btn">Copia risultato</a>
         </div>
       </form>
     </div>
@@ -38,6 +38,12 @@
 {% endblock %}
 
 {% block script %}
+$(document).ready(function(){
+    {% if error %}
+      M.toast({html: '{{ error }}', classes: 'orange'})
+    {% endif %}
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   var elems = document.querySelectorAll('select');
   var options = {};
@@ -45,6 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function copy() {
+  M.toast({html: 'Valore copiato!', classes: 'green'})
+
   var copyText = document.getElementById("data");
   copyText.select();
   copyText.setSelectionRange(0, 99999); /*For mobile devices*/
