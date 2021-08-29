@@ -972,83 +972,51 @@ def doclist(request):
             types = []
             groups = []
 
-    # filter documents based on group of staff
-    q_obj = Q(group__name__in=parent_groups)
-
-    documents = Document.objects.filter(q_obj)
+    # filter documents based on group of staff and date range
+    q_obj = Q(group__name__in=parent_groups) & Q(compilation_date__range=[newer, older])
 
     # filter documents
     if not hidden:
-        documents = documents.filter(~Q(status="archive"))
+        q_obj &= ~Q(status="archive")
         hidden_check = ""
     if not wait:
-        documents = documents.filter(~Q(status="wait"))
+        q_obj &= ~Q(status="wait")
         wait_check = ""
     if not selfsign:
-        documents = documents.filter(~Q(status="autosign"))
+        q_obj &= ~Q(status="autosign")
         selfsign_check = ""
     if not ok:
-        documents = documents.filter(~Q(status="ok"))
+        q_obj &= ~Q(status="ok")
         ok_check = ""
-    if not signdoc:
+    if signdoc:
+        q_obj &= ~Q(signed_doc="")
+    else:
         signdoc_check = ""
-
-    # filter date range
-    documents = documents.filter(compilation_date__range=[newer, older])
 
     # filter types, owner, groups using chips
     if len(types) > 0:
         if types[0] != "":
-            q_obj = Q(document_type__name__in=types)
+            q_obj &= Q(document_type__name__in=types)
             chips_types += types
-            documents = documents.filter(q_obj)
 
     if len(owner) > 0:
         if owner[0] != "":
-            q_obj = Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
+            q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
             chips_owner += owner
-            documents = documents.filter(q_obj)
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj = Q(group__name__in=groups)
+            q_obj &= Q(group__name__in=groups)
             chips_groups += groups
-            documents = documents.filter(q_obj)
 
-    out = []
-    users = []
+    # run query
+    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
 
-    # TODO convert this in a query
-    for i in documents:
-        # filter for confirmed with attachment documents and approved
-        if signdoc:
-            if i.status == "ok" and not i.signed_doc:
-                continue
+    users = documents.values("user__username", "user__first_name", "user__last_name")
 
-        # prepare images in base64
-        personal = None
-        medical = None
-        vac_file = ""
-        health_file = ""
-        sign_doc_file = ""
-        if i.personal_data:
-            personal = i.personal_data
-        if i.medical_data:
-            medical = i.medical_data
-            if medical.vac_certificate.name:
-                vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
-
-            if medical.health_care_certificate.name:
-                health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
-
-        if i.signed_doc:
-            sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
-
-        doc_group = i.user.groups.values_list('name', flat=True)[0]
-
-        out.append([i, KeyVal.objects.filter(container=i), personal,
-                    medical, doc_group, vac_file, health_file, sign_doc_file])
-        users.append(i.user)
+    vac_file = ["/server/media/", "/vac_certificate/doc"]
+    health_file = ["/server/media/", "/health_care_certificate/doc"]
+    sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
     # get types and users for chips autocompletation
     if request.user.is_staff:
@@ -1058,10 +1026,13 @@ def doclist(request):
         auto_types = DocumentType.objects.filter(Q(group_private=False))
 
     context = {
+        "vac_file": vac_file,
+        "health_file": health_file,
+        "sign_doc_file": sign_doc_file,
         "types": auto_types,
         "users": users,
         "groups": parent_groups,
-        "docs": out,
+        "docs": documents,
         "hidden_check": hidden_check,
         "wait_check": wait_check,
         "selfsign_check": selfsign_check,
@@ -1113,13 +1084,14 @@ def doclist_readonly(request):
         # get all users that are part of the group and are administrators but not request.user
         emails = User.objects.filter(groups__name=i).filter(Q(is_staff=True) | Q(user_permissions=perm)).filter(~Q(id=request.user.id)).values_list("email", flat=True)
 
-        send_mail(
-            'Attenzione! ' + request.user.username + ' ha visionato i documenti del gruppo "' + i.name + '"',
-            "Questo messaggio è stato inviato automaticamente dal sistema di iscrizioni digitali. Ti è arrivata questa mail perchè hai abilitato la possibilità a persone del gruppo capi di visionare i documenti. L'utente con username " + request.user.username + " e con nome registrato " + request.user.first_name + " " + request.user.last_name + " ha visionato dei documenti.",
-            settings.DEFAULT_FROM_EMAIL,
-            emails,
-            fail_silently=False,
-        )
+        if not settings.DEBUG:
+            send_mail(
+                'Attenzione! ' + request.user.username + ' ha visionato i documenti del gruppo "' + i.name + '"',
+                "Questo messaggio è stato inviato automaticamente dal sistema di iscrizioni digitali. Ti è arrivata questa mail perchè hai abilitato la possibilità a persone del gruppo capi di visionare i documenti. L'utente con username " + request.user.username + " e con nome registrato " + request.user.first_name + " " + request.user.last_name + " ha visionato dei documenti.",
+                settings.DEFAULT_FROM_EMAIL,
+                emails,
+                fail_silently=False,
+            )
 
 
     # create typezone
@@ -1227,90 +1199,64 @@ def doclist_readonly(request):
             types = []
             groups = []
 
-    # filter documents based on group of staff
-    documents = Document.objects.filter(group__in=groups_view)
+    # filter documents based on group of staff and date range
+    q_obj = Q(group__name__in=groups_view) & Q(compilation_date__range=[newer, older])
 
     # filter documents
     if not hidden:
-        documents = documents.filter(~Q(status="archive"))
+        q_obj &= ~Q(status="archive")
         hidden_check = ""
     if not wait:
-        documents = documents.filter(~Q(status="wait"))
+        q_obj &= ~Q(status="wait")
         wait_check = ""
     if not selfsign:
-        documents = documents.filter(~Q(status="autosign"))
+        q_obj &= ~Q(status="autosign")
         selfsign_check = ""
     if not ok:
-        documents = documents.filter(~Q(status="ok"))
+        q_obj &= ~Q(status="ok")
         ok_check = ""
-    if not signdoc:
+    if signdoc:
+        q_obj &= ~Q(signed_doc="")
+    else:
         signdoc_check = ""
-
-    # filter date range
-    documents = documents.filter(compilation_date__range=[newer, older])
 
     # filter types, owner, groups using chips
     if len(types) > 0:
         if types[0] != "":
-            q_obj = Q(document_type__name__in=types)
+            q_obj &= Q(document_type__name__in=types)
             chips_types += types
-            documents = documents.filter(q_obj)
 
     if len(owner) > 0:
         if owner[0] != "":
-            q_obj = Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
+            q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
             chips_owner += owner
-            documents = documents.filter(q_obj)
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj = Q(group__name__in=groups)
+            q_obj &= Q(group__name__in=groups)
             chips_groups += groups
-            documents = documents.filter(q_obj)
 
-    out = []
-    users = []
-    # TODO user query instead of for
-    for i in documents:
-        # filter for confirmed with attachment documents and approved
-        if signdoc:
-            if i.status == "ok" and not i.signed_doc:
-                continue
+    # run query
+    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
 
-        # prepare images in base64
-        personal = None
-        medical = None
-        vac_file = ""
-        health_file = ""
-        sign_doc_file = ""
-        if i.personal_data:
-            personal = i.personal_data
-        if i.medical_data:
-            medical = i.medical_data
-            if medical.vac_certificate.name:
-                vac_file = "/server/media/" + str(i.id) + "/vac_certificate/doc"
+    users = documents.values("user__username", "user__first_name", "user__last_name")
 
-            if medical.health_care_certificate.name:
-                health_file = "/server/media/" + str(i.id) + "/health_care_certificate/doc"
-
-        if i.signed_doc:
-            sign_doc_file = "/server/media/" + str(i.id) + "/signed_doc/doc"
-
-        doc_group = i.user.groups.values_list('name', flat=True)[0]
-
-        users.append(i.user)
-        out.append([i, KeyVal.objects.filter(container=i), personal,
-                    medical, doc_group, vac_file, health_file, sign_doc_file])
+    vac_file = ["/server/media/", "/vac_certificate/doc"]
+    health_file = ["/server/media/", "/health_care_certificate/doc"]
+    sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
     # get types and users for chips autocompletation
     auto_types = DocumentType.objects.filter(
         Q(group_private=False) | Q(group__in=groups_view))
 
     context = {
+        "vac_file": vac_file,
+        "health_file": health_file,
+        "sign_doc_file": sign_doc_file,
         "types": auto_types,
         "users": users,
         "groups": groups_view,
-        "docs": out,
+        "docs": documents,
         "hidden_check": hidden_check,
         "wait_check": wait_check,
         "selfsign_check": selfsign_check,
@@ -1663,22 +1609,23 @@ def media_request(request, id=0, t="", flag=""):
 
     elif flag == "doc":
         doc = Document.objects.get(id=id)
-        doc_group = doc.user.groups.values_list('name', flat=True)[0]
+        doc_group = doc.group.name
+
+        groups = request.user.groups.values_list('name', flat=True)
+        group_view = "capi" in groups and len(GroupSettings.objects.filter(group__name=doc_group).filter(view_documents=True)) != 0
 
         # check if user can view media
         if request.user.is_staff:
             # user is staff
-            groups = request.user.groups.values_list('name', flat=True)
             if doc_group not in groups:
                 return
         elif request.user.has_perm("client.staff"):
             # user is psudo-staff
-            groups = request.user.groups.values_list('name', flat=True)[1:]
-            if doc_group not in groups:
+            if doc_group not in groups[1:] and not group_view:
                 return
         else:
             # is normal user
-            if doc.user != request.user:
+            if doc.user != request.user and not group_view:
                 return
 
         if t == "health_care_certificate":
