@@ -279,7 +279,7 @@ def ulist(request):
     # list users with their documents
     permission = Permission.objects.get(codename="approved")
 
-    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).select_related("user", "medic").order_by("user__last_name")
+    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__name__contains=parent_group).select_related("user", "medic").order_by("user__last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/usercode"]
     health_file = ["/server/media/", "/health_care_certificate/usercode"]
