@@ -53,12 +53,12 @@ def index(request):
     if request.user.is_staff:
         groups = request.user.groups.all()
 
-        public_types = DocumentType.objects.filter(
+        doc_types = DocumentType.objects.filter(
             Q(group_private=False) | Q(group=groups[0]) & Q(enabled=True)).order_by("-id")
     else:
         groups = request.user.groups.all()[1:]
 
-        public_types = DocumentType.objects.filter(
+        doc_types = DocumentType.objects.filter(
             Q(group_private=False) & Q(enabled=True)).order_by("-id")
 
     # check for settings
@@ -101,19 +101,8 @@ def index(request):
 
         return HttpResponseRedirect("/server")
 
-    # count documents of that type to show statistics
-    docs = []
-    for doc in public_types:
-        doc_count = str(len(Document.objects.filter(document_type=doc)))
-        ref_docs_archived = len(Document.objects.filter(document_type=doc, status="archive"))
-        if ref_docs_archived > 0:
-            doc_count += "-" + str(ref_docs_archived)
-        if doc.max_instances != 0:
-            doc_count += "/" + str(doc.max_instances)
-        docs.append([doc, doc_count])
-
     context = {
-        'docs': docs,
+        'docs': doc_types,
         'groups': group_check,
         'doc_view_check': doc_view_check,
     }
@@ -146,13 +135,13 @@ def uapprove(request):
                 data[i] = data[i] + " - Formato errato"
             elif int(data[i][1:]) < 100000 or int(data[i][1:]) > 999999:
                 data[i] = data[i] + " - Formato errato"
-            elif len(UserCode.objects.filter(code=data[i][1:])) == 0:
+            elif UserCode.objects.filter(code=data[i][1:]).count() == 0:
                 data[i] = data[i] + " - Invalido"
             else:
                 user = UserCode.objects.filter(code=data[i][1:])[0].user
                 user.user_permissions.add(permission)
                 # if user not in any group add to the same group as staff
-                if len(user.groups.values_list('name', flat=True)) == 0:
+                if user.groups.values_list('name', flat=True).count() == 0:
                     user.groups.add(group)
                     data[i] = data[i] + " - Ok"
                 else:
@@ -195,7 +184,7 @@ def docapprove(request):
                 data[i] = data[i] + " - Formato errato"
             elif int(data[i]) < 100000 or int(data[i]) > 999999:
                 data[i] = data[i] + " - Formato errato"
-            elif len(Document.objects.filter(code=data[i])) == 0:
+            elif Document.objects.filter(code=data[i]).count() == 0:
                 data[i] = data[i] + " - Invalido"
             elif Document.objects.filter(code=data[i])[0].group.name not in groups:
                 # check if user has permission to approve document
@@ -569,21 +558,8 @@ def doctype(request):
         public_types = public_types.filter(custom_group=False)
         group_check = ""
 
-    # get custom keys from types
-    out = []
-    for doc in public_types:
-        custom_keys = Keys.objects.filter(container=doc)
-        doc_count = str(len(Document.objects.filter(document_type=doc)))
-        ref_docs_archived = len(Document.objects.filter(document_type=doc, status="archive"))
-        if ref_docs_archived > 0:
-            doc_count += "-" + str(ref_docs_archived)
-        if doc.max_instances != 0:
-            doc_count += "/" + str(doc.max_instances)
-
-        out.append([doc, custom_keys, doc_count])
-
     context = {
-        'docs': out,
+        'docs': public_types,
         'public_check': public_check,
         'selfsign_check': selfsign_check,
         'hidden_check': hidden_check,
@@ -668,7 +644,7 @@ def doccreate(request):
             return render(request, 'server/doc_create.html', context)
 
         # if already existing name throw error
-        if len(DocumentType.objects.filter(name=name)) > 0:
+        if DocumentType.objects.filter(name=name).count() > 0:
             context["error"] = "true"
             context["error_text"] = "Questo nome esiste già. Prego usarne un altro."
             return render(request, 'server/doc_create.html', context)
@@ -1379,7 +1355,7 @@ def upload_doc(request):
         elif int(data) < 100000 or int(data) > 999999:
             error_text = "Formato codice errato"
             error = True
-        elif len(Document.objects.filter(code=data)) == 0:
+        elif Document.objects.filter(code=data).count() == 0:
             error_text = "Codice invalido"
             error = True
         elif Document.objects.filter(code=data)[0].group.name not in groups:
@@ -1442,7 +1418,7 @@ def docpreview(request):
         # check if code valid and user has permission
         if not code.isdigit():
             return render(request, 'server/download_doc.html', context)
-        if len(Document.objects.filter(code=code)) == 0:
+        if Document.objects.filter(code=code).count() == 0:
             return render(request, 'server/download_doc.html', context)
         if Document.objects.filter(code=code)[0].group.name not in groups:
             return render(request, 'server/download_doc.html', context)
@@ -1612,7 +1588,7 @@ def media_request(request, id=0, t="", flag=""):
         doc_group = doc.group.name
 
         groups = request.user.groups.values_list('name', flat=True)
-        group_view = "capi" in groups and len(GroupSettings.objects.filter(group__name=doc_group).filter(view_documents=True)) != 0
+        group_view = "capi" in groups and GroupSettings.objects.filter(group__name=doc_group).filter(view_documents=True).count() != 0
 
         # check if user can view media
         if request.user.is_staff:

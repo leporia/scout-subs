@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% block content %}
+{% load app_filter %}
 <div class="row">
   <div class="col l5 s12">
     <div class="card large">
@@ -69,17 +70,17 @@
         <ul class="collection">
           {% for doctype in docs %}
             <li class="collection-item">
-                {% if not doctype.0.enabled %}
+                {% if not doctype.enabled %}
                     <i class="material-icons left">visibility_off</i>
                 {% endif %}
-                {% if not doctype.0.group_private %}
+                {% if not doctype.group_private %}
                     <i class="material-icons left">public</i>
                 {% endif %}
-                {% if doctype.0.auto_sign %}
+                {% if doctype.auto_sign %}
                   <i class="material-icons left">assignment_turned_in</i>
                 {% endif %}
-                {{doctype.0.name}}
-                <span class="new badge {{color}}" data-badge-caption="">{{doctype.1}}</span>
+                {{doctype.name}}
+                <span class="new badge {{color}}" data-badge-caption="">{{doctype|doc_count}}</span>
           {% endfor %}
         </ul>
       </div>

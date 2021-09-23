@@ -42,6 +42,7 @@
 {% endblock %}
 
 {% block content %}
+{% load app_filter %}
 <form id="selection" action="{% url 'doctype' %}" method="post">
 {% csrf_token %}
 <div id="modal1" class="modal">
@@ -122,73 +123,73 @@
         <li>
         <div class="collapsible-header list">
             <label>
-              <input name={{doctype.0.id}} type="checkbox" class="filled-in allselect"/>
+              <input name={{doctype.id}} type="checkbox" class="filled-in allselect"/>
               <span></span>
             </label>
-            {% if not doctype.0.enabled %}
+            {% if not doctype.enabled %}
                 <i class="material-icons">visibility_off</i>
             {% endif %}
-            {% if not doctype.0.group_private %}
+            {% if not doctype.group_private %}
                 <i class="material-icons">public</i>
             {% endif %}
-            {% if doctype.0.custom_group %}
+            {% if doctype.custom_group %}
               <i class="material-icons">group_work</i>
             {% endif %}
-            {% if doctype.0.auto_sign %}
+            {% if doctype.auto_sign %}
                 <i class="material-icons">assignment_turned_in</i>
             {% endif %}
-            {% if doctype.0.staff_only %}
+            {% if doctype.staff_only %}
                 <i class="material-icons">lock</i>
             {% endif %}
-            {{doctype.0.name}}
-            <span class="new badge {{color}}" data-badge-caption="">{{doctype.2}}</span>
+            {{doctype.name}}
+            <span class="new badge {{color}}" data-badge-caption="">{{doctype|doc_count}}</span>
         </div>
         <div class="collapsible-body"><span>
           <div class="hide-on-med-and-down">
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.0.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('p{{doctype.0.id}}')"><i class="material-icons left">file_download</i> Scarica CSV</a>
-            {% if doctype.0.medical_data %}
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.0.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('p{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV</a>
+            {% if doctype.medical_data %}
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
             {% endif %}
           </div>
           <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.0.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
+            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
             <br>
             <br>
-            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doctype.0.id}}')"><i class="material-icons left">file_download</i> Scarica CSV</a>
-            {% if doctype.0.medical_data %}
+            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV</a>
+            {% if doctype.medical_data %}
             <br>
             <br>
-            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.0.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
+            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
             {% endif %}
           </div>
           <br>
           <br>
           <ul class="collection">
-          {% if not doctype.0.group_private %}
+          {% if not doctype.group_private %}
             <li class="collection-item">
-              <i class="material-icons left">group_work</i>{{doctype.0.group.name}}
+              <i class="material-icons left">group_work</i>{{doctype.group.name}}
             </li>
           {% endif %}
-          {% if doctype.0.personal_data %}
+          {% if doctype.personal_data %}
             <li class="collection-item">
               <i class="material-icons left">person</i>Dati personali
             </li>
           {% endif %}
-          {% if doctype.0.medical_data %}
+          {% if doctype.medical_data %}
             <li class="collection-item">
               <i class="material-icons left">healing</i>Dati medici
             </li>
           {% endif %}
-          {% if doctype.0.max_instances != 0 %}
+          {% if doctype.max_instances != 0 %}
             <li class="collection-item">
-              <i class="material-icons left">control_point_duplicate</i>Numero massimo di partecipanti: {{doctype.0.max_instances}}
+              <i class="material-icons left">control_point_duplicate</i>Numero massimo di partecipanti: {{doctype.max_instances}}
             </li>
           {% endif %}
           </ul>
-          {% if doctype.0.custom_data or doctype.0.custom_message %}
+          {% if doctype.custom_data or doctype.custom_message %}
           <ul class="collapsible">
-          {% if doctype.0.custom_data %}
+          {% if doctype.custom_data %}
             <li>
               <div class="collapsible-header">
                 <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
@@ -196,7 +197,7 @@
               <div class="collapsible-body"><span>
                 <table class="striped">
                 <tbody>
-                {% for key in doctype.1 %}
+                {% for key in doctype|doc_key_type %}
                   <tr>
                   <td>{{key.key}}</td>
                   </tr>
@@ -206,13 +207,13 @@
               </span></div>
             </li>
           {% endif %}
-          {% if doctype.0.custom_message %}
+          {% if doctype.custom_message %}
             <li>
               <div class="collapsible-header">
                 <i class="material-icons">message</i>Messaggio aggiuntivo
               </div>
               <div class="collapsible-body"><span>
-                {{doctype.0.custom_message_text}}
+                {{doctype.custom_message_text}}
               </span></div>
             </li>
           {% endif %}

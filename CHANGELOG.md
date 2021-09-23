@@ -1,3 +1,7 @@
+# 0.4 (23 set 2021)
+- Bug: emergency document list visible also to non "capi"
+- Overall performance improvements leveraging SQL queries
+
 # 0.3 (23 jul 2021)
 
 - Bug: Reconvert images to JPEG so that all device can show them
