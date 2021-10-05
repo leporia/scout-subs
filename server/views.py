@@ -373,7 +373,7 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
+            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
 
             if document_type.custom_data:
                 header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
@@ -426,7 +426,7 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"]
+            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"]
 
             if document_type.custom_data:
                 header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
@@ -1484,7 +1484,7 @@ def data_request(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
+            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"])
 
             for user in users:
                 usercode = UserCode.objects.filter(user=user)[0]
@@ -1520,7 +1520,7 @@ def data_request(request):
             writer = csv.writer(response)
 
             # csv header
-            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Paese", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
+            writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
 
             for user in users:
                 usercode = UserCode.objects.filter(user=user)[0]

@@ -209,7 +209,7 @@
                     <label for="birth_date">Data di nascita</label>
                   </div>
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{base_group}}" id="branca" type="text">
+                    <input disabled value="{{doc.user|user_primary_group}}" id="branca" type="text">
                     <label for="branca">Branca</label>
                   </div>
                   <div class="input-field col l4 s12">
@@ -230,7 +230,7 @@
                   </div>
                   <div class="input-field col l4 s12">
                     <input disabled value="{{doc.personal_data.country}}" name="country" id="country" type="text" >
-                    <label for="country">Paese</label>
+                    <label for="country">Comune</label>
                   </div>
                   <div class="input-field col l4 s12">
                     <input disabled value="{{doc.personal_data.nationality}}" name="nationality" id="nationality" type="text" >
