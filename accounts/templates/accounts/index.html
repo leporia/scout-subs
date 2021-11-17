@@ -27,17 +27,22 @@
           {% csrf_token %}
           <div class="row">
             <div class="input-field col l4 s12">
-              <input name="first_name" value="{{first_name}}" id="first_name" type="text" >
+              <input name="first_name" value="{{first_name}}" id="first_name" type="text" {{validation_dic.first_name|safe}}>
               <label for="first_name">Nome</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input name="last_name" value="{{last_name}}" id="last_name" type="text" >
+              <input name="last_name" value="{{last_name}}" id="last_name" type="text" {{validation_dic.last_name|safe}}>
               <label for="last_name">Cognome</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" class="datepicker">
+              <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" {{validation_dic.birth_date|safe}}>
               <label for="birth_date">Data di nascita</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
+          </div>
+          <div class="row">
             <div class="input-field col l4 s12">
               <select name="branca" disabled>
                 <option value="" disabled {{branca_default}}>Nessuna</option>
@@ -50,47 +55,55 @@
               <label>Branca</label>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" >
+              <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" {{validation_dic.parent_name|safe}}>
               <label for="parent_name">Nome dei genitori</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{avs_number}}" name="avs_number" id="avs_number" type="text" placeholder="756.1234.5678.90">
-              <label for="avs_number">Numero AVS</label>
+              <input value="{{avs_number}}" name="avs_number" id="avs_number" type="text" placeholder="756.1234.5678.90" {{validation_dic.avs_number|safe}}>
+              <label for="avs_number" data-error="wrong">Numero AVS</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l12 s12">
-              <input value="{{via}}" name="via" id="via" type="text" >
+              <input value="{{via}}" name="via" id="via" type="text" {{validation_dic.via|safe}}>
               <label for="via">Via e numero</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{cap}}" name="cap" id="cap" type="text" >
+              <input value="{{cap}}" name="cap" id="cap" type="text" {{validation_dic.cap|safe}}>
               <label for="cap">CAP</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{country}}" name="country" id="country" type="text" >
+              <input value="{{country}}" name="country" id="country" type="text" {{validation_dic.country|safe}}>
               <label for="country">Comune</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{nationality}}" name="nationality" id="nationality" type="text" >
+              <input value="{{nationality}}" name="nationality" id="nationality" type="text" {{validation_dic.nationality|safe}}>
               <label for="nationality">Nazionalit&agrave;</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{phone}}" name="phone" id="phone" type="text" >
+              <input value="{{phone}}" name="phone" id="phone" type="text" {{validation_dic.phone|safe}}>
               <label for="phone">Cellulare</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" >
+              <input value="{{home_phone}}" name="home_phone" id="home_phone" type="text" {{validation_dic.home_phone|safe}}>
               <label for="home_phone">Telefono di casa</label>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{email}}" name="email" id="email" type="text" >
+              <input value="{{email}}" name="email" id="email" type="text" {{validation_dic.email|safe}}>
               <label for="email">Email</label>
+              <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l8 s12">
-              <input value="{{school}}" name="school" id="school" type="text" >
+              <input value="{{school}}" name="school" id="school" type="text" {{validation_dic.school|safe}}>
               <label for="school">Scuola frequentata (o professione)</label>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{year}}" name="year" id="year" type="text" >
+              <input value="{{year}}" name="year" id="year" type="text" {{validation_dic.year|safe}}>
               <label for="year">Classe scolastica</label>
             </div>
           </div>
@@ -114,23 +127,27 @@
       </div>
       <div class="row">
         <div class="input-field col l6 s12">
-          <input name="emer_name" value="{{emer_name}}" id="emer_name" type="text" >
+          <input name="emer_name" value="{{emer_name}}" id="emer_name" type="text" {{validation_dic.emer_name|safe}}>
           <label for="emer_name">Nome e cognome</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l3 s12">
-          <input name="emer_relative" value="{{emer_relative}}" id="emer_relative" type="text" >
+          <input name="emer_relative" value="{{emer_relative}}" id="emer_relative" type="text" {{validation_dic.emer_relative|safe}}>
           <label for="emer_releative">Parentela</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l3 s12">
-          <input name="cell_phone" value="{{cell_phone}}" id="cellphone" type="text" >
+          <input name="cell_phone" value="{{cell_phone}}" id="cellphone" type="text" {{validation_dic.cell_phone|safe}}>
           <label for="cell_phone">Cellulare</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l9 s12">
-          <input value="{{address}}" name="address" id="address" type="text" >
+          <input value="{{address}}" name="address" id="address" type="text" {{validation_dic.address|safe}}>
           <label for="address">Indirizzo completo</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l3 s12">
-          <input value="{{emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+          <input value="{{emer_phone}}" name="emer_phone" id="emer_phone" type="text" {{validation_dic.emer_phone|safe}}>
           <label for="emer_phone">Telefono di casa</label>
         </div>
       </div>
@@ -141,16 +158,19 @@
       </div>
       <div class="row">
         <div class="input-field col l4 s12">
-          <input value="{{health_care}}" name="health_care" id="health_care" type="text" >
+          <input value="{{health_care}}" name="health_care" id="health_care" type="text" {{validation_dic.health_care|safe}}>
           <label for="health_care">Cassa Malati</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l4 s12">
-          <input value="{{injuries}}" name="injuries" id="injuries" type="text" >
+          <input value="{{injuries}}" name="injuries" id="injuries" type="text" {{validation_dic.injuries|safe}}>
           <label for="injuries">Infortuni</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l4 s12">
-          <input value="{{rc}}" name="rc" id="rc" type="text" >
+          <input value="{{rc}}" name="rc" id="rc" type="text" {{validation_dic.rc|safe}}>
           <label for="rc">Responsabilit&agrave; civile</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
       </div>
       <div class="row">
@@ -169,16 +189,19 @@
           <h6>Medico di famiglia</h6>
         </div>
         <div class="input-field col l6 s12">
-          <input value="{{medic_name}}" name="medic_name" id="medic_name" type="text" >
+          <input value="{{medic_name}}" name="medic_name" id="medic_name" type="text" {{validation_dic.medic_name|safe}}>
           <label for="medic_name">Nome e cognome</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l6 s12">
-          <input value="{{medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+          <input value="{{medic_phone}}" name="medic_phone" id="medic_phone" type="text" {{validation_dic.medic_phone|safe}}>
           <label for="medic_phone">Telefono studio</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l12 s12">
-          <input value="{{medic_address}}" name="medic_address" id="medic_address" type="text" >
+          <input value="{{medic_address}}" name="medic_address" id="medic_address" type="text" {{validation_dic.medic_address|safe}}>
           <label for="medic_address">Indirizzo completo</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
       </div>
       <div class="row">

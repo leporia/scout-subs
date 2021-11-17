@@ -93,6 +93,11 @@ def personal(request):
     branca_pionieri = ""
     branca_rover = ""
 
+    # variables for validation
+    validation_dic = {}
+    required_fields = ["first_name", "last_name", "email", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
+
+
     # variables for throwing errors to the user
     error = False
     error_text = ""
@@ -144,6 +149,7 @@ def personal(request):
         usercode.phone = request.POST["phone"]
         usercode.school = request.POST["school"]
         usercode.avs_number = request.POST["avs_number"]
+
         if request.POST["year"].isdigit():
             usercode.year = request.POST["year"]
         else:
@@ -173,6 +179,21 @@ def personal(request):
         medic.misc_bool = "misc_bool" in request.POST
         medic.misc = request.POST["misc"]
         medic.save()
+
+        if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
+            validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
+            error = True
+            error_text = "Alcuni campi richiesti non sono stati compilati"
+        else:
+            validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
+
+        for i in required_fields:
+            if request.POST[i] == "":
+                error = True
+                error_text = "Alcuni campi richiesti non sono stati compilati"
+                validation_dic[i] = 'class="validate invalid" required="" aria-required="true"'
+            else:
+                validation_dic[i] = 'class="validate" required="" aria-required="true"'
 
         # if "branca" in request.POST:
         #    if request.POST["branca"] != "":
@@ -280,6 +301,12 @@ def personal(request):
         if not error:
             return HttpResponseRedirect("")
 
+    else:
+        # no post, create empty validation
+        validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
+        for i in required_fields:
+            validation_dic[i] = 'class="validate" required="" aria-required="true"'
+
     # check if user is in a group and set multiple choice to that
     if len(request.user.groups.values_list('name', flat=True)) == 0:
         branca_default = "selected"
@@ -323,8 +350,10 @@ def personal(request):
     else:
         card_name = ''
 
+
     # fill context
     context = {
+        'validation_dic': validation_dic,
         'first_name': request.user.first_name,
         'last_name': request.user.last_name,
         'email': request.user.email,
