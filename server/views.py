@@ -53,13 +53,17 @@ def index(request):
     if request.user.is_staff:
         groups = request.user.groups.all()
 
+        q_obj = Q(group__in=groups)
+
         doc_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=groups[0]) & Q(enabled=True)).order_by("-id")
+            (Q(group_private=False) | q_obj) & Q(enabled=True)).order_by("-id")
     else:
         groups = request.user.groups.all()[1:]
 
+        q_obj = Q(group__in=groups)
+
         doc_types = DocumentType.objects.filter(
-            Q(group_private=False) & Q(enabled=True)).order_by("-id")
+            Q(group_private=False) & Q(enabled=True) & q_obj).order_by("-id")
 
     # check for settings
     group_check = []
