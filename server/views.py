@@ -11,7 +11,6 @@ from django.template.loader import get_template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.db import SessionStore
 
 import csv
@@ -330,8 +329,6 @@ def doctype(request):
             1:]
 
     if request.method == "POST":
-        selected = []
-
         # check if request to edit
         if request.POST["action"][0] == 'e':
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
