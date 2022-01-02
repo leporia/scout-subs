@@ -11,7 +11,6 @@ from django.template.loader import get_template
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.backends.db import SessionStore
 
 import csv
@@ -53,13 +52,17 @@ def index(request):
     if request.user.is_staff:
         groups = request.user.groups.all()
 
+        q_obj = Q(group__in=groups)
+
         doc_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=groups[0]) & Q(enabled=True)).order_by("-id")
+            (Q(group_private=False) | q_obj) & Q(enabled=True)).order_by("-id")
     else:
         groups = request.user.groups.all()[1:]
 
+        q_obj = Q(group__in=groups)
+
         doc_types = DocumentType.objects.filter(
-            Q(group_private=False) & Q(enabled=True)).order_by("-id")
+            Q(group_private=False) & Q(enabled=True) & q_obj).order_by("-id")
 
     # check for settings
     group_check = []
@@ -326,8 +329,6 @@ def doctype(request):
             1:]
 
     if request.method == "POST":
-        selected = []
-
         # check if request to edit
         if request.POST["action"][0] == 'e':
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
