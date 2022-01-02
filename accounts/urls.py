@@ -9,5 +9,6 @@ urlpatterns = [
     path('oauth_login/', views.oauth_login, name='oauth_login'),
     path('auth/', views.auth, name='auth'),
     path('oauth_connect/', views.oauth_connect, name='oauth_connect'),
+    path('oauth_disconnect/', views.oauth_disconnect, name='oauth_disconnect'),
     path('auth_connect/', views.auth_connect, name='auth_connect'),
 ]

@@ -95,11 +95,22 @@ def auth(request):
     return HttpResponseRedirect('/')
 
 # send to hitobito request to get token
+@login_required
 def oauth_connect(request):
     redirect_uri = request.build_absolute_uri(reverse('auth_connect'))
     return hitobito.authorize_redirect(request, redirect_uri)
 
+@login_required
+def oauth_disconnect(request):
+    usercode = UserCode.objects.filter(user=request.user)[0]
+    usercode.midata_id = 0
+    usercode.midata_token = ""
+    usercode.save()
+
+    return HttpResponseRedirect(reverse("personal") + "#misc")
+
 # callback after acquiring token
+@login_required
 def auth_connect(request):
     token = hitobito.authorize_access_token(request)
 
@@ -111,13 +122,18 @@ def auth_connect(request):
     resp = requests.get(api_url, headers=headers)
     resp_data = resp.json()
 
-    # find user with that id
-    usercode = UserCode.objects.filter(user=user)[0]
+    # check that account is not linked to another
+    existing_codes = UserCode.objects.filter(midata_id=resp_data["id"])
+    if len(existing_codes) > 0:
+        return personal_wrapper(request, True, "Questo utente è già collegato ad un altro")
+
+    # save id to user
+    usercode = UserCode.objects.filter(user=request.user)[0]
     usercode.midata_id = resp_data["id"]
     usercode.midata_token = token["access_token"]
     usercode.save()
 
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect(reverse("personal") + "#misc")
 
 @sensitive_variables("raw_passsword")
 def signup(request):
@@ -169,8 +185,13 @@ def signup(request):
     }
     return render(request, 'accounts/signup.html', context)
 
+# create wrapper to send custom error from other views (oauth connect/disconnect)
 @login_required
 def personal(request):
+    return personal_wrapper(request, False, "")
+
+@login_required
+def personal_wrapper(request, error, error_text):
     context = {}
     # additional user informations
     usercode = UserCode.objects.filter(user=request.user)[0]
@@ -188,11 +209,6 @@ def personal(request):
     # variables for validation
     validation_dic = {}
     required_fields = ["first_name", "last_name", "email", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
-
-
-    # variables for throwing errors to the user
-    error = False
-    error_text = ""
 
     if request.method == "POST":
         # requested download
@@ -442,6 +458,7 @@ def personal(request):
     else:
         card_name = ''
 
+    midata_user = (usercode.midata_id > 0)
 
     # fill context
     context = {
@@ -490,6 +507,7 @@ def personal(request):
         'vac_certificate': vac_name,
         'error': error,
         'error_text': error_text,
+        'midata_user': midata_user,
     }
 
     return render(request, 'accounts/index.html', context)
