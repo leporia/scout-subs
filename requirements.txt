@@ -5,3 +5,4 @@ dateparser
 pytz
 pdf2image
 django-debug-toolbar
+requests

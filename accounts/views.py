@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.urls import reverse
+from django.conf import settings
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from django.http import FileResponse
@@ -8,8 +11,11 @@ from django.http import HttpResponseRedirect
 
 from client.models import UserCode
 
+from authlib.integrations.django_client import OAuth
+
 import dateparser
 import os
+import requests
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
@@ -18,6 +24,9 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 
+oauth = OAuth()
+hitobito = oauth.register(name="hitobito")
+
 # override to remove help text
 class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -25,6 +34,22 @@ class RegisterForm(UserCreationForm):
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
+
+def oauth_login(request):
+    redirect_uri = request.build_absolute_uri(reverse('auth'))
+    return hitobito.authorize_redirect(request, redirect_uri)
+
+def auth(request):
+    token = hitobito.authorize_access_token(request)
+    print(token)
+    headers = {
+        "Authorization" : "Bearer " + token["access_token"],
+        "X-Scope": "with_roles",
+    }
+    resp = requests.get("https://demo.hitobito.com/oauth/profile", headers=headers)
+    print(resp)
+    print(resp.text)
+    return HttpResponseRedirect('/')
 
 @sensitive_variables("raw_passsword")
 def signup(request):
@@ -75,7 +100,6 @@ def signup(request):
         "errors": out_errors,
     }
     return render(request, 'accounts/signup.html', context)
-
 
 @login_required
 def personal(request):

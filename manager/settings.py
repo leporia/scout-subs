@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+AUTHLIB_OAUTH_CLIENTS = {
+   'hitobito': {
+        'client_id': 'uZOLGZDioF0FBm5FlkSYkiCJ0nsNErZmLgCDMbWiHYY',
+        'client_secret': '-Vv4El7-UmiSoET_tvgqeNnJzrSN_76b9I_zKFZFKpo',
+        'access_token_url': 'https://demo.hitobito.com/oauth/token',
+        'access_token_params': None,
+        'refresh_token_url': None,
+        'authorize_url': 'https://demo.hitobito.com/oauth/authorize',
+        'authorize_params': None,
+        'client_kwargs': {"grant_type": "authorization_code", "scope": "with_roles"},
+    }
+}
 
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
