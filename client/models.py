@@ -113,6 +113,8 @@ class UserCode(models.Model):
     school = models.CharField(default="", max_length=250)
     year = models.IntegerField(default=0)
     avs_number = models.CharField(default="", max_length=250)
+    midata_id = models.IntegerField(default=0)
+    midata_token = models.CharField(default="", max_length=1024)
 
 class GroupSettings(models.Model):
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)

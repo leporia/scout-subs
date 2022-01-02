@@ -12,109 +12,109 @@ from datetime import datetime
 import pytz
 from random import randint
 
+@login_required()
 def index(request):
     context = {}
     group_view = False
-    # check if user is logged
-    if (request.user.is_authenticated):
-        if not (request.user.is_staff or request.user.has_perm("client.approved")):
-            # generate code if user has no code
-            users = UserCode.objects.filter(user=request.user)
-            code = None
-            if (len(users) == 0):
-                while (True):
-                    code = randint(100000, 999999)
-                    if len(UserCode.objects.filter(code=code)) == 0:
-                        break
-                medic = MedicalData()
-                medic.save()
-                userCode = UserCode(user=request.user, code=code, medic=medic)
-                userCode.save()
+    if not (request.user.is_staff or request.user.has_perm("client.approved")):
+        # generate code if user has no code
+        users = UserCode.objects.filter(user=request.user)
+        code = None
+        if (len(users) == 0):
+            while (True):
+                code = randint(100000, 999999)
+                if len(UserCode.objects.filter(code=code)) == 0:
+                    break
+            medic = MedicalData()
+            medic.save()
+            userCode = UserCode(user=request.user, code=code, medic=medic)
+            userCode.save()
 
-            user_code = None
-            usercode = UserCode.objects.filter(user=request.user)[0]
-            if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
-                user_code = "U" + str(usercode.code)
-            context = {"user_code": user_code}
-        else:
-            # get user group
-            groups = request.user.groups.all()
+        user_code = None
+        usercode = UserCode.objects.filter(user=request.user)[0]
+        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
+            user_code = "U" + str(usercode.code)
+        context = {"user_code": user_code}
+        return render(request, 'client/index.html', context)
 
-            # check if any group has enabled RO documents
-            if request.user.is_staff or len(groups.filter(name="capi")) == 0:
-                # if user is staff then not needed
-                gr = []
-            elif request.user.has_perm("client.staff"):
-                gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True).filter(~Q(group=groups[0]))
-            else:
-                gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
+    # get user group
+    groups = request.user.groups.all()
 
-            group_view = len(gr) != 0
+    # check if any group has enabled RO documents
+    if request.user.is_staff or len(groups.filter(name="capi")) == 0:
+        # if user is staff then not needed
+        gr = []
+    elif request.user.has_perm("client.staff"):
+        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True).filter(~Q(group=groups[0]))
+    else:
+        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
 
-            # user action
-            if request.method == "POST":
-                # get document id
-                document = Document.objects.get(id=request.POST["action"][1:])
+    group_view = len(gr) != 0
 
-                # check if document is valid to modify
-                if document.user != request.user:
-                    return
+    # user action
+    if request.method == "POST":
+        # get document id
+        document = Document.objects.get(id=request.POST["action"][1:])
 
-                if document.status == "ok" or document.status == "archive":
-                    return
+        # check if document is valid to modify
+        if document.user != request.user:
+            return
 
-                # execute action
-                if request.POST["action"][0] == 'f':
-                    # generate approve pdf
-                    template = get_template('client/approve_doc_pdf.html')
-                    context = {'doc': document}
-                    html = template.render(context)
-                    pdf = pdfkit.from_string(html, False)
-                    result = BytesIO(pdf)
-                    result.seek(0)
-                    return FileResponse(result, filename=document.document_type.name+".pdf")
-                elif request.POST["action"][0] == 'a':
-                    # sign autosign doc
-                    if document.status == "autosign":
-                        document.status = "ok"
-                        document.save()
-                        return HttpResponseRedirect("/")
-                elif request.POST["action"][0] == 'd':
-                    # delete doc
-                    document.delete()
-                    return HttpResponseRedirect("/")
-                elif request.POST["action"][0] == 'e':
-                    # edit doc generate context and render edit page
-                    document_type = document.document_type
-                    context = {
-                        'doctype': document_type,
-                    }
-                    context['doc'] = document
-                    context['personal_data'] = document_type.personal_data
-                    context['medical_data'] = document_type.medical_data
-                    context['custom_data'] = document_type.custom_data
-                    context['keys'] = KeyVal.objects.filter(container=document)
-                    context['custom_message'] = document_type.custom_message
-                    context['custom_message_text'] = document_type.custom_message_text
-                    return edit_wrapper(request, context)
+        if document.status == "ok" or document.status == "archive":
+            return
 
-            # show only docs of the user and non archived
-            documents = Document.objects.filter(
-                Q(user=request.user) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
-
-            vac_file = ["/server/media/", "/vac_certificate/doc"]
-            health_file = ["/server/media/", "/health_care_certificate/doc"]
-            sign_doc_file = ["/server/media/", "/signed_doc/doc"]
-
+        # execute action
+        if request.POST["action"][0] == 'f':
+            # generate approve pdf
+            template = get_template('client/approve_doc_pdf.html')
+            context = {'doc': document}
+            html = template.render(context)
+            pdf = pdfkit.from_string(html, False)
+            result = BytesIO(pdf)
+            result.seek(0)
+            return FileResponse(result, filename=document.document_type.name+".pdf")
+        elif request.POST["action"][0] == 'a':
+            # sign autosign doc
+            if document.status == "autosign":
+                document.status = "ok"
+                document.save()
+                return HttpResponseRedirect("/")
+        elif request.POST["action"][0] == 'd':
+            # delete doc
+            document.delete()
+            return HttpResponseRedirect("/")
+        elif request.POST["action"][0] == 'e':
+            # edit doc generate context and render edit page
+            document_type = document.document_type
             context = {
-                "docs": documents,
-                "base_group": groups[0].name,
-                "empty": len(documents) == 0,
-                "group_view": group_view,
-                "vac_file": vac_file,
-                "health_file": health_file,
-                "sign_doc_file": sign_doc_file
+                'doctype': document_type,
             }
+            context['doc'] = document
+            context['personal_data'] = document_type.personal_data
+            context['medical_data'] = document_type.medical_data
+            context['custom_data'] = document_type.custom_data
+            context['keys'] = KeyVal.objects.filter(container=document)
+            context['custom_message'] = document_type.custom_message
+            context['custom_message_text'] = document_type.custom_message_text
+            return edit_wrapper(request, context)
+
+    # show only docs of the user and non archived
+    documents = Document.objects.filter(
+        Q(user=request.user) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
+
+    vac_file = ["/server/media/", "/vac_certificate/doc"]
+    health_file = ["/server/media/", "/health_care_certificate/doc"]
+    sign_doc_file = ["/server/media/", "/signed_doc/doc"]
+
+    context = {
+        "docs": documents,
+        "base_group": groups[0].name,
+        "empty": len(documents) == 0,
+        "group_view": group_view,
+        "vac_file": vac_file,
+        "health_file": health_file,
+        "sign_doc_file": sign_doc_file
+    }
 
     return render(request, 'client/index.html', context)
 

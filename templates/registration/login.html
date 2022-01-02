@@ -1,4 +1,5 @@
 {% extends 'registration/base_simple.html' %}
+{% load static %}
 
 {% block title %}Login{% endblock %}
 
@@ -14,8 +15,29 @@
             <a href={% url 'password_reset' %}>Password dimenticata</a>
             <br>
             <br>
-            <a href={% url 'oauth_login' %} class="btn waves-effect waves-light {{color}}">OAuth</a>
             <button class="btn waves-effect waves-light {{color}}" type="submit">Login</button>
+            <br><br><hr><br>
+            <div class="row">
+              <div class="col s12">
+                <a href={% url 'oauth_login' %} style="width: 100%; background-color: #99BF62" class="btn waves-effect waves-light">
+                  <div class="row">
+                    <div class="col s2">
+                      <img style="height: 30px; padding-top: 3px" src="{% static 'pbs_logo.svg' %}" alt="PBS Logo">
+                    </div>
+                    <div class="col s10">
+                      Login con MiData
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12">
+                <a href={% url 'signup' %} style="width: 100%" class="btn waves-effect waves-light {{color}}">
+                  Registrazione
+                </a>
+              </div>
+            </div>
           </form>
         </div>
       </div>

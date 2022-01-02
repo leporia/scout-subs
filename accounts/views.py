@@ -1,21 +1,23 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.shortcuts import redirect
 from django.conf import settings
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.debug import sensitive_variables
 from django.http import HttpResponseRedirect
 
-from client.models import UserCode
+from client.models import UserCode, MedicalData
 
 from authlib.integrations.django_client import OAuth
 
 import dateparser
 import os
 import requests
+from random import randint
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
@@ -24,8 +26,23 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 
-oauth = OAuth()
+def update_token(name, token, refresh_token=None, access_token=None):
+    if refresh_token:
+        item = OAuth2Token.find(name=name, refresh_token=refresh_token)
+    elif access_token:
+        item = OAuth2Token.find(name=name, access_token=access_token)
+    else:
+        return
+
+    # update old token
+    item.access_token = token['access_token']
+    item.refresh_token = token.get('refresh_token')
+    item.expires_at = token['expires_at']
+    item.save()
+
+oauth = OAuth(update_token=update_token)
 hitobito = oauth.register(name="hitobito")
+api_url = settings.AUTHLIB_OAUTH_CLIENTS["hitobito"]["api_url"]
 
 # override to remove help text
 class RegisterForm(UserCreationForm):
@@ -35,20 +52,71 @@ class RegisterForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
 
+# send to hitobito request to get token
 def oauth_login(request):
     redirect_uri = request.build_absolute_uri(reverse('auth'))
     return hitobito.authorize_redirect(request, redirect_uri)
 
+# callback after acquiring token
 def auth(request):
     token = hitobito.authorize_access_token(request)
-    print(token)
+
+    # request data from user account
     headers = {
         "Authorization" : "Bearer " + token["access_token"],
         "X-Scope": "with_roles",
     }
-    resp = requests.get("https://demo.hitobito.com/oauth/profile", headers=headers)
-    print(resp)
-    print(resp.text)
+    resp = requests.get(api_url, headers=headers)
+    resp_data = resp.json()
+
+    # find user with that id
+    usercode = UserCode.objects.filter(midata_id=resp_data["id"])
+    
+    if len(usercode) > 0:
+        # user exist
+        login(request, usercode[0].user)
+        return HttpResponseRedirect('/')
+
+    user = User.objects.create_user(resp_data["email"], resp_data["email"])
+
+    # create new usercode
+    while (True):
+        code = randint(100000, 999999)
+        if len(UserCode.objects.filter(code=code)) == 0:
+            break
+
+    medic = MedicalData()
+    medic.save()
+    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
+    userCode.save()
+
+    login(request, user)
+
+    return HttpResponseRedirect('/')
+
+# send to hitobito request to get token
+def oauth_connect(request):
+    redirect_uri = request.build_absolute_uri(reverse('auth_connect'))
+    return hitobito.authorize_redirect(request, redirect_uri)
+
+# callback after acquiring token
+def auth_connect(request):
+    token = hitobito.authorize_access_token(request)
+
+    # request data from user account
+    headers = {
+        "Authorization" : "Bearer " + token["access_token"],
+        "X-Scope": "with_roles",
+    }
+    resp = requests.get(api_url, headers=headers)
+    resp_data = resp.json()
+
+    # find user with that id
+    usercode = UserCode.objects.filter(user=user)[0]
+    usercode.midata_id = resp_data["id"]
+    usercode.midata_token = token["access_token"]
+    usercode.save()
+
     return HttpResponseRedirect('/')
 
 @sensitive_variables("raw_passsword")

@@ -79,6 +79,7 @@ AUTHLIB_OAUTH_CLIENTS = {
         'refresh_token_url': None,
         'authorize_url': 'https://demo.hitobito.com/oauth/authorize',
         'authorize_params': None,
+        'api_url': "https://demo.hitobito.com/oauth/profile",
         'client_kwargs': {"grant_type": "authorization_code", "scope": "with_roles"},
     }
 }
