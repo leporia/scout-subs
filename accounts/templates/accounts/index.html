@@ -11,15 +11,14 @@
     <ul class="tabs tabs-transparent">
       <li class="tab"><a class="active" href="#personal">Info Personali</a></li>
       <li class="tab"><a href="#medic">Info Mediche</a></li>
-      <li class="tab"><a href="#misc">Impostazioni</a></li>
-      <li class="tab"><a href="#test">Woooo</a></li>
+      <li class="tab"><a href="#settings">Impostazioni</a></li>
     </ul>
   </div>
 {% endblock%}
 
 {% block content %}
 <form action="{% url 'personal'%}" method="post" id="form1" enctype="multipart/form-data">
-<div "personal" class="row">
+<div id="personal" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
@@ -314,12 +313,7 @@
     </div>
   </div>
 </div>
-<div id="test" class="row">
-  <div class="col s12">
-    Helloooooo
-  </div>
-</div>
-<div id="misc" class="row">
+<div id="settings" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">

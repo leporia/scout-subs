@@ -107,7 +107,7 @@ def oauth_disconnect(request):
     usercode.midata_token = ""
     usercode.save()
 
-    return HttpResponseRedirect(reverse("personal") + "#misc")
+    return HttpResponseRedirect(reverse("personal") + "#settings")
 
 # callback after acquiring token
 @login_required
@@ -133,7 +133,7 @@ def auth_connect(request):
     usercode.midata_token = token["access_token"]
     usercode.save()
 
-    return HttpResponseRedirect(reverse("personal") + "#misc")
+    return HttpResponseRedirect(reverse("personal") + "#settings")
 
 @sensitive_variables("raw_passsword")
 def signup(request):
