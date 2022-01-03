@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -72,14 +71,14 @@ MIDDLEWARE = [
 
 AUTHLIB_OAUTH_CLIENTS = {
    'hitobito': {
-        'client_id': 'uZOLGZDioF0FBm5FlkSYkiCJ0nsNErZmLgCDMbWiHYY',
-        'client_secret': '-Vv4El7-UmiSoET_tvgqeNnJzrSN_76b9I_zKFZFKpo',
-        'access_token_url': 'https://demo.hitobito.com/oauth/token',
+        'client_id': 't5yYztJorDVXRE7PgPy7AttzarwTFW8faPrm56wsbSg',
+        'client_secret': 'hgpsKjMGymVsi-dAeOFMWv2V2IpIbdILZJ1SIOT5cSA',
+        'access_token_url': 'https://pbs.puzzle.ch/oauth/token',
         'access_token_params': None,
         'refresh_token_url': None,
-        'authorize_url': 'https://demo.hitobito.com/oauth/authorize',
+        'authorize_url': 'https://pbs.puzzle.ch/oauth/authorize',
         'authorize_params': None,
-        'api_url': "https://demo.hitobito.com/oauth/profile",
+        'api_url': "https://pbs.puzzle.ch/oauth/profile",
         'client_kwargs': {"grant_type": "authorization_code", "scope": "with_roles"},
     }
 }

@@ -29,17 +29,17 @@
           {% csrf_token %}
           <div class="row">
             <div class="input-field col l4 s12">
-              <input name="first_name" value="{{first_name}}" id="first_name" type="text" {{validation_dic.first_name|safe}}>
+              <input name="first_name" value="{{first_name}}" id="first_name" type="text" {{validation_dic.first_name|safe}} {{midata_disable}}>
               <label for="first_name">Nome</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input name="last_name" value="{{last_name}}" id="last_name" type="text" {{validation_dic.last_name|safe}}>
+              <input name="last_name" value="{{last_name}}" id="last_name" type="text" {{validation_dic.last_name|safe}} {{midata_disable}}>
               <label for="last_name">Cognome</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" {{validation_dic.birth_date|safe}}>
+              <input name="birth_date" value="{{birth_date}}" id="birth_date" type="text" {{validation_dic.birth_date|safe}} {{midata_disable}}>
               <label for="birth_date">Data di nascita</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
@@ -67,17 +67,17 @@
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l12 s12">
-              <input value="{{via}}" name="via" id="via" type="text" {{validation_dic.via|safe}}>
+              <input value="{{via}}" name="via" id="via" type="text" {{validation_dic.via|safe}} {{midata_disable}}>
               <label for="via">Via e numero</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{cap}}" name="cap" id="cap" type="text" {{validation_dic.cap|safe}}>
+              <input value="{{cap}}" name="cap" id="cap" type="text" {{validation_dic.cap|safe}} {{midata_disable}}>
               <label for="cap">CAP</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{country}}" name="country" id="country" type="text" {{validation_dic.country|safe}}>
+              <input value="{{country}}" name="country" id="country" type="text" {{validation_dic.country|safe}} {{midata_disable}}>
               <label for="country">Comune</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>
@@ -96,7 +96,7 @@
               <label for="home_phone">Telefono di casa</label>
             </div>
             <div class="input-field col l4 s12">
-              <input value="{{email}}" name="email" id="email" type="text" {{validation_dic.email|safe}}>
+              <input value="{{email}}" name="email" id="email" type="text" {{validation_dic.email|safe}} {{midata_disable}}>
               <label for="email">Email</label>
               <span class="helper-text" data-error="Campo richiesto"></span>
             </div>

@@ -75,6 +75,18 @@ def auth(request):
     if len(usercode) > 0:
         # user exist
         login(request, usercode[0].user)
+
+        request.user.first_name = resp_data["first_name"]
+        request.user.last_name = resp_data["last_name"]
+        request.user.email = resp_data["email"]
+        request.user.save()
+
+        usercode[0].via = resp_data["address"]
+        usercode[0].cap = resp_data["zip_code"]
+        usercode[0].country = resp_data["town"]
+        usercode[0].born_date = dateparser.parse(resp_data["birthday"])
+        usercode[0].save()
+
         return HttpResponseRedirect('/')
 
     user = User.objects.create_user(resp_data["email"], resp_data["email"])
@@ -88,6 +100,15 @@ def auth(request):
     medic = MedicalData()
     medic.save()
     userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
+    user.first_name = resp_data["first_name"]
+    user.last_name = resp_data["last_name"]
+    user.email = resp_data["email"]
+    user.save()
+
+    userCode.via = resp_data["address"]
+    userCode.cap = resp_data["zip_code"]
+    userCode.country = resp_data["town"]
+    userCode.born_date = dateparser.parse(resp_data["birthday"])
     userCode.save()
 
     login(request, user)
@@ -459,6 +480,29 @@ def personal_wrapper(request, error, error_text):
         card_name = ''
 
     midata_user = (usercode.midata_id > 0)
+    midata_disable = ""
+
+    if midata_user:
+        # request data from user account
+        headers = {
+            "Authorization" : "Bearer " + usercode.midata_token,
+            "X-Scope": "with_roles",
+        }
+
+        resp = requests.get(api_url, headers=headers)
+        resp_data = resp.json()
+
+        midata_disable = " disabled"
+        request.user.first_name = resp_data["first_name"]
+        request.user.last_name = resp_data["last_name"]
+        request.user.email = resp_data["email"]
+        request.user.save()
+
+        usercode.via = resp_data["address"]
+        usercode.cap = resp_data["zip_code"]
+        usercode.country = resp_data["town"]
+        usercode.born_date = dateparser.parse(resp_data["birthday"])
+        usercode.save()
 
     # fill context
     context = {
@@ -508,6 +552,7 @@ def personal_wrapper(request, error, error_text):
         'error': error,
         'error_text': error_text,
         'midata_user': midata_user,
+        'midata_disable': midata_disable,
     }
 
     return render(request, 'accounts/index.html', context)
