@@ -313,12 +313,13 @@
     </div>
   </div>
 </div>
+</form>
 <div id="settings" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
       <div class="row">
         <div class="col s12">
-          <h6>Collegamento con MiData</h6>
+          <h5>Collegamento con MiData</h5>
         </div>
       </div>
       {% if midata_user %}
@@ -354,10 +355,49 @@
           </div>
         </div>
       {% endif %}
+      <div class="row">
+        <div class="col s12">
+          <h5>Cambia password</h5>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" id="action" value="password">
+            {% if usable_password %}
+            <div class="row">
+              <div class="col s12">
+                <input id="old_password" type="password">
+                <label for="old_password">Password attuale</label>
+              </div>
+            </div>
+            {% else %}
+              <input id="old_password" type="hidden" value="">
+            {% endif %}
+            <div class="row">
+              <div class="col s12">
+                <input id="new_password1" type="password">
+                <label for="new_password1">Nuova password</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12">
+                <input id="new_password2" type="password">
+                <label for="new_password2">Conferma nuova password</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12">
+                <button type="submit" class="btn waves-effect waves-light {{color}}">Salva</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-</form>
 {% endblock %}
 
 {% block script %}
@@ -414,10 +454,9 @@ $(document).ready(function() {
   $('.datepicker').datepicker(options);
   $('.tabs').tabs();
   $('select').formSelect();
-  {% if error %}
-    M.toast({html: '{{ error_text}}', classes: 'orange'})
-  {% endif %}
-
+  {% for error in errors %}
+    M.toast({html: '{{ error }}', classes: 'orange'})
+  {% endfor %}
   document.getElementById("vac_certificate").onchange = function() {
     for (i=0; i < this.files.length; i++) {
       if(this.files[i].size > 1048576*10) {

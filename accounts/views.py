@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.shortcuts import redirect
 from django.conf import settings
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import FileResponse
@@ -50,11 +49,16 @@ def get_oauth_data(token):
 # send to hitobito request to get token
 def oauth_login(request):
     redirect_uri = request.build_absolute_uri(reverse('auth'))
+
+    if not request.GET["next"]:
+        redirect_uri += "?next=/"
+    else:
+        redirect_uri += "?next=" + request.GET["next"]
+
     return hitobito.authorize_redirect(request, redirect_uri)
 
 # callback after acquiring token
 def auth(request):
-    code = request.GET["code"]
     token = hitobito.authorize_access_token(request)
 
     # request data from user account
@@ -77,10 +81,9 @@ def auth(request):
         usercode[0].country = resp_data["town"]
         usercode[0].born_date = dateparser.parse(resp_data["birthday"])
         usercode[0].midata_token = token["access_token"]
-        usercode[0].midata_code = code
         usercode[0].save()
 
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(request.GET["next"])
 
     user = User.objects.create_user(resp_data["email"], resp_data["email"])
 
@@ -92,7 +95,7 @@ def auth(request):
 
     medic = MedicalData()
     medic.save()
-    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"], midata_code=code)
+    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
     user.first_name = resp_data["first_name"]
     user.last_name = resp_data["last_name"]
     user.email = resp_data["email"]
@@ -106,7 +109,7 @@ def auth(request):
 
     login(request, user)
 
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect(request.GET["next"])
 
 # send to hitobito request to get token
 @login_required
@@ -116,10 +119,12 @@ def oauth_connect(request):
 
 @login_required
 def oauth_disconnect(request):
+    if not request.user.has_usable_password():
+        return personal_wrapper(request, ["Il tuo utente non ha una password impostata, impostare una password prima di scollegarlo da MiData"])
+
     usercode = UserCode.objects.filter(user=request.user)[0]
     usercode.midata_id = 0
     usercode.midata_token = ""
-    usercode.midata_code = ""
     usercode.save()
 
     return HttpResponseRedirect(reverse("personal") + "#settings")
@@ -135,13 +140,12 @@ def auth_connect(request):
     # check that account is not linked to another
     existing_codes = UserCode.objects.filter(midata_id=resp_data["id"])
     if len(existing_codes) > 0:
-        return personal_wrapper(request, True, "Questo utente è già collegato ad un altro")
+        return personal_wrapper(request, ["Questo utente è già collegato ad un altro"])
 
     # save id to user
     usercode = UserCode.objects.filter(user=request.user)[0]
     usercode.midata_id = resp_data["id"]
     usercode.midata_token = token["access_token"]
-    usercode.midata_code = request.GET["code"]
     usercode.save()
 
     return HttpResponseRedirect(reverse("personal") + "#settings")
@@ -199,12 +203,12 @@ def signup(request):
 # create wrapper to send custom error from other views (oauth connect/disconnect)
 @login_required
 def personal(request):
-    return personal_wrapper(request, False, "")
+    return personal_wrapper(request, [])
 
 @login_required
-def personal_wrapper(request, error, error_text):
+def personal_wrapper(request, errors):
     context = {}
-    # additional user informations
+    # additional user information
     usercode = UserCode.objects.filter(user=request.user)[0]
     # medical info
     medic = usercode.medic
@@ -238,7 +242,7 @@ def personal_wrapper(request, error, error_text):
                 im_io.seek(0)
                 return FileResponse(im_io, as_attachment=True, filename=filename)
 
-        if request.POST['action'] == "download_health":
+        elif request.POST['action'] == "download_health":
             if medic.health_care_certificate != None:
                 filename = os.path.basename(medic.health_care_certificate.name)
                 filename = filename[filename.find("_")+1:]
@@ -253,172 +257,186 @@ def personal_wrapper(request, error, error_text):
                 im_io.seek(0)
                 return FileResponse(im_io, as_attachment=True, filename=filename)
 
-        # set all attributes
-        request.user.first_name = request.POST["first_name"]
-        request.user.last_name = request.POST["last_name"]
-        request.user.email = request.POST["email"]
-        request.user.save()
-        usercode.parent_name = request.POST["parent_name"]
-        usercode.via = request.POST["via"]
-        usercode.cap = request.POST["cap"]
-        usercode.country = request.POST["country"]
-        usercode.nationality = request.POST["nationality"]
-        usercode.born_date = dateparser.parse(request.POST["birth_date"])
-        usercode.home_phone = request.POST["home_phone"]
-        usercode.phone = request.POST["phone"]
-        usercode.school = request.POST["school"]
-        usercode.avs_number = request.POST["avs_number"]
+        elif request.POST['action'] == "password":
+            # get form object
+            print(request.POST)
 
-        if request.POST["year"].isdigit():
-            usercode.year = request.POST["year"]
+            # if form is valid and terms were accepted save user
+            password_errors = []
+            for err in password_errors:
+                if err.code == "password_mismatch":
+                    errors.append("Le due password non sono uguali")
+                elif err.code == "password_too_similar":
+                    errors.append("La password è troppo simile all'username")
+                elif err.code == "password_too_short":
+                    errors.append("La password è troppo corta")
+                elif err.code == "password_too_common":
+                    errors.append("La password è troppo comune")
+                elif err.code == "password_entirely_numeric":
+                    errors.append("La password deve contenere lettere")
+                elif err.code == "password_incorrect":
+                    errors.append("La password attuale è incorretta")
+
         else:
-            error = True
-            error_text = "L'anno scolastico deve essere un numero"
+            # set all attributes
+            request.user.first_name = request.POST["first_name"]
+            request.user.last_name = request.POST["last_name"]
+            request.user.email = request.POST["email"]
+            request.user.save()
+            usercode.parent_name = request.POST["parent_name"]
+            usercode.via = request.POST["via"]
+            usercode.cap = request.POST["cap"]
+            usercode.country = request.POST["country"]
+            usercode.nationality = request.POST["nationality"]
+            usercode.born_date = dateparser.parse(request.POST["birth_date"])
+            usercode.home_phone = request.POST["home_phone"]
+            usercode.phone = request.POST["phone"]
+            usercode.school = request.POST["school"]
+            usercode.avs_number = request.POST["avs_number"]
 
-        usercode.save()
-
-        medic.emer_name = request.POST["emer_name"]
-        medic.emer_relative = request.POST["emer_relative"]
-        medic.cell_phone = request.POST["cell_phone"]
-        medic.address = request.POST["address"]
-        medic.emer_phone = request.POST["emer_phone"]
-        medic.health_care = request.POST["health_care"]
-        medic.injuries = request.POST["injuries"]
-        medic.rc = request.POST["rc"]
-        medic.rega = "rega" in request.POST
-        medic.medic_name = request.POST["medic_name"]
-        medic.medic_phone = request.POST["medic_phone"]
-        medic.medic_address = request.POST["medic_address"]
-        medic.sickness = request.POST["sickness"]
-        medic.vaccine = request.POST["vaccine"]
-        medic.tetanus_date = dateparser.parse(request.POST["tetanus_date"])
-        medic.allergy = request.POST["allergy"]
-        medic.drugs_bool = "drugs_bool" in request.POST
-        medic.drugs = request.POST["drugs"]
-        medic.misc_bool = "misc_bool" in request.POST
-        medic.misc = request.POST["misc"]
-        medic.save()
-
-        if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
-            validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
-            error = True
-            error_text = "Alcuni campi richiesti non sono stati compilati"
-        else:
-            validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
-
-        for i in required_fields:
-            if request.POST[i] == "":
-                error = True
-                error_text = "Alcuni campi richiesti non sono stati compilati"
-                validation_dic[i] = 'class="validate invalid" required="" aria-required="true"'
+            if request.POST["year"].isdigit():
+                usercode.year = request.POST["year"]
             else:
-                validation_dic[i] = 'class="validate" required="" aria-required="true"'
+                errors.append("L'anno scolastico deve essere un numero")
 
-        # if "branca" in request.POST:
-        #    if request.POST["branca"] != "":
-        #        request.user.groups.clear()
-        #        request.user.groups.add(
-        #            Group.objects.get(name=request.POST["branca"]))
+            usercode.save()
 
-        # check if user uploaded a file
-        if "vac_certificate" in request.FILES:
-            files = request.FILES.getlist('vac_certificate')
-            name = files[0].name
-            try:
-                # if multiple files concatenate pictures
-                im = Image.new("RGB", (0, 0), (255, 255, 255))
-                for f in files:
-                    if f.name.endswith(".pdf"):
-                        images = convert_from_bytes(f.read())
-                        for i in images:
+            medic.emer_name = request.POST["emer_name"]
+            medic.emer_relative = request.POST["emer_relative"]
+            medic.cell_phone = request.POST["cell_phone"]
+            medic.address = request.POST["address"]
+            medic.emer_phone = request.POST["emer_phone"]
+            medic.health_care = request.POST["health_care"]
+            medic.injuries = request.POST["injuries"]
+            medic.rc = request.POST["rc"]
+            medic.rega = "rega" in request.POST
+            medic.medic_name = request.POST["medic_name"]
+            medic.medic_phone = request.POST["medic_phone"]
+            medic.medic_address = request.POST["medic_address"]
+            medic.sickness = request.POST["sickness"]
+            medic.vaccine = request.POST["vaccine"]
+            medic.tetanus_date = dateparser.parse(request.POST["tetanus_date"])
+            medic.allergy = request.POST["allergy"]
+            medic.drugs_bool = "drugs_bool" in request.POST
+            medic.drugs = request.POST["drugs"]
+            medic.misc_bool = "misc_bool" in request.POST
+            medic.misc = request.POST["misc"]
+            medic.save()
+
+            missing_fields = False
+            if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
+                validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
+                missing_fields = True
+            else:
+                validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
+
+            for i in required_fields:
+                if request.POST[i] == "":
+                    missing_fields = True
+                    validation_dic[i] = 'class="validate invalid" required="" aria-required="true"'
+                else:
+                    validation_dic[i] = 'class="validate" required="" aria-required="true"'
+
+            if missing_fields:
+                errors.append("Alcuni campi richiesti non sono stati compilati")
+
+            # if "branca" in request.POST:
+            #    if request.POST["branca"] != "":
+            #        request.user.groups.clear()
+            #        request.user.groups.add(
+            #            Group.objects.get(name=request.POST["branca"]))
+
+            # check if user uploaded a file
+            if "vac_certificate" in request.FILES:
+                files = request.FILES.getlist('vac_certificate')
+                name = files[0].name
+                try:
+                    # if multiple files concatenate pictures
+                    im = Image.new("RGB", (0, 0), (255, 255, 255))
+                    for f in files:
+                        if f.name.endswith(".pdf"):
+                            images = convert_from_bytes(f.read())
+                            for i in images:
+                                dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
+                                dst.paste(im, (0, 0))
+                                dst.paste(i, (0, im.height))
+                                im = dst
+                        else:
+                            i = Image.open(f)
                             dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                             dst.paste(im, (0, 0))
                             dst.paste(i, (0, im.height))
                             im = dst
-                    else:
-                        i = Image.open(f)
-                        dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
-                        dst.paste(im, (0, 0))
-                        dst.paste(i, (0, im.height))
-                        im = dst
 
-                im_io = BytesIO()
-                # resize image if larger than max value
-                if im.height > 16383:
-                    im = im.resize((round(im.width/im.height*16383), 16383))
-                # compress image in WEBP
-                im.save(im_io, 'WEBP', quality=50, method=4)
-                medic.vac_certificate.save(
-                    request.user.username+"_"+name, im_io)
-                medic.save()
-            except UnidentifiedImageError:
-                error = True
-                error_text = "Il file non è un immagine valida"
-            except PDFPageCountError:
-                error = True
-                error_text = "Il file non è un pdf valido"
-            except PDFSyntaxError:
-                error = True
-                error_text = "Il file non è un pdf valido"
-            except IOError:
-                error = True
-                error_text = "Il file è un immagine troppo grande"
+                    im_io = BytesIO()
+                    # resize image if larger than max value
+                    if im.height > 16383:
+                        im = im.resize((round(im.width/im.height*16383), 16383))
+                    # compress image in WEBP
+                    im.save(im_io, 'WEBP', quality=50, method=4)
+                    medic.vac_certificate.save(
+                        request.user.username+"_"+name, im_io)
+                    medic.save()
+                except UnidentifiedImageError:
+                    errors.append("Il certificato delle vaccinazioni non è un immagine valida")
+                except PDFPageCountError:
+                    errors.append("Il certificato delle vaccinazioni non è un pdf valido")
+                except PDFSyntaxError:
+                    errors.append("Il certificato delle vaccinazioni non è un pdf valido")
+                except IOError:
+                    errors.append("Il certificato delle vaccinazioni è un immagine troppo grande")
 
-        if "health_care_certificate" in request.FILES:
-            files = request.FILES.getlist('health_care_certificate')
-            name = files[0].name
-            try:
-                # if multiple files concatenate pictures
-                im = Image.new("RGB", (0, 0), (255, 255, 255))
-                for f in files:
-                    if f.name.endswith(".pdf"):
-                        images = convert_from_bytes(f.read())
-                        for i in images:
+            if "health_care_certificate" in request.FILES:
+                files = request.FILES.getlist('health_care_certificate')
+                name = files[0].name
+                try:
+                    # if multiple files concatenate pictures
+                    im = Image.new("RGB", (0, 0), (255, 255, 255))
+                    for f in files:
+                        if f.name.endswith(".pdf"):
+                            images = convert_from_bytes(f.read())
+                            for i in images:
+                                dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
+                                dst.paste(im, (0, 0))
+                                dst.paste(i, (0, im.height))
+                                im = dst
+                        else:
+                            i = Image.open(f)
                             dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
                             dst.paste(im, (0, 0))
                             dst.paste(i, (0, im.height))
                             im = dst
-                    else:
-                        i = Image.open(f)
-                        dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
-                        dst.paste(im, (0, 0))
-                        dst.paste(i, (0, im.height))
-                        im = dst
 
-                im_io = BytesIO()
-                # resize image if larger than max value
-                if im.height > 16383:
-                    im = im.resize((round(im.width/im.height*16383), 16383))
-                # compress image in WEBP
-                im.save(im_io, 'WEBP', quality=50, method=4)
-                medic.health_care_certificate.save(
-                    request.user.username+"_"+name, im_io)
+                    im_io = BytesIO()
+                    # resize image if larger than max value
+                    if im.height > 16383:
+                        im = im.resize((round(im.width/im.height*16383), 16383))
+                    # compress image in WEBP
+                    im.save(im_io, 'WEBP', quality=50, method=4)
+                    medic.health_care_certificate.save(
+                        request.user.username+"_"+name, im_io)
+                    medic.save()
+                except UnidentifiedImageError:
+                    errors.append("La tessera della cassa malati non è un immagine valida")
+                except PDFPageCountError:
+                    errors.append("La tessera della cassa malati non è un pdf valido")
+                except PDFSyntaxError:
+                    errors.append("La tessera della cassa malati non è un pdf valido")
+                except IOError:
+                    errors.append("La tessera della cassa malati è un immagine troppo grande")
+
+            # user requested file delete
+            if request.POST["delete_vac"] == 'vac':
+                medic.vac_certificate = None
                 medic.save()
-            except UnidentifiedImageError:
-                error = True
-                error_text = "Il file non è un immagine valida"
-            except PDFPageCountError:
-                error = True
-                error_text = "Il file non è un pdf valido"
-            except PDFSyntaxError:
-                error = True
-                error_text = "Il file non è un pdf valido"
-            except IOError:
-                error = True
-                error_text = "Il file è un immagine troppo grande"
 
-        # user requested file delete
-        if request.POST["delete_vac"] == 'vac':
-            medic.vac_certificate = None
-            medic.save()
+            if request.POST["delete_health"] == 'health':
+                medic.health_care_certificate = None
+                medic.save()
 
-        if request.POST["delete_health"] == 'health':
-            medic.health_care_certificate = None
-            medic.save()
-
-        # if there wasn't any error redirect to clear POST
-        if not error:
-            return HttpResponseRedirect("")
+            # if there wasn't any error redirect to clear POST
+            if len(errors) == 0:
+                return HttpResponseRedirect("")
 
     else:
         # no post, create empty validation
@@ -476,15 +494,8 @@ def personal_wrapper(request, error, error_text):
         resp = get_oauth_data(usercode.midata_token)
 
         if resp.status_code != 200:
-            request.GET["code"] = usercode.midata_code
-            token = hitobito.authorize_access_token(request)
-            usercode.midata_token = token["access_token"]
-            usercode.save()
-            resp = get_oauth_data(usercode.midata_token)
-
-        if resp.status_code != 200:
             logout(request)
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(request.path_info)
 
         resp_data = resp.json()
 
@@ -499,6 +510,8 @@ def personal_wrapper(request, error, error_text):
         usercode.country = resp_data["town"]
         usercode.born_date = dateparser.parse(resp_data["birthday"])
         usercode.save()
+
+    usable_password = request.user.has_usable_password()
 
     # fill context
     context = {
@@ -545,10 +558,10 @@ def personal_wrapper(request, error, error_text):
         'misc': medic.misc,
         'health_care_certificate': card_name,
         'vac_certificate': vac_name,
-        'error': error,
-        'error_text': error_text,
+        'errors': errors,
         'midata_user': midata_user,
         'midata_disable': midata_disable,
+        'usable_password': usable_password,
     }
 
     return render(request, 'accounts/index.html', context)

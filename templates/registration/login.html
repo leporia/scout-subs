@@ -19,7 +19,7 @@
             <br><br><hr><br>
             <div class="row">
               <div class="col s12">
-                <a href={% url 'oauth_login' %} style="width: 100%; background-color: #99BF62" class="btn waves-effect waves-light">
+                <a href="{% url 'oauth_login' %}?next={{ request.GET.next }}" style="width: 100%; background-color: #99BF62" class="btn waves-effect waves-light">
                   <div class="row">
                     <div class="col s2">
                       <img style="height: 30px; padding-top: 3px" src="{% static 'pbs_logo.svg' %}" alt="PBS Logo">
