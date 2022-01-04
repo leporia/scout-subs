@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.debug import sensitive_variables
@@ -26,21 +26,7 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 
-def update_token(name, token, refresh_token=None, access_token=None):
-    if refresh_token:
-        item = OAuth2Token.find(name=name, refresh_token=refresh_token)
-    elif access_token:
-        item = OAuth2Token.find(name=name, access_token=access_token)
-    else:
-        return
-
-    # update old token
-    item.access_token = token['access_token']
-    item.refresh_token = token.get('refresh_token')
-    item.expires_at = token['expires_at']
-    item.save()
-
-oauth = OAuth(update_token=update_token)
+oauth = OAuth()
 hitobito = oauth.register(name="hitobito")
 api_url = settings.AUTHLIB_OAUTH_CLIENTS["hitobito"]["api_url"]
 
@@ -52,6 +38,15 @@ class RegisterForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
 
+def get_oauth_data(token):
+    # request data from user account
+    headers = {
+        "Authorization" : "Bearer " + token,
+        "X-Scope": "with_roles",
+    }
+
+    return requests.get(api_url, headers=headers)
+
 # send to hitobito request to get token
 def oauth_login(request):
     redirect_uri = request.build_absolute_uri(reverse('auth'))
@@ -59,15 +54,11 @@ def oauth_login(request):
 
 # callback after acquiring token
 def auth(request):
+    code = request.GET["code"]
     token = hitobito.authorize_access_token(request)
 
     # request data from user account
-    headers = {
-        "Authorization" : "Bearer " + token["access_token"],
-        "X-Scope": "with_roles",
-    }
-    resp = requests.get(api_url, headers=headers)
-    resp_data = resp.json()
+    resp_data = get_oauth_data(token["access_token"]).json()
 
     # find user with that id
     usercode = UserCode.objects.filter(midata_id=resp_data["id"])
@@ -85,6 +76,8 @@ def auth(request):
         usercode[0].cap = resp_data["zip_code"]
         usercode[0].country = resp_data["town"]
         usercode[0].born_date = dateparser.parse(resp_data["birthday"])
+        usercode[0].midata_token = token["access_token"]
+        usercode[0].midata_code = code
         usercode[0].save()
 
         return HttpResponseRedirect('/')
@@ -99,7 +92,7 @@ def auth(request):
 
     medic = MedicalData()
     medic.save()
-    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
+    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"], midata_code=code)
     user.first_name = resp_data["first_name"]
     user.last_name = resp_data["last_name"]
     user.email = resp_data["email"]
@@ -126,6 +119,7 @@ def oauth_disconnect(request):
     usercode = UserCode.objects.filter(user=request.user)[0]
     usercode.midata_id = 0
     usercode.midata_token = ""
+    usercode.midata_code = ""
     usercode.save()
 
     return HttpResponseRedirect(reverse("personal") + "#settings")
@@ -136,12 +130,7 @@ def auth_connect(request):
     token = hitobito.authorize_access_token(request)
 
     # request data from user account
-    headers = {
-        "Authorization" : "Bearer " + token["access_token"],
-        "X-Scope": "with_roles",
-    }
-    resp = requests.get(api_url, headers=headers)
-    resp_data = resp.json()
+    resp_data = get_oauth_data(token["access_token"]).json()
 
     # check that account is not linked to another
     existing_codes = UserCode.objects.filter(midata_id=resp_data["id"])
@@ -152,6 +141,7 @@ def auth_connect(request):
     usercode = UserCode.objects.filter(user=request.user)[0]
     usercode.midata_id = resp_data["id"]
     usercode.midata_token = token["access_token"]
+    usercode.midata_code = request.GET["code"]
     usercode.save()
 
     return HttpResponseRedirect(reverse("personal") + "#settings")
@@ -483,13 +473,19 @@ def personal_wrapper(request, error, error_text):
     midata_disable = ""
 
     if midata_user:
-        # request data from user account
-        headers = {
-            "Authorization" : "Bearer " + usercode.midata_token,
-            "X-Scope": "with_roles",
-        }
+        resp = get_oauth_data(usercode.midata_token)
 
-        resp = requests.get(api_url, headers=headers)
+        if resp.status_code != 200:
+            request.GET["code"] = usercode.midata_code
+            token = hitobito.authorize_access_token(request)
+            usercode.midata_token = token["access_token"]
+            usercode.save()
+            resp = get_oauth_data(usercode.midata_token)
+
+        if resp.status_code != 200:
+            logout(request)
+            return HttpResponseRedirect("/")
+
         resp_data = resp.json()
 
         midata_disable = " disabled"
