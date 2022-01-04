@@ -488,7 +488,7 @@ def personal_wrapper(request, error, error_text):
 
         resp_data = resp.json()
 
-        midata_disable = " disabled"
+        midata_disable = " readonly disabled"
         request.user.first_name = resp_data["first_name"]
         request.user.last_name = resp_data["last_name"]
         request.user.email = resp_data["email"]

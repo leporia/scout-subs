@@ -366,6 +366,9 @@ function send(id) {
   var form = document.getElementById('form1');
   var action = document.getElementById('action');
   action.setAttribute('value', id);
+  $(':disabled').each(function(e) {
+        $(this).removeAttr('disabled');
+  })
   form.submit();
 }
 
