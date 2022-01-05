@@ -21,7 +21,18 @@
         <div class="card-content">
           <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div class="row">
+              <div class="input-field col s12">
+                <label for="id_username">Nome utente</label>
+                {{ form.username }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+              </div>
+            </div>
             <br>
             <a href={% url 'password_reset' %}>Password dimenticata</a>
             <br>
@@ -54,6 +65,15 @@
       </div>
     </div>
   </div>
+{% endblock %}
+{% block script %}
+document.addEventListener('DOMContentLoaded', function() {
+  {% for field, errors in form.errors.items %}
+    {% for error in errors %}
+      M.toast({html: '{{ error }}', classes: 'orange'})
+    {% endfor %}
+  {% endfor %}
+});
 {% endblock %}
 {% block footer %}
   <footer class="page-footer {{color}}">

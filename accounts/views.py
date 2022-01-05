@@ -1,13 +1,15 @@
 from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
-from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.views import LoginView
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.debug import sensitive_variables
 from django.http import HttpResponseRedirect
+from django.core.exceptions import ValidationError
 
 from client.models import UserCode, MedicalData
 
@@ -36,6 +38,28 @@ class RegisterForm(UserCreationForm):
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
+
+class AuthForm(AuthenticationForm):
+    error_messages = {
+        'invalid_login': ("Password errata e/o utente inesistente"),
+        'inactive': ("Utente disattivato"),
+        'midata_user': ("Utilizza il login con MiData collegato all'utente"),
+    }
+    def confirm_login_allowed(self, user):
+        usercode = UserCode.objects.filter(user=user)
+
+        if len(usercode) > 0:
+            if usercode[0].midata_id > 0:
+                raise ValidationError(
+                    self.error_messages['midata_user'],
+                    code='midata_user',
+                )
+
+        if not user.is_active:
+            raise ValidationError(
+                self.error_messages['inactive'],
+                code='inactive',
+            )
 
 # request data from user account
 def get_oauth_data(token):
@@ -69,6 +93,9 @@ def copy_from_midata(request, usercode):
     return True
 
 ### Views ###
+
+class CustomLoginView(LoginView):
+    form_class = AuthForm
 
 # send to hitobito request to get token
 def oauth_login(request):

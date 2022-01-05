@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('signup/', views.signup, name='signup'),
+    path('login/', views.CustomLoginView.as_view(), name='login'),
     path('personal/', views.personal, name='personal'),
     path('terms/', views.terms, name='terms'),
     path('oauth_login/', views.oauth_login, name='oauth_login'),
