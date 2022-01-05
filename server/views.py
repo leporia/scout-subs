@@ -672,10 +672,16 @@ def doccreate(request):
         # create custom keys
         if custom_data:
             custom = request.POST["custom"]
-            custom.replace("\r", "")
-            custom = custom.split("\n")
+            custom = custom.splitlines()
             for i in custom:
-                key = Keys(key=i, container=doctype)
+                val = i
+                if val.startswith("!"):
+                    if len(val) < 3:
+                        val = val
+
+                    val = val[3:].split(",")[0]
+
+                key = Keys(key=val, key_extra=i, container=doctype)
                 key.save()
 
         return HttpResponseRedirect('doctype')

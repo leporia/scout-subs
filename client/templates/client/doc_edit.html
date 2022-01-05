@@ -6,6 +6,8 @@
     <a href="#!" class="breadcrumb hide-on-med-and-down">Modifica iscrizione</a>
 {% endblock %}
 
+{% load app_filter %}
+
 {% block content %}
 <div class="row">
   <div class="col l8 offset-l2 s12">
@@ -63,12 +65,35 @@
           {% endif %}
           {% if custom_data %}
             {% for key in keys %}
-              <div class="row">
-                <div class="input-field col s12">
-                  <input value="{{key.value}}" name="{{key.id}}" id="{{key.id}}" type="text">
-                  <label for="{{key.id}}">{{key.key}}</label>
+              {% if key.key_extra|first in '!' %}
+                <div class="row">
+                  <div class="col s12">
+                    {% with arr=key.key_extra|parse_multiple_choice %}
+                      {{arr.0}}
+                      {% for val in arr.1 %}
+                        {% if key.value == val %}
+                          <p><label>
+                            <input class="with-gap" name="{{key.key}}" value="{{val}}" type="radio" checked/>
+                            <span>{{val}}</span>
+                          </label></p>
+                        {% else %}
+                          <p><label>
+                            <input class="with-gap" name="{{key.key}}" value="{{val}}" type="radio"/>
+                            <span>{{val}}</span>
+                          </label></p>
+                        {% endif %}
+                      {% endfor %}
+                    {% endwith %}
+                  </div>
                 </div>
-              </div>
+              {% else %}
+                <div class="row">
+                  <div class="input-field col s12">
+                    <input value="{{key.value}}" name="{{key.key}}" id="{{key.id}}" type="text">
+                    <label for="{{key.id}}">{{key.key}}</label>
+                  </div>
+                </div>
+              {% endif %}
             {% endfor %}
           {% endif %}
           <div class="row">

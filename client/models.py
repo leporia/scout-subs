@@ -96,6 +96,7 @@ class Keys(models.Model):
     container = models.ForeignKey(
         DocumentType, db_index=True, on_delete=models.CASCADE)
     key = models.CharField(max_length=240, db_index=True)
+    key_extra = models.CharField(max_length=1024, default="")
 
 
 class UserCode(models.Model):

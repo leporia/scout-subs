@@ -31,6 +31,14 @@
      background-color: {{hexcolor}} !important;
     }
 
+    [type="radio"]:checked + span::after, [type="radio"].with-gap:checked + span::before, [type="radio"].with-gap:checked + span::after {
+      border: 2px solid {{hexcolor}};
+    }
+
+    [type="radio"]:checked + span::after, [type="radio"].with-gap:checked + span::after {
+      background-color: {{hexcolor}};
+    }
+
     .switch label input[type="checkbox"]:checked + .lever {
       background-color: {{hexlightcolor}};
     }

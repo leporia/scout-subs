@@ -6,6 +6,8 @@
     <a href="#!" class="breadcrumb hide-on-med-and-down">Crea Iscrizione</a>
 {% endblock %}
 
+{% load app_filter %}
+
 {% block content %}
 <div class="row">
   <div class="col l8 offset-l2 s12">
@@ -107,12 +109,28 @@
               {% endif %}
               {% if custom_data %}
                 {% for key in keys %}
-                  <div class="row">
-                    <div class="input-field col s12">
-                      <input value="" name="{{key.id}}" id="{{key.id}}" type="text">
-                      <label for="{{key.id}}">{{key.key}}</label>
+                  {% if key.key_extra|first in '!' %}
+                    <div class="row">
+                      <div class="col s12">
+                        {% with arr=key.key_extra|parse_multiple_choice %}
+                          {{arr.0}}
+                          {% for val in arr.1 %}
+                            <p><label>
+                              <input class="with-gap" name="{{key.id}}" value="{{val}}" type="radio"/>
+                              <span>{{val}}</span>
+                            </label></p>
+                          {% endfor %}
+                        {% endwith %}
+                      </div>
                     </div>
-                  </div>
+                  {% else %}
+                    <div class="row">
+                      <div class="input-field col s12">
+                        <input value="" name="{{key.id}}" id="{{key.id}}" type="text">
+                        <label for="{{key.id}}">{{key.key}}</label>
+                      </div>
+                    </div>
+                  {% endif %}
                 {% endfor %}
               {% endif %}
               <div class="row">

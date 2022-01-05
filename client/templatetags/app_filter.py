@@ -35,3 +35,15 @@ def doc_count(doc):
         doc_count += "/" + str(doc.max_instances)
 
     return doc_count
+
+@register.filter(name="parse_multiple_choice")
+def parse_multiple_choice(str):
+    if len(str) < 3:
+        return [str, []]
+
+    str = str[3:]
+    arr = str.split(",")
+    if len(arr) < 2:
+        return [arr[0], []]
+
+    return [arr[0], arr[1:]]

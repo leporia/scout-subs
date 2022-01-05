@@ -1,3 +1,4 @@
+from django.db.models.expressions import OuterRef, Subquery
 from django.template.loader import get_template
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
@@ -94,7 +95,10 @@ def index(request):
             context['personal_data'] = document_type.personal_data
             context['medical_data'] = document_type.medical_data
             context['custom_data'] = document_type.custom_data
-            context['keys'] = KeyVal.objects.filter(container=document)
+            keys = Keys.objects.filter(container=document_type).annotate(value=Subquery(
+                KeyVal.objects.filter(container=document, key=OuterRef('key')).values('value')
+            ))
+            context['keys'] = keys
             context['custom_message'] = document_type.custom_message
             context['custom_message_text'] = document_type.custom_message_text
             return edit_wrapper(request, context)
@@ -264,6 +268,11 @@ def edit_wrapper(request, context):
             if document.user != request.user:
                 return
 
+            # check if document is editable
+            if document.status != "wait" and document.status != "autosign":
+                # user is cheating
+                return
+
             # update compilation date
             document.compilation_date = pytz.timezone('Europe/Zurich').localize(datetime.now())
             document.save(update_fields=["compilation_date"])
@@ -293,9 +302,13 @@ def edit_wrapper(request, context):
                 for i in request.POST.keys():
                     if i == "doc" or i == "csrfmiddlewaretoken":
                         continue
-                    key = KeyVal.objects.get(id=i)
-                    key.value = request.POST[i]
-                    key.save()
+                    key = KeyVal.objects.filter(key=i, container=document)
+                    if len(key) == 0:
+                        new_key = KeyVal(container=document, key=i, value=request.POST[i])
+                        new_key.save()
+                    else:
+                        key[0].value = request.POST[i]
+                        key[0].save()
 
             return HttpResponseRedirect('/')
 
