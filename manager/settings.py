@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from subprocess import check_output
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,6 +45,12 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL  = 'mafaldo@hotmail.it'
 SERVER_EMAIL    = 'mafaldo@hotmail.it'
 
+VERSION = ""
+with open("version.txt", 'r') as f:
+    VERSION = f.read()
+
+BRANCH = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode()
+COMMIT_ID = check_output(["git", "rev-parse", "HEAD"]).decode()
 
 # Application definition
 

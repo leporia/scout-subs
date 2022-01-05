@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from accounts.views import copy_from_midata
+from django.conf import settings
 
 from io import BytesIO
 import pdfkit
@@ -317,24 +318,20 @@ def edit_wrapper(request, context):
 
 def about(request):
     # very simple about page, get version from text file
-    version = ""
-
-    with open("version.txt", 'r') as f:
-        version = f.read()
+    version = settings.VERSION
 
     # parse file
     version = version[version.find("=")+1:]
     version = version.replace("\n", " ").replace("=", " ")
 
     # get branch
-    branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode()
+    branch = settings.BRANCH
     version += " (" + branch[:-1] + ")"
 
     if version.startswith("0"):
         version = "Beta " + version
 
     # get commitid using git command, a bit hacky but works
-    commitid = check_output(["git", "rev-parse", "HEAD"]).decode()
 
-    context = {"version": version, "commitid": commitid}
+    context = {"version": version, "commitid": settings.COMMIT_ID}
     return render(request, 'client/about.html', context)
