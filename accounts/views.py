@@ -58,6 +58,28 @@ def oauth_login(request):
 
     return hitobito.authorize_redirect(request, redirect_uri)
 
+def copy_from_midata(request, usercode):
+    resp = get_oauth_data(usercode.midata_token)
+
+    if resp.status_code != 200:
+        logout(request)
+        return False
+
+    resp_data = resp.json()
+
+    request.user.first_name = resp_data["first_name"]
+    request.user.last_name = resp_data["last_name"]
+    request.user.email = resp_data["email"]
+    request.user.save()
+
+    usercode.via = resp_data["address"]
+    usercode.cap = resp_data["zip_code"]
+    usercode.country = resp_data["town"]
+    usercode.born_date = dateparser.parse(resp_data["birthday"])
+    usercode.save()
+
+    return True
+
 # callback after acquiring token
 def auth(request):
     token = hitobito.authorize_access_token(request)
@@ -72,17 +94,10 @@ def auth(request):
         # user exist
         login(request, usercode[0].user)
 
-        request.user.first_name = resp_data["first_name"]
-        request.user.last_name = resp_data["last_name"]
-        request.user.email = resp_data["email"]
-        request.user.save()
-
-        usercode[0].via = resp_data["address"]
-        usercode[0].cap = resp_data["zip_code"]
-        usercode[0].country = resp_data["town"]
-        usercode[0].born_date = dateparser.parse(resp_data["birthday"])
         usercode[0].midata_token = token["access_token"]
         usercode[0].save()
+
+        copy_from_midata(request, usercode[0])
 
         return HttpResponseRedirect(request.GET["next"])
 
@@ -97,19 +112,11 @@ def auth(request):
 
     medic = MedicalData()
     medic.save()
-    userCode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
-    user.first_name = resp_data["first_name"]
-    user.last_name = resp_data["last_name"]
-    user.email = resp_data["email"]
-    user.save()
-
-    userCode.via = resp_data["address"]
-    userCode.cap = resp_data["zip_code"]
-    userCode.country = resp_data["town"]
-    userCode.born_date = dateparser.parse(resp_data["birthday"])
-    userCode.save()
+    usercode = UserCode(user=user, code=code, medic=medic, midata_id=resp_data["id"], midata_token=token["access_token"])
 
     login(request, user)
+
+    copy_from_midata(request, usercode)
 
     return HttpResponseRedirect(request.GET["next"])
 
@@ -509,25 +516,9 @@ def personal_wrapper(request, errors):
 
     # get user info from midata
     if midata_user:
-        resp = get_oauth_data(usercode.midata_token)
-
-        if resp.status_code != 200:
-            logout(request)
-            return HttpResponseRedirect(request.path_info)
-
-        resp_data = resp.json()
-
         midata_disable = " readonly disabled"
-        request.user.first_name = resp_data["first_name"]
-        request.user.last_name = resp_data["last_name"]
-        request.user.email = resp_data["email"]
-        request.user.save()
-
-        usercode.via = resp_data["address"]
-        usercode.cap = resp_data["zip_code"]
-        usercode.country = resp_data["town"]
-        usercode.born_date = dateparser.parse(resp_data["birthday"])
-        usercode.save()
+        if not copy_from_midata(request, usercode):
+            return HttpResponseRedirect(request.path_info)
 
     usable_password = request.user.has_usable_password()
 

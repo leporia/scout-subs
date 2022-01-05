@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from accounts.views import copy_from_midata
 
 from io import BytesIO
 import pdfkit
@@ -122,6 +123,12 @@ def index(request):
 @login_required
 def create(request):
     context = {}
+    usercode = UserCode.objects.filter(user=request.user)[0]
+
+    if usercode.midata_id > 0:
+        if not copy_from_midata(request, usercode):
+            return HttpResponseRedirect(request.path_info)
+    
     # group name and obj
     parent_groups = request.user.groups.values_list('name', flat=True)
 
@@ -190,7 +197,6 @@ def create(request):
                 return
 
             # set default values
-            usercode = UserCode.objects.filter(user=request.user)[0]
             code = 0
             status = "wait"
             personal_data = None
@@ -245,6 +251,11 @@ def edit(request):
 @login_required
 def edit_wrapper(request, context):
     if request.method == "POST":
+        usercode = UserCode.objects.filter(user=request.user)[0]
+        if usercode.midata_id > 0:
+            if not copy_from_midata(request, usercode):
+                return HttpResponseRedirect(request.path_info)
+
         if "action" not in request.POST.keys():
             # get document
             document = Document.objects.get(id=request.POST["doc"])
@@ -258,8 +269,6 @@ def edit_wrapper(request, context):
             document.save(update_fields=["compilation_date"])
 
             # save again all data
-            usercode = UserCode.objects.filter(user=document.user)[0]
-
             if document.document_type.personal_data:
                 personal_data = PersonalData(email=request.user.email, parent_name=usercode.parent_name, via=usercode.via, cap=usercode.cap, country=usercode.country,
                                              nationality=usercode.nationality, born_date=usercode.born_date, home_phone=usercode.home_phone, phone=usercode.phone, school=usercode.school, year=usercode.year, avs_number=usercode.avs_number)
