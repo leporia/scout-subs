@@ -304,6 +304,10 @@ def about(request):
     version = version[version.find("=")+1:]
     version = version.replace("\n", " ").replace("=", " ")
 
+    # get branch
+    branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode()
+    version += " (" + branch[:-1] + ")"
+
     if version.startswith("0"):
         version = "Beta " + version
 

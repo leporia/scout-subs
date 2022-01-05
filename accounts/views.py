@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
-from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
 from django.http import FileResponse
@@ -37,8 +37,8 @@ class RegisterForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
 
+# request data from user account
 def get_oauth_data(token):
-    # request data from user account
     headers = {
         "Authorization" : "Bearer " + token,
         "X-Scope": "with_roles",
@@ -50,6 +50,7 @@ def get_oauth_data(token):
 def oauth_login(request):
     redirect_uri = request.build_absolute_uri(reverse('auth'))
 
+    # forward next page requested by user
     if not request.GET["next"]:
         redirect_uri += "?next=/"
     else:
@@ -85,6 +86,7 @@ def auth(request):
 
         return HttpResponseRedirect(request.GET["next"])
 
+    # create new user
     user = User.objects.create_user(resp_data["email"], resp_data["email"])
 
     # create new usercode
@@ -117,6 +119,7 @@ def oauth_connect(request):
     redirect_uri = request.build_absolute_uri(reverse('auth_connect'))
     return hitobito.authorize_redirect(request, redirect_uri)
 
+# clear token only if user has another way to login
 @login_required
 def oauth_disconnect(request):
     if not request.user.has_usable_password():
@@ -208,6 +211,9 @@ def personal(request):
 @login_required
 def personal_wrapper(request, errors):
     context = {}
+    ok_message = ""
+    personal_active = "active"
+    settings_active = ""
     # additional user information
     usercode = UserCode.objects.filter(user=request.user)[0]
     # medical info
@@ -259,23 +265,34 @@ def personal_wrapper(request, errors):
 
         elif request.POST['action'] == "password":
             # get form object
-            print(request.POST)
+            if request.user.has_usable_password():
+                form2 = PasswordChangeForm(data=request.POST, user=request.user)
+            else:
+                form2 = SetPasswordForm(data=request.POST, user=request.user)
 
             # if form is valid and terms were accepted save user
-            password_errors = []
-            for err in password_errors:
-                if err.code == "password_mismatch":
-                    errors.append("Le due password non sono uguali")
-                elif err.code == "password_too_similar":
-                    errors.append("La password è troppo simile all'username")
-                elif err.code == "password_too_short":
-                    errors.append("La password è troppo corta")
-                elif err.code == "password_too_common":
-                    errors.append("La password è troppo comune")
-                elif err.code == "password_entirely_numeric":
-                    errors.append("La password deve contenere lettere")
-                elif err.code == "password_incorrect":
-                    errors.append("La password attuale è incorretta")
+            if form2.is_valid():
+                form2.save()
+                ok_message = "Password modificata con successo"
+                personal_active = ""
+                settings_active = "active"
+            else:
+                personal_active = ""
+                settings_active = "active"
+                for field in form2.errors.as_data().values():
+                    for err in field:
+                        if err.code == "password_mismatch":
+                            errors.append("Le due password non sono uguali")
+                        elif err.code == "password_too_similar":
+                            errors.append("La password è troppo simile all'username")
+                        elif err.code == "password_too_short":
+                            errors.append("La password è troppo corta")
+                        elif err.code == "password_too_common":
+                            errors.append("La password è troppo comune")
+                        elif err.code == "password_entirely_numeric":
+                            errors.append("La password deve contenere lettere")
+                        elif err.code == "password_incorrect":
+                            errors.append("La password attuale è incorretta")
 
         else:
             # set all attributes
@@ -448,8 +465,7 @@ def personal_wrapper(request, errors):
     if len(request.user.groups.values_list('name', flat=True)) == 0:
         branca_default = "selected"
     else:
-        parent_group = request.user.groups.values_list('name', flat=True)[
-            0]
+        parent_group = request.user.groups.values_list('name', flat=True)[0]
         if parent_group == "colonia":
             branca_castorini = "selected"
         elif parent_group == "muta":
@@ -487,9 +503,11 @@ def personal_wrapper(request, errors):
     else:
         card_name = ''
 
+    # check if user is connected with midata
     midata_user = (usercode.midata_id > 0)
     midata_disable = ""
 
+    # get user info from midata
     if midata_user:
         resp = get_oauth_data(usercode.midata_token)
 
@@ -559,9 +577,12 @@ def personal_wrapper(request, errors):
         'health_care_certificate': card_name,
         'vac_certificate': vac_name,
         'errors': errors,
+        'ok_message': ok_message,
         'midata_user': midata_user,
         'midata_disable': midata_disable,
         'usable_password': usable_password,
+        'settings_active': settings_active,
+        'personal_active': personal_active,
     }
 
     return render(request, 'accounts/index.html', context)

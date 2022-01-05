@@ -1,22 +1,24 @@
-{% extends 'registration/base_client.html' %}
+{% extends 'registration/base_simple.html' %}
 
 {% block title %}About{% endblock %}
 
-{%block breadcrumb%}
-  <a class="breadcrumb hide-on-med-and-down">Informazioni</a>
-{% endblock%}
-
 {% block content %}
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large {{color}}" href='/'>
+      <i class="large material-icons">home</i>
+    </a>
+  </div>
+
   <div class="row">
     <div class="col l6 offset-l3 m8 offset-m2 s12">
       <div class="card">
         <div class="card-content">
           <p>
-            Versione software {{version}}<br>Commit ID: <a href="https://git.thearcway.org/mafaldo/scout-subs/commit/?id={{commitid}}">{{commitid}}</a>
+            Versione: {{version}}<br>Commit ID: <a href="https://git.thearcway.org/mafaldo/scout-subs/commit/?id={{commitid}}">{{commitid}}</a>
           </p>
           <h5>Licenza</h5>
           <blockquote>
-            Copyright (C) 2020-21 Andrea Lepori<br><br>
+            Copyright (C) 2020-22 Andrea Lepori<br><br>
 
             This program is free software: you can redistribute it and/or modify
             it under the terms of the GNU General Public License as published by

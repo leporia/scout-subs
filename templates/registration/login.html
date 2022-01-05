@@ -1,10 +1,21 @@
 {% extends 'registration/base_simple.html' %}
 {% load static %}
+{% block style %}
+  body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1 0 auto;
+  }
+{% endblock %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
-  <div class="row">
+  <div style="margin-top: 50px" class="row">
     <div class="col l4 offset-l4 m8 offset-m2 s12">
       <div class="card">
         <div class="card-content">
@@ -43,4 +54,15 @@
       </div>
     </div>
   </div>
+{% endblock %}
+{% block footer %}
+  <footer class="page-footer {{color}}">
+    <div class="container">
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+      <a class="grey-text text-lighten-4 right" href="{% url 'about' %}">© 2020-22 Andrea Lepori</a>
+      </div>
+    </div>
+  </footer>
 {% endblock %}

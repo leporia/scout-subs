@@ -9,9 +9,9 @@
 {% block toolbar %}
   <div class="nav-content {{color}}">
     <ul class="tabs tabs-transparent">
-      <li class="tab"><a class="active" href="#personal">Info Personali</a></li>
+      <li class="tab"><a class="{{personal_active}}" href="#personal">Info Personali</a></li>
       <li class="tab"><a href="#medic">Info Mediche</a></li>
-      <li class="tab"><a href="#settings">Impostazioni</a></li>
+      <li class="tab"><a class="{{settings_active}}" href="#settings">Impostazioni</a></li>
     </ul>
   </div>
 {% endblock%}
@@ -362,13 +362,13 @@
       </div>
       <div class="row">
         <div class="col s12">
-          <form method="post">
+          <form action="{% url 'personal'%}" id="form2" method="post">
             {% csrf_token %}
             <input type="hidden" name="action" id="action" value="password">
             {% if usable_password %}
             <div class="row">
               <div class="col s12">
-                <input id="old_password" type="password">
+                <input id="old_password" name="old_password" type="password">
                 <label for="old_password">Password attuale</label>
               </div>
             </div>
@@ -377,19 +377,19 @@
             {% endif %}
             <div class="row">
               <div class="col s12">
-                <input id="new_password1" type="password">
+                <input id="new_password1" name="new_password1" type="password">
                 <label for="new_password1">Nuova password</label>
               </div>
             </div>
             <div class="row">
               <div class="col s12">
-                <input id="new_password2" type="password">
+                <input id="new_password2" name="new_password2" type="password">
                 <label for="new_password2">Conferma nuova password</label>
               </div>
             </div>
             <div class="row">
               <div class="col s12">
-                <button type="submit" class="btn waves-effect waves-light {{color}}">Salva</button>
+                <button onclick="document.getElementById(form2).submit()" class="btn waves-effect waves-light {{color}}">Salva</button>
               </div>
             </div>
           </form>
@@ -457,6 +457,9 @@ $(document).ready(function() {
   {% for error in errors %}
     M.toast({html: '{{ error }}', classes: 'orange'})
   {% endfor %}
+  {% if ok_message %}
+    M.toast({html: '{{ ok_message }}', classes: 'green'})
+  {% endif %}
   document.getElementById("vac_certificate").onchange = function() {
     for (i=0; i < this.files.length; i++) {
       if(this.files[i].size > 1048576*10) {
