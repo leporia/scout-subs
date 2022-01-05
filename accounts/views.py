@@ -46,18 +46,6 @@ def get_oauth_data(token):
 
     return requests.get(api_url, headers=headers)
 
-# send to hitobito request to get token
-def oauth_login(request):
-    redirect_uri = request.build_absolute_uri(reverse('auth'))
-
-    # forward next page requested by user
-    if not request.GET["next"]:
-        redirect_uri += "?next=/"
-    else:
-        redirect_uri += "?next=" + request.GET["next"]
-
-    return hitobito.authorize_redirect(request, redirect_uri)
-
 def copy_from_midata(request, usercode):
     resp = get_oauth_data(usercode.midata_token)
 
@@ -79,6 +67,20 @@ def copy_from_midata(request, usercode):
     usercode.save()
 
     return True
+
+### Views ###
+
+# send to hitobito request to get token
+def oauth_login(request):
+    redirect_uri = request.build_absolute_uri(reverse('auth'))
+
+    # forward next page requested by user
+    if not request.GET["next"]:
+        redirect_uri += "?next=/"
+    else:
+        redirect_uri += "?next=" + request.GET["next"]
+
+    return hitobito.authorize_redirect(request, redirect_uri)
 
 # callback after acquiring token
 def auth(request):
