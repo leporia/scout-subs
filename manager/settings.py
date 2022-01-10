@@ -52,6 +52,8 @@ with open("version.txt", 'r') as f:
 BRANCH = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode()
 COMMIT_ID = check_output(["git", "rev-parse", "HEAD"]).decode()
 
+OAUTH_ENABLED = True
+
 # Application definition
 
 INSTALLED_APPS = [

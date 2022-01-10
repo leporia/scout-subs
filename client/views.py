@@ -331,7 +331,5 @@ def about(request):
     if version.startswith("0"):
         version = "Beta " + version
 
-    # get commitid using git command, a bit hacky but works
-
     context = {"version": version, "commitid": settings.COMMIT_ID}
     return render(request, 'client/about.html', context)

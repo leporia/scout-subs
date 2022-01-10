@@ -317,43 +317,45 @@
 <div id="settings" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
+      {% if midata_enabled %}
       <div class="row">
         <div class="col s12">
           <h5>Collegamento con MiData</h5>
         </div>
       </div>
-      {% if midata_user %}
-        <div class="row">
-          <div class="col s12">
-            Il tuo utente è già connesso a MiData
+        {% if midata_user %}
+          <div class="row">
+            <div class="col s12">
+              Il tuo utente è già connesso a MiData
+            </div>
+            <div class="col m6 s12">
+              <a href={% url 'oauth_disconnect' %} style="width: 100%" class="btn waves-effect waves-light {{color}}">
+                Scollega da MiData
+              </a>
+            </div>
           </div>
-          <div class="col m6 s12">
-            <a href={% url 'oauth_disconnect' %} style="width: 100%" class="btn waves-effect waves-light {{color}}">
-              Scollega da MiData
-            </a>
+        {% else %}
+          <div class="row">
+            <div class="col s12">
+              Collega il tuo account con MiData per avere un login unico. Attenzione una volta collegato il
+              tuo account i dati presenti su MiData dovranno essere modificati sulla piattaforma stessa.
+            </div>
           </div>
-        </div>
-      {% else %}
-        <div class="row">
-          <div class="col s12">
-            Collega il tuo account con MiData per avere un login unico. Attenzione una volta collegato il
-            tuo account i dati presenti su MiData dovranno essere modificati sulla piattaforma stessa.
-          </div>
-        </div>
-        <div class="row">
-          <div class="col m6 s12">
-            <a href={% url 'oauth_connect' %} style="width: 100%; background-color: #99BF62" class="btn waves-effect waves-light">
-              <div class="row">
-                <div class="col s2">
-                  <img style="height: 30px; padding-top: 3px" src="{% static 'pbs_logo.svg' %}" alt="PBS Logo">
+          <div class="row">
+            <div class="col m6 s12">
+              <a href={% url 'oauth_connect' %} style="width: 100%; background-color: #99BF62" class="btn waves-effect waves-light">
+                <div class="row">
+                  <div class="col s2">
+                    <img style="height: 30px; padding-top: 3px" src="{% static 'pbs_logo.svg' %}" alt="PBS Logo">
+                  </div>
+                  <div class="col s10">
+                    Collega a MiData
+                  </div>
                 </div>
-                <div class="col s10">
-                  Collega a MiData
-                </div>
-              </div>
-            </a>
+              </a>
+            </div>
           </div>
-        </div>
+        {% endif %}
       {% endif %}
       <div class="row">
         <div class="col s12">

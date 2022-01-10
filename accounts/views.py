@@ -30,6 +30,7 @@ from pdf2image.exceptions import (
 oauth = OAuth()
 hitobito = oauth.register(name="hitobito")
 api_url = settings.AUTHLIB_OAUTH_CLIENTS["hitobito"]["api_url"]
+MIDATA_ENABLED = settings.OAUTH_ENABLED
 
 # override to remove help text
 class RegisterForm(UserCreationForm):
@@ -96,9 +97,13 @@ def copy_from_midata(request, usercode):
 
 class CustomLoginView(LoginView):
     form_class = AuthForm
+    extra_context = {'midata_enabled': MIDATA_ENABLED}
 
 # send to hitobito request to get token
 def oauth_login(request):
+    if not MIDATA_ENABLED:
+        return None
+
     redirect_uri = request.build_absolute_uri(reverse('auth'))
 
     # forward next page requested by user
@@ -111,6 +116,9 @@ def oauth_login(request):
 
 # callback after acquiring token
 def auth(request):
+    if not MIDATA_ENABLED:
+        return None
+
     token = hitobito.authorize_access_token(request)
 
     # request data from user account
@@ -152,6 +160,9 @@ def auth(request):
 # send to hitobito request to get token
 @login_required
 def oauth_connect(request):
+    if not MIDATA_ENABLED:
+        return None
+
     redirect_uri = request.build_absolute_uri(reverse('auth_connect'))
     return hitobito.authorize_redirect(request, redirect_uri)
 
@@ -171,6 +182,9 @@ def oauth_disconnect(request):
 # callback after acquiring token
 @login_required
 def auth_connect(request):
+    if not MIDATA_ENABLED:
+        return None
+
     token = hitobito.authorize_access_token(request)
 
     # request data from user account
@@ -603,6 +617,7 @@ def personal_wrapper(request, errors):
         'usable_password': usable_password,
         'settings_active': settings_active,
         'personal_active': personal_active,
+        'midata_enabled': MIDATA_ENABLED,
     }
 
     return render(request, 'accounts/index.html', context)
