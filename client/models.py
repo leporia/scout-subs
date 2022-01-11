@@ -15,7 +15,7 @@ class DocumentType(models.Model):
     medical_data = models.BooleanField(default=False)
     custom_data = models.BooleanField(default=False)
     custom_message = models.BooleanField(default=False)
-    custom_message_text = models.CharField(default="", max_length=250)
+    custom_message_text = models.CharField(default="", max_length=2048)
     staff_only = models.BooleanField(default=False)
     max_instances = models.IntegerField(default=0)
     name = models.CharField(default="", max_length=250)
@@ -88,15 +88,15 @@ class Document(models.Model):
 class KeyVal(models.Model):
     container = models.ForeignKey(
         Document, db_index=True, on_delete=models.CASCADE)
-    key = models.CharField(max_length=240, db_index=True)
-    value = models.CharField(max_length=240, db_index=True)
+    key = models.CharField(max_length=2048, db_index=True)
+    value = models.CharField(max_length=2048, db_index=True)
 
 
 class Keys(models.Model):
     container = models.ForeignKey(
         DocumentType, db_index=True, on_delete=models.CASCADE)
-    key = models.CharField(max_length=240, db_index=True)
-    key_extra = models.CharField(max_length=1024, default="")
+    key = models.CharField(max_length=2048, db_index=True)
+    key_extra = models.CharField(max_length=2048, default="")
 
 
 class UserCode(models.Model):
