@@ -1472,11 +1472,13 @@ def data_request(request):
         if "request" not in request.POST.keys():
             context["error"] = "Selezionare una richesta"
         elif request.POST["request"] == "email_all":
-            users_email = User.objects.filter(groups__name=parent_group).values_list("email", flat=True)
+            perm = Permission.objects.get(codename="approved")
+            users_email = User.objects.filter(groups__name=parent_group, user_permissions=perm).values_list("email", flat=True)
             data = ", ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "email_non_staff":
-            users_email = User.objects.filter(groups__name=parent_group).exclude(groups__name="capi").values_list("email", flat=True)
+            perm = Permission.objects.get(codename="approved")
+            users_email = User.objects.filter(groups__name=parent_group, user_permission=perm).exclude(groups__name="capi").values_list("email", flat=True)
             data = ", ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "data_user":
