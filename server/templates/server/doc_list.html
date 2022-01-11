@@ -508,7 +508,7 @@ $('#chips_owner').chips({
   autocompleteOptions: {
     data: {
       {% for user in users %}
-        '{{user.username}} ({{user.first_name}} {{user.last_name}})': null,
+        '{{user.user__username}} ({{user.user__first_name}} {{user.user__last_name}})': null,
       {% endfor %}
     },
     limit: Infinity,
