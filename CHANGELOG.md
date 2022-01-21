@@ -1,3 +1,11 @@
+# 0.5 (21 jan 2022)
+- Bug: users of other groups also visible in user list
+- Show warning if some account fields are empty
+- Implementation of oauth login using midata/hitobito
+- New settings tab in profile page
+- Password change
+- Multiple choice for custom parameters
+
 # 0.4 (23 set 2021)
 - Bug: emergency document list visible also to non "capi"
 - Overall performance improvements leveraging SQL queries

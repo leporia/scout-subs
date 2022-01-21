@@ -1,2 +1,2 @@
-version=0.4
-rev=29
+version=0.5
+rev=1

@@ -117,7 +117,9 @@
           <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Lista documenti" class="hide-on-med-and-up"><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i></a></li>
         {% endif %}
         <li class="tooltipped" data-position="bottom" data-tooltip="Informazioni"><a href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
-        <li class="tooltipped" data-position="bottom" data-tooltip="Logout"><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
+        {% if user.is_authenticated %}
+          <li class="tooltipped" data-position="bottom" data-tooltip="Logout"><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
+        {% endif %}
       </ul>
     </div>
     {% block toolbar %}
