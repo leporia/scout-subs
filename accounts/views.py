@@ -27,6 +27,13 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 
+# suppress warning about dateparser deprecated dependencies
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="The localize method is no longer necessary, as this time zone supports the fold attribute",
+)
+
 oauth = OAuth()
 hitobito = oauth.register(name="hitobito")
 api_url = settings.AUTHLIB_OAUTH_CLIENTS["hitobito"]["api_url"]
