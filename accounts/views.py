@@ -510,7 +510,7 @@ def personal_wrapper(request, errors):
 
             # if there wasn't any error redirect to clear POST
             if len(errors) == 0:
-                return HttpResponseRedirect("")
+                return HttpResponseRedirect(request.path_info)
 
     else:
         # no post, create empty validation
