@@ -574,7 +574,6 @@ def personal_wrapper(request, errors):
 
     # check if user has saved the form
     home_tooltip = False
-    print(errors)
     if "saved" in request.GET:
         # show tooltip only if user is not approved and there are no errors
         home_tooltip = (not request.user.has_perm("client.approved")) and (len(errors) == 0)
