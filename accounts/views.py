@@ -510,7 +510,7 @@ def personal_wrapper(request, errors):
 
             # if there wasn't any error redirect to clear POST
             if len(errors) == 0:
-                return HttpResponseRedirect(request.path_info)
+                return HttpResponseRedirect(request.get_full_path())
 
     else:
         # no post, create empty validation
@@ -568,9 +568,16 @@ def personal_wrapper(request, errors):
     if midata_user:
         midata_disable = " readonly disabled"
         if not copy_from_midata(request, usercode):
-            return HttpResponseRedirect(request.path_info)
+            return HttpResponseRedirect(request.get_full_path())
 
     usable_password = request.user.has_usable_password()
+
+    # check if user has saved the form
+    home_tooltip = False
+    print(errors)
+    if "saved" in request.GET:
+        # show tooltip only if user is not approved and there are no errors
+        home_tooltip = (not request.user.has_perm("client.approved")) and (len(errors) == 0)
 
     # fill context
     context = {
@@ -625,6 +632,7 @@ def personal_wrapper(request, errors):
         'settings_active': settings_active,
         'personal_active': personal_active,
         'midata_enabled': MIDATA_ENABLED,
+        'home_tooltip': home_tooltip,
     }
 
     return render(request, 'accounts/index.html', context)
