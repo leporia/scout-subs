@@ -12,4 +12,5 @@ urlpatterns = [
     path('oauth_connect/', views.oauth_connect, name='oauth_connect'),
     path('oauth_disconnect/', views.oauth_disconnect, name='oauth_disconnect'),
     path('auth_connect/', views.auth_connect, name='auth_connect'),
+    path('user_switcher/', views.user_switcher, name='user_switcher'),
 ]

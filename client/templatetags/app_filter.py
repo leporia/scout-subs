@@ -2,6 +2,8 @@ from django import template
 from django.db.models.query_utils import Q
 from client.models import Document, KeyVal, Keys
 
+import json
+
 register = template.Library()
 @register.filter(name="doc_key")
 def doc_key(doc):
@@ -47,3 +49,10 @@ def parse_multiple_choice(str):
         return [arr[0], []]
 
     return [arr[0], arr[1:]]
+
+@register.filter(name="parse_userswitcher")
+def parse_userswitcher(str):
+    if not str:
+        return []
+
+    return json.loads(str).keys()

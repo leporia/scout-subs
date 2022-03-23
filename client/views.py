@@ -2,7 +2,7 @@ from django.db.models.expressions import OuterRef, Subquery
 from django.template.loader import get_template
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
-from django.http import HttpResponseRedirect, FileResponse
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from accounts.views import copy_from_midata

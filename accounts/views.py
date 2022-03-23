@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
@@ -15,6 +16,7 @@ from client.models import UserCode, MedicalData
 
 from authlib.integrations.django_client import OAuth
 
+import json
 import dateparser
 import os
 import requests
@@ -202,6 +204,79 @@ def auth_connect(request):
     usercode.save()
 
     return HttpResponseRedirect(reverse("personal") + "#settings")
+
+@sensitive_variables("sessionid")
+def set_session_cookie(response, sessionid, expires):
+    expires_date = datetime.datetime.fromtimestamp(int(expires))
+    max_age = (expires_date - datetime.datetime.utcnow()).total_seconds()
+    response.set_cookie(
+        "sessionid",
+        sessionid,
+        max_age=max_age,
+        expires=expires,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+        secure=settings.SESSION_COOKIE_SECURE,
+        httponly=settings.SESSION_COOKIE_HTTPONLY,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+    )
+
+@sensitive_variables("data")
+def set_switch_cookie(response, data):
+
+    max_age = 30 * 60 * 60 * 24
+    expires = datetime.datetime.strftime(
+        datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age),
+        "%a, %d-%b-%Y %H:%M:%S GMT",
+    )
+    response.set_cookie(
+        "user_switcher",
+        json.dumps(data),
+        max_age=max_age,
+        expires=expires,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+        secure=settings.SESSION_COOKIE_SECURE,
+        httponly=settings.SESSION_COOKIE_HTTPONLY,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+    )
+
+@sensitive_variables("sessions")
+def user_switcher(request):
+    if request.method == 'POST':
+        if request.POST["metadata"] == 'new':
+            response = HttpResponseRedirect('/accounts/login')
+
+            sessions = dict()
+            if "user_switcher" in request.COOKIES:
+                sessions = json.loads(request.COOKIES.get("user_switcher"))
+
+            sessions[request.user.username] = (request.session.session_key, request.session.get_expiry_date().timestamp())
+            set_switch_cookie(response, sessions)
+
+            response.set_cookie("sessionid", "")
+
+            return response
+
+        if request.POST["metadata"][0] == 's':
+            response = HttpResponseRedirect("/")
+            username = request.POST["metadata"][1:]
+
+            sessions = dict()
+            if "user_switcher" in request.COOKIES:
+                sessions = json.loads(request.COOKIES.get("user_switcher"))
+
+            sessions[request.user.username] = (request.session.session_key, request.session.get_expiry_date().timestamp())
+            set_switch_cookie(response, sessions)
+
+            if username in sessions:
+                set_session_cookie(response, sessions[username][0], sessions[username][1])
+            else:
+                set_session_cookie(response, "", 0)
+
+            print("done")
+            return response
+
+    
+    return HttpResponseRedirect("/")
 
 @sensitive_variables("raw_passsword")
 def signup(request):
