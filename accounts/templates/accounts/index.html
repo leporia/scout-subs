@@ -17,7 +17,14 @@
 {% endblock%}
 
 {% block content %}
-<form action="{% url 'personal'%}" method="post" id="form1" enctype="multipart/form-data">
+<div class="tap-target {{color}}" data-target="home_btn">
+  <div class="tap-target-content">
+    <h5 style="color:white">Continua l'attivazione</h5>
+    <p style="color:white">Usa questo pulsante per tornare alla home e continuare il processo d'attivazione</p>
+  </div>
+</div>
+
+<form action="{% url 'personal'%}?saved=true" method="post" id="form1" enctype="multipart/form-data">
 <div id="personal" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
@@ -54,7 +61,7 @@
                 <option value="posto" {{branca_pionieri}}>Pionieri</option>
                 <option value="clan" {{branca_rover}}>Rover</option>
               </select>
-              <label>Branca</label>
+              <label>Branca (campo non modificabile)</label>
             </div>
             <div class="input-field col l4 s12">
               <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" {{validation_dic.parent_name|safe}}>
@@ -456,11 +463,15 @@ $(document).ready(function() {
   $('.datepicker').datepicker(options);
   $('.tabs').tabs();
   $('select').formSelect();
+  $('.tap-target').tapTarget();
   {% for error in errors %}
     M.toast({html: '{{ error }}', classes: 'orange'})
   {% endfor %}
   {% if ok_message %}
     M.toast({html: '{{ ok_message }}', classes: 'green'})
+  {% endif %}
+  {% if home_tooltip %}
+    $('.tap-target').tapTarget('open');
   {% endif %}
   document.getElementById("vac_certificate").onchange = function() {
     for (i=0; i < this.files.length; i++) {

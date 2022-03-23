@@ -88,6 +88,10 @@
      border-bottom: none;
      box-shadow: 0 1px 0 0 #9e9e9e;
    }
+
+   .breadcrumb:last-child {
+     color: {{hexcolor}}
+   }
   </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta charset="utf-8">
@@ -99,9 +103,8 @@
     {% csrf_token %}
     <input type="hidden" name="metadata" id="metadata">
     <div class="nav-wrapper {{color}}">
-      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb hide-on-small-only">Home</a>
-      <ul class="left hide-on-med-and-up">
-      <li><a href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
+      <ul class="left">
+      <li><a id="home_btn" href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
       </ul>
       {% block breadcrumb %}
       {% endblock %}

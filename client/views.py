@@ -61,10 +61,10 @@ def index(request):
 
         # check if document is valid to modify
         if document.user != request.user:
-            return
+            return HttpResponseRedirect("/")
 
         if document.status == "ok" or document.status == "archive":
-            return
+            return HttpResponseRedirect("/")
 
         # execute action
         if request.POST["action"][0] == 'f':
@@ -184,22 +184,22 @@ def create(request):
             if document_type.max_instances != 0:
                 if len(Document.objects.filter(document_type=document_type)) - len(Document.objects.filter(document_type=document_type, status="archive")) >= document_type.max_instances:
                     # there aren't user is cheating
-                    return
+                    return HttpResponseRedirect("/")
 
             # check if user has permission to use that type
             if document_type.staff_only and not request.user.is_staff and "capi" not in request.user.groups.values_list('name', flat = True):
                 # user is cheating abort
-                return
+                return HttpResponseRedirect("/")
 
             if not document_type.custom_group and document_type.group.name not in request.user.groups.values_list('name', flat=True):
                 # user is cheating abort
-                return
+                return HttpResponseRedirect("/")
 
             # get list of docs with that type
             current_docs = Document.objects.filter(user=request.user).filter(document_type=document_type)
             if len(current_docs) > 0:
                 # if there is already a document with that type abort (user is cheating)
-                return
+                return HttpResponseRedirect("/")
 
             # set default values
             code = 0
@@ -267,12 +267,12 @@ def edit_wrapper(request, context):
 
             # check if user has permission
             if document.user != request.user:
-                return
+                return HttpResponseRedirect("/")
 
             # check if document is editable
             if document.status != "wait" and document.status != "autosign":
                 # user is cheating
-                return
+                return HttpResponseRedirect("/")
 
             # update compilation date
             document.compilation_date = pytz.timezone('Europe/Zurich').localize(datetime.now())
