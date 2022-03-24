@@ -272,14 +272,15 @@ def user_switcher(request):
                 sessions = json.loads(request.COOKIES.get("user_switcher"))
 
             sessions[request.user.username] = (request.session.session_key, request.session.get_expiry_date().timestamp())
-            set_switch_cookie(response, sessions)
 
             if username in sessions:
                 set_session_cookie(response, sessions[username][0], sessions[username][1])
+                del sessions[username]
             else:
                 set_session_cookie(response, "", 0)
 
-            print("done")
+            set_switch_cookie(response, sessions)
+
             return response
 
     

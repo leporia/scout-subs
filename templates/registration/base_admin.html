@@ -5,6 +5,7 @@
 <html>
 <head>
   {% load static %}
+  {% load app_filter %}
   <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <style>
@@ -78,29 +79,40 @@
 <body>
   <nav class="nav-extended">
     <div class="nav-wrapper {{color}}">
-      <a style="margin-left: 10px;" href="{% url 'index' %}" class="breadcrumb hide-on-small-only">Home</a>
-      <ul class="left hide-on-med-and-up">
-      <li><a href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
+      <ul class="left">
+      <li><a id="home_btn" href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
       </ul>
       {% block breadcrumb %}
       {% endblock %}
       <ul class="right">
-        {% if user.is_authenticated %}
+        <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}</a></li>
+        <ul id='userswitcher' class='dropdown-content'>
+          <li><a href="{% url 'personal' %}"><i class="material-icons">person</i>Gestione account</a></li>
           {% if user.is_staff or perms.client.staff %}
-            <li class="hide-on-small-only"><a href="{% url 'server' %}">Pannello Admin</a></li>
+            <li><a href="{% url 'server' %}"><i class="material-icons">build</i>Pannello Admin</a></li>
           {% endif %}
-          <li class="hide-on-small-only tooltipped" data-position="bottom" data-tooltip="Dati personali"><a href="{% url 'personal' %}">{{ user.username }}</a></li>
-          <li class="hide-on-med-and-up tooltipped" data-position="bottom" data-tooltip="Dati personali"><a href="{% url 'personal' %}"><i class="material-icons">person</i></a></li>
-          {% if user.is_staff or perms.client.staff %}
-            <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Pannello Admin" class="hide-on-med-and-up"><a href="{% url 'server' %}"><i class="material-icons">build</i></a></li>
+          {% if group_view %}
+            <li><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i>Lista documenti</a></li>
           {% endif %}
-          <li class="tooltipped" data-position="bottom" data-tooltip="Informazioni"><a href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
-          <li class="tooltipped" data-position="bottom" data-tooltip="Logout"><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i></a></li>
-        {% else %}
-          <li><a href="{% url 'about' %}"><i class="material-icons">info_outline</i></a></li>
-          <li><a href="{% url 'signup' %}">Registrazione</a></li>
-          <li><a href="{% url 'login' %}">Login</a></li>
-        {% endif %}
+
+          <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          {% for username in request.COOKIES.user_switcher|parse_userswitcher%}
+            {% if username != user.username %}
+              <li><a onclick="switcher_submit('s{{username}}')">{{username}}</a></li>
+            {% endif %}
+          {% endfor %}
+          <li class="divider" tabindex="-1"></li>
+          <li><a onclick="switcher_submit('new')"><i class="material-icons">person_add</i>Aggiungi un altro utente</a></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li><a href="{% url 'about' %}">Informazioni sul prodotto</a></li>
+        </ul>
       </ul>
     </div>
     {% block toolbar %}
@@ -118,6 +130,17 @@
   $(document).ready(function(){
     $('.tooltipped').tooltip();
   });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.userswitcher');
+    var instances = M.Dropdown.init(elems, {"coverTrigger": false, "constrainWidth": false});
+  });
+  function switcher_submit(id) {
+    var form = document.getElementById('user_form')
+    var action = document.getElementById('metadata')
+    action.setAttribute('value', id);
+    form.submit()
+  }
   {% block script %}
   {% endblock%}
   </script>

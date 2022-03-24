@@ -109,29 +109,31 @@
       {% block breadcrumb %}
       {% endblock %}
       <ul class="right">
-        {% if group_view %}
-          <li class="hide-on-small-only"><a class="modal-trigger" href="#modal_capi">Lista documenti</a></li>
-        {% endif %}
-        {% if user.is_staff or perms.client.staff %}
-          <li class="hide-on-small-only"><a href="{% url 'server' %}">Pannello Admin</a></li>
-        {% endif %}
-        {% if user.is_staff or perms.client.staff %}
-          <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Pannello Admin" class="hide-on-med-and-up"><a href="{% url 'server' %}"><i class="material-icons">build</i></a></li>
-        {% endif %}
-        {% if group_view %}
-          <li class="tooltipped hide-on-med-and-up" data-position="bottom" data-tooltip="Lista documenti" class="hide-on-med-and-up"><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i></a></li>
-        {% endif %}
         <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}</a></li>
         <ul id='userswitcher' class='dropdown-content'>
           <li><a href="{% url 'personal' %}"><i class="material-icons">person</i>Gestione account</a></li>
+          {% if user.is_staff or perms.client.staff %}
+            <li><a href="{% url 'server' %}"><i class="material-icons">build</i>Pannello Admin</a></li>
+          {% endif %}
+          {% if group_view %}
+            <li><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i>Lista documenti</a></li>
+          {% endif %}
+
           <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
           {% for username in request.COOKIES.user_switcher|parse_userswitcher%}
             {% if username != user.username %}
               <li><a onclick="switcher_submit('s{{username}}')">{{username}}</a></li>
             {% endif %}
           {% endfor %}
+          <li class="divider" tabindex="-1"></li>
           <li><a onclick="switcher_submit('new')"><i class="material-icons">person_add</i>Aggiungi un altro utente</a></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
+          <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
           <li><a href="{% url 'about' %}">Informazioni sul prodotto</a></li>
         </ul>
