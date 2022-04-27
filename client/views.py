@@ -18,7 +18,6 @@ from random import randint
 @login_required()
 def index(request):
     context = {}
-    group_view = False
     if not (request.user.is_staff or request.user.has_perm("client.approved")):
         # generate code if user has no code
         users = UserCode.objects.filter(user=request.user)
@@ -40,19 +39,7 @@ def index(request):
         context = {"user_code": user_code}
         return render(request, 'client/index.html', context)
 
-    # get user group
     groups = request.user.groups.all()
-
-    # check if any group has enabled RO documents
-    if request.user.is_staff or len(groups.filter(name="capi")) == 0:
-        # if user is staff then not needed
-        gr = []
-    elif request.user.has_perm("client.staff"):
-        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True).filter(~Q(group=groups[0]))
-    else:
-        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
-
-    group_view = len(gr) != 0
 
     # user action
     if request.method == "POST":
@@ -116,7 +103,6 @@ def index(request):
         "docs": documents,
         "base_group": groups[0].name,
         "empty": len(documents) == 0,
-        "group_view": group_view,
         "vac_file": vac_file,
         "health_file": health_file,
         "sign_doc_file": sign_doc_file

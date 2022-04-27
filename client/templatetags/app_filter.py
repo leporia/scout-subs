@@ -1,6 +1,6 @@
 from django import template
 from django.db.models.query_utils import Q
-from client.models import Document, KeyVal, Keys
+from client.models import Document, GroupSettings, KeyVal, Keys
 
 import json
 
@@ -56,3 +56,19 @@ def parse_userswitcher(str):
         return []
 
     return json.loads(str).keys()
+
+@register.filter(name="user_list")
+def user_list(user):
+    # get user group
+    groups = user.groups.all()
+
+    # check if any group has enabled RO documents
+    if user.is_staff or len(groups.filter(name="capi")) == 0:
+        # if user is staff then not needed
+        gr = []
+    elif user.has_perm("client.staff"):
+        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True).filter(~Q(group=groups[0]))
+    else:
+        gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
+
+    return (len(gr) != 0)
