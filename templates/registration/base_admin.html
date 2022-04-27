@@ -78,6 +78,9 @@
 </head>
 <body>
   <nav class="nav-extended">
+    <form id="user_form" method="post" action="{% url 'user_switcher'%}">
+    {% csrf_token %}
+    <input type="hidden" name="metadata" id="metadata">
     <div class="nav-wrapper {{color}}">
       <ul class="left">
       <li><a id="home_btn" href="{% url 'index' %}"><i class="material-icons">home</i></a></li>
@@ -85,13 +88,19 @@
       {% block breadcrumb %}
       {% endblock %}
       <ul class="right">
-        <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}</a></li>
+        {% if user.is_staff or perms.client.staff %}
+          <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}<i class="right material-icons">shield</i></a></li>
+        {% elif "capi" in user|user_groups%}
+          <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}<i class="right material-icons">supervisor_account</i></a></li>
+        {% else %}
+          <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}</a></li>
+        {% endif %}
         <ul id='userswitcher' class='dropdown-content'>
           <li><a href="{% url 'personal' %}"><i class="material-icons">person</i>Gestione account</a></li>
           {% if user.is_staff or perms.client.staff %}
             <li><a href="{% url 'server' %}"><i class="material-icons">build</i>Pannello Admin</a></li>
           {% endif %}
-          {% if group_view %}
+          {% if user|user_list %}
             <li><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i>Lista documenti</a></li>
           {% endif %}
 
@@ -116,6 +125,7 @@
     </div>
     {% block toolbar %}
     {% endblock %}
+    </form>
   </nav>
 
   <main id="main" style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
