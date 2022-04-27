@@ -108,6 +108,41 @@ class CustomLoginView(LoginView):
     form_class = AuthForm
     extra_context = {'midata_enabled': MIDATA_ENABLED}
 
+    def get(self, request, *args, **kwargs):
+        # check auto-login is enabled
+        if "autologin" not in request.COOKIES:
+            return super(CustomLoginView, self).get(request, *args, **kwargs)
+
+        if request.COOKIES.get("autologin") != "true":
+            return super(CustomLoginView, self).get(request, *args, **kwargs)
+
+        # check if user has a cookie saved
+        response = HttpResponseRedirect("/")
+
+        sessions = dict()
+        # no cookie
+        if "user_switcher" not in request.COOKIES:
+            return super(CustomLoginView, self).get(request, *args, **kwargs)
+
+        sessions = json.loads(request.COOKIES.get("user_switcher"))
+
+        # empty cookie
+        if len(sessions) == 0: 
+            return super(CustomLoginView, self).get(request, *args, **kwargs)
+
+        # pick the first username to login to
+        username = list(sessions.keys())[0]
+
+        set_session_cookie(response, sessions[username][0], sessions[username][1])
+        del sessions[username]
+
+        set_switch_cookie(response, sessions)
+
+        # disable autologin
+        response.set_cookie("autologin", "false")
+
+        return response
+
 # send to hitobito request to get token
 def oauth_login(request):
     if not MIDATA_ENABLED:
@@ -260,10 +295,11 @@ def user_switcher(request):
             set_switch_cookie(response, sessions)
 
             response.set_cookie("sessionid", "")
+            response.set_cookie("autologin", "false")
 
             return response
 
-        if request.POST["metadata"][0] == 's':
+        elif request.POST["metadata"][0] == 's':
             response = HttpResponseRedirect("/")
             username = request.POST["metadata"][1:]
 
@@ -280,6 +316,15 @@ def user_switcher(request):
                 set_session_cookie(response, "", 0)
 
             set_switch_cookie(response, sessions)
+
+            response.set_cookie("autologin", "false")
+
+            return response
+        elif request.POST["metadata"] == "logout":
+            # send user to logout page
+            # on the login page we check if we have a cookie set
+            response = HttpResponseRedirect("/accounts/logout")
+            response.set_cookie("autologin", "true")
 
             return response
 

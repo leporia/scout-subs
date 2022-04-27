@@ -119,7 +119,7 @@
             <li><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i>Lista documenti</a></li>
           {% endif %}
 
-          <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i>Logout</a></li>
+          <li><a onclick="switcher_submit('logout')"><i class="material-icons">exit_to_app</i>Logout</a></li>
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
@@ -129,7 +129,6 @@
               <li><a onclick="switcher_submit('s{{username}}')">{{username}}</a></li>
             {% endif %}
           {% endfor %}
-          <li class="divider" tabindex="-1"></li>
           <li><a onclick="switcher_submit('new')"><i class="material-icons">person_add</i>Aggiungi un altro utente</a></li>
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
