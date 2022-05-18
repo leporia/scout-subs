@@ -1478,7 +1478,7 @@ def data_request(request):
             context["data"] = data
         elif request.POST["request"] == "email_non_staff":
             perm = Permission.objects.get(codename="approved")
-            users_email = User.objects.filter(groups__name=parent_group, user_permission=perm).exclude(groups__name="capi").values_list("email", flat=True)
+            users_email = User.objects.filter(groups__name=parent_group, user_permissions=perm).exclude(groups__name="capi").values_list("email", flat=True)
             data = ", ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "data_user":
