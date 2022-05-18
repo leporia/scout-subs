@@ -378,8 +378,10 @@ def doctype(request):
             if document_type.personal_data:
                 header += ["Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
 
+            keys = []
             if document_type.custom_data:
-                header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
+                keys = Keys.objects.filter(container=document_type).values_list("key", flat=True)
+                header += keys
 
             writer.writerow(header)
 
@@ -407,7 +409,15 @@ def doctype(request):
                     ]
 
                 if document_type.custom_data:
-                    write_data += KeyVal.objects.filter(container=doc).values_list("value", flat=True)
+                    # add empty cell if no keyval present
+                    keyvals = KeyVal.objects.filter(container=doc).values_list("key", "value")
+                    for key in keys:
+                        for keyval in keyvals:
+                            if keyval[0] == key:
+                                write_data.append(keyval[1])
+                                break
+                        else:
+                            write_data.append("")
 
                 writer.writerow(write_data)
 

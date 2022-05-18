@@ -38,6 +38,18 @@ def doc_count(doc):
 
     return doc_count
 
+@register.filter(name="is_multiple_choice")
+def is_multiple_choice(str):
+    return str.startswith("!m")
+
+@register.filter(name="is_checkbox")
+def is_checkbox(str):
+    return str.startswith("!c")
+
+@register.filter(name="is_heading")
+def is_heading(str):
+    return str.startswith("!h")
+
 @register.filter(name="parse_multiple_choice")
 def parse_multiple_choice(str):
     if len(str) < 3:
@@ -49,6 +61,12 @@ def parse_multiple_choice(str):
         return [arr[0], []]
 
     return [arr[0], arr[1:]]
+
+@register.filter(name="parse_heading")
+def parse_heading(str):
+    if len(str) < 3:
+        return str
+    return str[3:]
 
 @register.filter(name="parse_userswitcher")
 def parse_userswitcher(str):

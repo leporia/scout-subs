@@ -65,7 +65,13 @@
           {% endif %}
           {% if custom_data %}
             {% for key in keys %}
-              {% if key.key_extra|first in '!' %}
+              {% if key.key_extra|is_heading %}
+                <div class="row">
+                  <div class="input-field col s12">
+                    <h6>{{key.key_extra|parse_heading}}</h6>
+                  </div>
+                </div>
+              {% elif key.key_extra|is_multiple_choice %}
                 <div class="row">
                   <div class="col s12">
                     {% with arr=key.key_extra|parse_multiple_choice %}
@@ -86,6 +92,8 @@
                     {% endwith %}
                   </div>
                 </div>
+              {% elif key.key_extra|is_checkbox %}
+                checkbox
               {% else %}
                 <div class="row">
                   <div class="input-field col s12">
