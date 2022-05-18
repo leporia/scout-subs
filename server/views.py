@@ -374,7 +374,9 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
+            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione"]
+            if document_type.personal_data:
+                header += ["Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
 
             if document_type.custom_data:
                 header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
@@ -388,18 +390,21 @@ def doctype(request):
                     doc.user.email,
                     doc.status,
                     doc.compilation_date,
-                    doc.personal_data.parent_name,
-                    doc.personal_data.via,
-                    doc.personal_data.cap,
-                    doc.personal_data.country,
-                    doc.personal_data.nationality,
-                    doc.personal_data.born_date,
-                    doc.personal_data.home_phone,
-                    doc.personal_data.phone,
-                    doc.personal_data.school,
-                    doc.personal_data.year,
-                    doc.personal_data.avs_number
                 ]
+                if document_type.personal_data:
+                    write_data += [
+                        doc.personal_data.parent_name,
+                        doc.personal_data.via,
+                        doc.personal_data.cap,
+                        doc.personal_data.country,
+                        doc.personal_data.nationality,
+                        doc.personal_data.born_date,
+                        doc.personal_data.home_phone,
+                        doc.personal_data.phone,
+                        doc.personal_data.school,
+                        doc.personal_data.year,
+                        doc.personal_data.avs_number
+                    ]
 
                 if document_type.custom_data:
                     write_data += KeyVal.objects.filter(container=doc).values_list("value", flat=True)
