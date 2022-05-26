@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initMaterializeHelper(customOptions) {
   const options = {
-    debug: true,
+    debug: false,
     selectOptions: true,
     selectTriggers: true,
     autocompletedInputLabels: true,
