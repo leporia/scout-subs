@@ -368,7 +368,7 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione"]
+            header = ["Nome", "Cognome", "Email", "Branca", "Capo", "Stato", "Data di compilazione"]
             if document_type.personal_data:
                 header += ["Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS"]
 
@@ -380,10 +380,16 @@ def doctype(request):
             writer.writerow(header)
 
             for doc in docs:
+                capo = "no"
+                if "capi" in doc.user.groups.values_list('name', flat=True) or doc.user.is_staff:
+                    capo = "si"
+
                 write_data = [
                     doc.user.first_name,
                     doc.user.last_name,
                     doc.user.email,
+                    doc.user.groups.values_list('name', flat=True)[0],
+                    capo,
                     doc.status,
                     doc.compilation_date,
                 ]
@@ -436,7 +442,7 @@ def doctype(request):
             writer = csv.writer(response)
 
             # csv header
-            header = ["Nome", "Cognome", "Email", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"]
+            header = ["Nome", "Cognome", "Email", "Branca", "Capo", "Stato", "Data di compilazione", "Nome dei genitori", "Via", "CAP", "Comune", "Nazionalita", "Data di nascita", "Telefono di casa", "Telefono", "Scuola", "Anno scolastico", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"]
 
             if document_type.custom_data:
                 header += Keys.objects.filter(container=document_type).values_list("key", flat=True)
@@ -444,10 +450,16 @@ def doctype(request):
             writer.writerow(header)
 
             for doc in docs:
+                capo = "no"
+                if "capi" in doc.user.groups.values_list('name', flat=True) or doc.user.is_staff:
+                    capo = "si"
+
                 write_data = [
                         doc.user.first_name,
                         doc.user.last_name,
                         doc.user.email,
+                        doc.user.groups.values_list('name', flat=True)[0],
+                        capo,
                         doc.status,
                         doc.compilation_date,
                         doc.personal_data.parent_name,
