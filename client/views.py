@@ -177,7 +177,7 @@ def create(request):
                 # user is cheating abort
                 return HttpResponseRedirect("/")
 
-            if not document_type.custom_group and document_type.group.name not in request.user.groups.values_list('name', flat=True):
+            if document_type.group_private and document_type.group.name not in request.user.groups.values_list('name', flat=True):
                 # user is cheating abort
                 return HttpResponseRedirect("/")
 

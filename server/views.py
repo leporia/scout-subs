@@ -998,7 +998,7 @@ def doclist(request):
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj &= Q(group__name__in=groups)
+            q_obj &= Q(user__groups__name__in=groups)
             chips_groups += groups
 
     # run query
@@ -1023,7 +1023,7 @@ def doclist(request):
         "sign_doc_file": sign_doc_file,
         "types": auto_types,
         "users": users,
-        "groups": parent_groups,
+        "groups": Group.objects.all(),
         "docs": documents,
         "hidden_check": hidden_check,
         "wait_check": wait_check,
@@ -1225,7 +1225,7 @@ def doclist_readonly(request):
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj &= Q(group__name__in=groups)
+            q_obj &= Q(user__groups__name__in=groups)
             chips_groups += groups
 
     # run query
@@ -1247,7 +1247,7 @@ def doclist_readonly(request):
         "sign_doc_file": sign_doc_file,
         "types": auto_types,
         "users": users,
-        "groups": groups_view,
+        "groups": Group.objects.all(),
         "docs": documents,
         "hidden_check": hidden_check,
         "wait_check": wait_check,
