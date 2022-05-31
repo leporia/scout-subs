@@ -132,9 +132,30 @@
 <input type="hidden" name="owner" id="owner">
 <input type="hidden" name="type" id="type">
 <input type="hidden" name="groups" id="groups">
+<div class="row">
+  <a href="#!"><div class="chip" onClick="showAll()">
+    {{total_count}} Tutti
+  </div></a>
+  <a href="#!"><div id="colonia_filter" class="chip {{color}} white-text" onClick="filterResults('colonia')">
+    {{colonia_count}} Colonia
+  </div></a>
+  <a href="#!"><div id="muta_filter" class="chip {{color}} white-text" onClick="filterResults('muta')">
+    {{muta_count}} Muta
+  </div></a>
+  <a href="#!"><div id="reparto_filter" class="chip {{color}} white-text" onClick="filterResults('reparto')">
+    {{reparto_count}} Reparto
+  </div></a>
+  <a href="#!"><div id="posto_filter" class="chip {{color}} white-text" onClick="filterResults('posto')">
+    {{posto_count}} Posto
+  </div></a>
+  <a href="#!"><div id="clan_filter" class="chip {{color}} white-text" onClick="filterResults('clan')">
+    {{clan_count}} Clan
+  </div></a>
+</div>
 <ul class="collapsible">
     {% for doc in docs %}
-        <li>
+        <li class="item">
+        <input value="{{doc.user|user_primary_group}}" type="hidden">
         <div class="collapsible-header">
             <label>
               <input name={{doc.id}} type="checkbox" class="filled-in allselect"/>
@@ -631,4 +652,39 @@ var options = {
     labelYearSelect: 'Seleziona un anno'
   }
 }
+
+function filterResults(group_name) {
+  var items = document.getElementsByClassName("item");
+  var btn = document.getElementById(group_name + "_filter");
+  var action = "none";
+  if (btn.className == "chip") {
+    btn.className = "chip {{color}} white-text";
+    action = "";
+  } else {
+    btn.className = "chip";
+    action = "none";
+  }
+
+  for (i = 0; i < items.length; i++) {
+    var a = items[i].children[0];
+    var txtValue = a.value;
+    if (txtValue == group_name) {
+      items[i].style.display = action;
+    }
+  }
+}
+
+function showAll() {
+  var items = document.getElementsByClassName("item");
+  document.getElementById("colonia_filter").className = "chip {{color}} white-text";
+  document.getElementById("muta_filter").className = "chip {{color}} white-text";
+  document.getElementById("reparto_filter").className = "chip {{color}} white-text";
+  document.getElementById("posto_filter").className = "chip {{color}} white-text";
+  document.getElementById("clan_filter").className = "chip {{color}} white-text";
+
+  for (i = 0; i < items.length; i++) {
+    items[i].style.display = "";
+  }
+}
+
 {% endblock %}

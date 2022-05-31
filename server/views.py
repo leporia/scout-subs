@@ -1050,6 +1050,12 @@ def doclist(request):
         'error': error,
         'error_text': error_text,
         'settings': settings,
+        'total_count': documents.count,
+        'colonia_count': documents.filter(user__groups__name__contains="colonia").count,
+        'muta_count': documents.filter(user__groups__name__contains="muta").count,
+        'reparto_count': documents.filter(user__groups__name__contains="reparto").count,
+        'posto_count': documents.filter(user__groups__name__contains="posto").count,
+        'clan_count': documents.filter(user__groups__name__contains="clan").count,
     }
 
     # check if download multiple documents
@@ -1274,6 +1280,12 @@ def doclist_readonly(request):
         'error': error,
         'error_text': error_text,
         'settings': settings,
+        'total_count': documents.count,
+        'colonia_count': documents.filter(user__groups__name__contains="colonia").count,
+        'muta_count': documents.filter(user__groups__name__contains="muta").count,
+        'reparto_count': documents.filter(user__groups__name__contains="reparto").count,
+        'posto_count': documents.filter(user__groups__name__contains="posto").count,
+        'clan_count': documents.filter(user__groups__name__contains="clan").count,
     }
 
     # check if download multiple documents
