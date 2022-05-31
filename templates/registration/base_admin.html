@@ -6,7 +6,7 @@
 <head>
   {% load static %}
   {% load app_filter %}
-  <link rel="stylesheet" type="text/css" href="{% static 'material_icons.css' %}">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <style>
     input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
@@ -96,7 +96,7 @@
       {% endblock %}
       <ul class="right">
         {% if user.is_staff or perms.client.staff %}
-          <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}<i class="right material-icons">security</i></a></li>
+          <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}<i class="right material-icons">admin_panel_settings</i></a></li>
         {% elif "capi" in user|user_groups%}
           <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}<i class="right material-icons">supervisor_account</i></a></li>
         {% else %}
