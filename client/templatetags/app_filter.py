@@ -15,8 +15,8 @@ def doc_key_type(doc_type):
 
 @register.filter(name="user_docs")
 def user_docs(admin_user, user):
-    parent_group = admin_user.groups.values_list('name', flat=True)[0]
-    documents = Document.objects.filter(Q(user=user) & ~Q(status='archive') & Q(group__name=parent_group))
+    parent_groups = admin_user.groups.values_list('name', flat=True)
+    documents = Document.objects.filter(Q(user=user) & ~Q(status='archive') & Q(document_type__group__name__in=parent_groups))
     return documents
 
 @register.filter(name="user_groups")
