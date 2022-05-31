@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import render
 from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.conf import settings
@@ -648,7 +649,21 @@ def doccreate(request):
         custom_message = "custom_message" in request.POST.keys()
         staff_only = "staff_only" in request.POST.keys()
         custom_message_text = request.POST["custom_message_text"]
+
+        # parse name with icons
         name = request.POST["name"]
+        if "<" in name:
+            context["error"] = "true"
+            context["error_text"] = "Il nome non puo' contenere il carattere <"
+            return render(request, 'server/doc_create.html', context)
+
+        reg = r'\{[\s\S]*\}'
+        name_split = re.split(reg, name)
+        name_matches = re.findall(reg, name)
+        name_matches = list(map(lambda x: "<i class='material-icons'>" + x[1:len(x)-1] + "</i>", name_matches)) + [""]
+        name_arr = [val for pair in zip(name_split, name_matches) for val in pair]
+        name = "".join(name_arr)
+
         custom_group = request.POST["custom_group"]
 
         if request.POST["max_instances"]:
@@ -687,7 +702,7 @@ def doccreate(request):
 
         # create type
         doctype = DocumentType(
-            custom_group=custom_group_bool, auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=request.POST["name"], enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data, staff_only=staff_only, max_instances=max_instances)
+            custom_group=custom_group_bool, auto_sign=auto_sign, custom_message=custom_message, custom_message_text=custom_message_text, name=name, enabled=enabled, group_private=group_private, group=group, personal_data=personal_data, medical_data=medical_data, custom_data=custom_data, staff_only=staff_only, max_instances=max_instances)
         doctype.save()
 
         # create custom keys
