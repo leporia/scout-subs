@@ -9,6 +9,73 @@
 {% endblock %}
 
 {% block content %}
+<div id="modal1" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h4>Parametri personalizzati</h4>
+    <p>Inserire un parametro per riga. I parametri sono di base dei campi di testo, qui di seguito sono spiegati gli altri tipi di parametri e come ottenerli.</p>
+    <h5>Scelta multipla</h5>
+    <blockquote>
+      !m {Titolo},{Opzione1},{Opzione2},...<br>
+      !m Colore preferito,Blu,Bianco,Giallo
+    </blockquote>
+    <div class="row">
+      <div class="col s12">
+        Colore preferito
+        <p><label>
+          <input class="with-gap" name="radiobtn" type="radio"/>
+          <span>Blu</span>
+        </label></p>
+        <p><label>
+          <input class="with-gap" name="radiobtn" type="radio"/>
+          <span>Bianco</span>
+        </label></p>
+        <p><label>
+          <input class="with-gap" name="radiobtn" type="radio"/>
+          <span>Giallo</span>
+        </label></p>
+      </div>
+    </div>
+    <h5>Titolo</h5>
+    <blockquote>
+      !t {Titolo}<br>
+      !t Esempio di titolo
+    </blockquote>
+    <h6>Esempio di titolo</h6>
+    <h5>Tutte le opzioni insieme</h5>
+    <blockquote>
+      !t Esempio di titolo<br>
+      Nome dell'animale domestico<br>
+      !m Colore preferito,Blu,Bianco,Giallo
+    </blockquote>
+    <h6>Esempio di titolo</h6>
+    <div class="row">
+      <div class="input-field col s12">
+        <input value="" name="ex" id="ex" type="text">
+        <label for="ex">Node dell'animale domestico</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12">
+        Colore preferito
+        <p><label>
+          <input class="with-gap" name="radiobt2" type="radio"/>
+          <span>Blu</span>
+        </label></p>
+        <p><label>
+          <input class="with-gap" name="radiobt2" type="radio"/>
+          <span>Bianco</span>
+        </label></p>
+        <p><label>
+          <input class="with-gap" name="radiobt2" type="radio"/>
+          <span>Giallo</span>
+        </label></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect btn-flat">Chiudi</a>
+  </div>
+</div>
 <div class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
@@ -67,6 +134,7 @@
               <label>
                 <input name="custom_data" type="checkbox" class="filled-in" {{custom_check}}/>
                 <span style="color:black">Parametri personalizzati</span>
+                <i class="material-icons"><a href="#modal1" class="modal-trigger black-text">info</a></i>
               </label>
             </div>
             <div class="input-field col l4 s12">
@@ -126,5 +194,6 @@ $(document).ready(function(){
   {% if error %}
     M.toast({html: '{{ error_text}}', classes: 'orange'})
   {% endif %}
+  $('.modal').modal();
 });
 {% endblock %}
