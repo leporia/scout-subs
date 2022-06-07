@@ -32,6 +32,52 @@
   {% if not empty %}
   <ul class="collapsible">
       {% for doc in docs %}
+          {% if doc.status == "autosign" %}
+            <div id="modal{{doc.id}}" class="modal">
+              <div class="modal-content">
+                <h4>Attenzione</h4>
+                <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
+                Comprovo come veritieri e completi tutti i dati apposti sul documento.
+                {% if doc.document_type.medical_data %}
+                  <br>
+                  Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
+                {% endif %}
+                {% if doc.document_type.custom_message %}
+                  <br>
+                  <br>
+                  Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
+                  {{doc.document_type.custom_message_text | linebreaksbr}}
+                {% endif %}
+                <br>
+                <br>
+                <b>Una volta approvata l'iscrizione non potrà più essere modificata o annullata.<br>
+                Sei sicuro di volerla approvare?</b>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+                <a onclick="send('a{{doc.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
+              </div>
+            </div>
+          {% endif %}
+          {% if doc.status == "autosign" or doc.status == "wait" %}
+            <div id="modal_approve{{doc.id}}" class="modal">
+              <div class="modal-content">
+                <h4>Approva documento</h4>
+                <p>Vuoi approvare ora il documento appena creato?<br>
+                  In alternativa puoi farlo in qualsiasi momento selezionando il documento desiderato dalla pagina principale.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <a href="/" class="modal-close waves-effect waves-green btn-flat">In seguito</a>
+                {% if doc.status == "autosign" %}
+                  <a style="color:green" class="modal-close waves-effect waves-light btn-flat modal-trigger" href="#modal{{doc.id}}">Approva iscrizione</a>
+                {% else %}
+                  <a style="color:green" class="modal-close waves-effect waves-light btn-flat" onclick="send('f{{doc.id}}')">Scarica documento per approvazione</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
           <li>
           <div class="collapsible-header">
               {% if doc.status == "wait" %}
@@ -63,32 +109,6 @@
               <br>
               <br>
             {% elif doc.status == "autosign" %}
-              <div id="modal{{doc.id}}" class="modal">
-                <div class="modal-content">
-                  <h4>Attenzione</h4>
-                  <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
-                  Comprovo come veritieri e completi tutti i dati apposti sul documento.
-                  {% if doc.document_type.medical_data %}
-                    <br>
-                    Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
-                  {% endif %}
-                  {% if doc.document_type.custom_message %}
-                    <br>
-                    <br>
-                    Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
-                    {{doc.document_type.custom_message_text | linebreaksbr}}
-                  {% endif %}
-                  <br>
-                  <br>
-                  <b>Una volta approvata l'iscrizione non potrà più essere modificata o annullata.<br>
-                  Sei sicuro di volerla approvare?</b>
-                  </p>
-                </div>
-                <div class="modal-footer">
-                  <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
-                  <a onclick="send('a{{doc.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
-                </div>
-              </div>
               <div class="hide-on-med-and-down">
                 <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
                 <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
@@ -413,6 +433,16 @@ $(document).ready(function(){
       {% if empty %}
         $('.tap-target').tapTarget('open');
       {% endif %}
+      var params = {};
+      var prmarr = window.location.search.substr(1).split("&");
+      for ( var i = 0; i < prmarr.length; i++) {
+          var tmparr = prmarr[i].split("=");
+          params[tmparr[0]] = tmparr[1];
+      }
+      var docid = params['approve_doc'];
+      if (docid != undefined) {
+        $('#modal_approve'+docid).modal('open');
+      }
     {% endif %}
     lazyload();
 });
@@ -426,6 +456,7 @@ $(document).ready(function(){
     var form = document.getElementById('form')
     var action = document.getElementById('action')
     action.setAttribute('value', id);
+    history.pushState(null, null, '/');
     form.submit()
   }
 {% endif %}

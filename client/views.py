@@ -228,7 +228,7 @@ def create(request):
                     key = KeyVal(container=document, key=Keys.objects.get(id=i).key, value=request.POST[i])
                     key.save()
 
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/?approve_doc=' + str(document.id))
 
     return render(request, 'client/doc_create.html', context)
 
