@@ -549,7 +549,7 @@ def personal_wrapper(request, errors):
                     # if multiple files concatenate pictures
                     im = Image.new("RGB", (0, 0), (255, 255, 255))
                     for f in files:
-                        if f.name.endswith(".pdf"):
+                        if f.name.endswith(".pdf") or f.name.endswith(".PDF"):
                             images = convert_from_bytes(f.read())
                             for i in images:
                                 dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
@@ -588,7 +588,7 @@ def personal_wrapper(request, errors):
                     # if multiple files concatenate pictures
                     im = Image.new("RGB", (0, 0), (255, 255, 255))
                     for f in files:
-                        if f.name.endswith(".pdf"):
+                        if f.name.endswith(".pdf") or f.name.endswith(".PDF"):
                             images = convert_from_bytes(f.read())
                             for i in images:
                                 dst = Image.new('RGB', (max(im.width, i.width), im.height + i.height), (255, 255, 255))
