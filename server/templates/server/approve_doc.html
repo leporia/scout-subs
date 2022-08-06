@@ -29,6 +29,7 @@
       <form id="form" action="{% url 'docapprove'%}" method="post">
         {% csrf_token %}
         <div class="card-content">
+          <span class="card-title">Approvazione multipla</span>
           <p>Inserire un codice per riga</p>
           <textarea name="codes" class="materialize-textarea"></textarea>
         </div>
@@ -39,4 +40,87 @@
     </div>
   </div>
 </div>
+
+<form target="_blank" action="{% url 'docpreview' %}" method="post" id="preview_form">
+  {% csrf_token %}
+  <input type="hidden" name="preview" id="code_submit">
+</form>
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+      <form id="form2" action="{% url 'docapprove'%}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-content">
+          <span class="card-title">Approvazione singola</span>
+          <p>Possibilità di caricare foto della firma e visualizzare il documento prima di approvarlo</p>
+          {{error_text}}
+          <div class="row">
+            <div class="input-field col s12">
+              <input name="code" id="code" type="text">
+              <label for="code">Codice documento</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="file-field input-field col s12">
+              <div class="btn {{color}}">
+                <span><i class="material-icons left">file_upload</i>File</span>
+                <input type="file" name="doc_sign" id="doc_sign" onchange="loadFile(event)">
+              </div>
+              <div class="file-path-wrapper">
+                <input id="doc_sign_name" class="file-path" type="text" placeholder="Documento firmato">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-action">
+          <a id="send_button" class="waves-effect waves-light btn {{color}}" href="#" onclick="confirm()">Approva</a>
+          <a class="right waves-effect waves-light btn {{color}}" onclick="send()">Anteprima documento</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+    <div class="card-image">
+      <img id="preview"/>
+    </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+function confirm() {
+  var button = document.getElementById('send_button')
+  button.innerHTML = "Sicuro?"
+  button.setAttribute('onclick', "document.getElementById('form2').submit()")
+  button.setAttribute('class', "waves-effect waves-light btn green")
+}
+
+function send() {
+  var form = document.getElementById('preview_form')
+  var action = document.getElementById('code_submit')
+  var text = document.getElementById('code').value
+  action.setAttribute('value', text);
+  form.submit()
+}
+
+var loadFile = function(event) {
+  var output = document.getElementById('preview');
+  output.src = URL.createObjectURL(event.target.files[0]);
+  output.onload = function() {
+    URL.revokeObjectURL(output.src) // free memory
+  }
+};
+$(document).ready(function(){
+    {% if error %}
+      M.toast({html: '{{ error_text }}', classes: 'orange'})
+    {% elif success %}
+      M.toast({html: '{{ success_text }}', classes: 'green'})
+    {% endif %}
+});
 {% endblock %}

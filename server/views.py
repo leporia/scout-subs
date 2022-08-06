@@ -180,40 +180,101 @@ def docapprove(request):
     context = {}
     data = []
 
-    # if user not staff of primary has only controll of non primary groups
+    # if user not staff of primary has only control of non primary groups
     if request.user.is_staff:
         groups = request.user.groups.values_list('name', flat=True)
     else:
         groups = request.user.groups.values_list('name', flat=True)[1:]
 
+    # setup variables for error text and success text
+    error = False
+    success = False
+    error_text = ""
+    success_text = ""
+
+    document = None
+    messages = []
+
     if request.method == "POST":
-        # parse text in array
-        data = request.POST["codes"]
-        data = split_codes(data)
-        # check if code valid
-        for i in range(len(data)):
-            if not data[i].isdigit():
-                data[i] = data[i] + " - Formato errato"
-            elif int(data[i]) < 100000 or int(data[i]) > 999999:
-                data[i] = data[i] + " - Formato errato"
-            elif Document.objects.filter(code=data[i]).count() == 0:
-                data[i] = data[i] + " - Invalido"
-            elif Document.objects.filter(code=data[i])[0].group.name not in groups:
-                # check if user has permission to approve document
-                data[i] = data[i] + " - Invalido"
+        # check if bulk approve or single
+        if "codes" in request.POST:
+            # parse text in array
+            data = request.POST["codes"]
+            data = split_codes(data)
+            # check if code valid
+            for i in range(len(data)):
+                if not data[i].isdigit():
+                    messages.append(data[i] + " - Formato errato")
+                elif int(data[i]) < 100000 or int(data[i]) > 999999:
+                    messages.append(data[i] + " - Formato errato")
+                elif Document.objects.filter(code=data[i]).count() == 0:
+                    messages.append(data[i] + " - Invalido")
+                elif Document.objects.filter(code=data[i])[0].group.name not in groups:
+                    # check if user has permission to approve document
+                    messages.append(data[i] + " - Invalido")
+                else:
+                    document = Document.objects.filter(code=data[i])[0]
+                    if document.status == 'ok':
+                        # do nothing document already approved
+                        messages.append(data[i] + " - Già approvato")
+                    else:
+                        document.status = 'ok'
+                        document.save()
+                        messages.append(data[i] + " - Ok")
+
+        elif "code" in request.POST:
+            print("doing this")
+            data = request.POST["code"]
+            if not data.isdigit():
+                error_text = "Formato codice errato"
+                error = True
+            elif int(data) < 100000 or int(data) > 999999:
+                error_text = "Formato codice errato"
+                error = True
+            elif Document.objects.filter(code=data).count() == 0:
+                error_text = "Codice invalido"
+                error = True
+            elif Document.objects.filter(code=data)[0].group.name not in groups:
+                error_text = "Codice invalido"
+                error = True
             else:
-                document = Document.objects.filter(code=data[i])[0]
+                # get document
+                document = Document.objects.filter(code=data)[0]
+
+                # prepare success message
                 if document.status == 'ok':
-                    # do nothing document already approved
-                    data[i] = data[i] + " - Già approvato"
+                    success_text = "File caricato"
+                    success = True
                 else:
                     document.status = 'ok'
                     document.save()
-                    data[i] = data[i] + " - Ok"
+                    success_text = "Documento approvato e file caricato"
+                    success = True
+
+                # check for errors and upload files
+                if "doc_sign" in request.FILES and not error:
+                    myfile = request.FILES['doc_sign']
+                    try:
+                        im = Image.open(myfile)
+                        im_io = BytesIO()
+                        # compress image in WEBP
+                        im.save(im_io, 'WEBP', quality=50)
+                        document.signed_doc.save(data+"_"+myfile.name, im_io)
+                        document.save()
+                    except UnidentifiedImageError:
+                        error = True
+                        error_text = "Il file non è un immagine valida"
+                else:
+                    error = True
+                    error_text = "Prego caricare un file"
 
     context = {
-        'messages': data,
-        'empty': len(data) == 0,
+        'messages': messages,
+        'empty': len(messages) == 0,
+        "error": error,
+        "error_text": error_text,
+        "success": success,
+        "success_text": success_text,
     }
 
     return render(request, 'server/approve_doc.html', context)
