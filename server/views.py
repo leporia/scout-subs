@@ -123,10 +123,9 @@ def uapprove(request):
 
         # parse text to array
         data = request.POST["codes"]
-        data = data.split("\n")
+        data = split_codes(data)
         # check if format is right
         for i in range(len(data)):
-            data[i] = data[i].replace("\r", "")
             if not data[i].startswith("U"):
                 data[i] = data[i] + " - Formato errato"
             elif not data[i][1:].isdigit():
@@ -159,6 +158,22 @@ def uapprove(request):
 
     return render(request, 'server/approve_user.html', context)
 
+def split_codes(str):
+    out = []
+    buffer = ""
+    for i in str:
+        if i.isdigit() or i == "U":
+            buffer += i
+            continue
+        
+        if i == "\n":
+            out.append(buffer)
+            buffer = ""
+
+    if buffer != "":
+        out.append(buffer)
+
+    return out
 
 @user_passes_test(isStaff)
 def docapprove(request):
@@ -174,8 +189,7 @@ def docapprove(request):
     if request.method == "POST":
         # parse text in array
         data = request.POST["codes"]
-        data.replace("\r", "")
-        data = data.split("\n")
+        data = split_codes(data)
         # check if code valid
         for i in range(len(data)):
             if not data[i].isdigit():
