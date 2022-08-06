@@ -610,6 +610,31 @@ def doctype(request):
     }
     return render(request, 'server/doc_type.html', context)
 
+@user_passes_test(isStaff)
+def custom_parameters_preview(request):
+    context = {}
+    if "param" not in request.GET:
+        return render(request, 'server/doc_creation_preview.html', context)
+
+    params = request.GET["param"]
+    params = base64.b64decode(params).decode("utf-8")
+    params = params.splitlines()
+    keys = []
+    for i in range(len(params)):
+        dic = {}
+        val = params[i]
+        if val.startswith("!"):
+            if len(val) < 3:
+                val = val
+
+            val = val[3:].split(",")[0]
+        dic["key"] = val
+        dic["key_extra"] = params[i]
+        dic["id"] = i
+        keys.append(dic)
+
+    context["keys"] = keys
+    return render(request, 'server/doc_creation_preview.html', context)
 
 @user_passes_test(isStaff)
 def doccreate(request):

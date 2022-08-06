@@ -48,7 +48,7 @@ def is_checkbox(str):
 
 @register.filter(name="is_heading")
 def is_heading(str):
-    return str.startswith("!h")
+    return str.startswith("!t")
 
 @register.filter(name="parse_multiple_choice")
 def parse_multiple_choice(str):

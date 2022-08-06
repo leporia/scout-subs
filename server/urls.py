@@ -15,6 +15,7 @@ urlpatterns = [
     path('docapprove', views.docapprove, name='docapprove'),
     path('docupload', views.upload_doc, name='docupload'),
     path('docpreview', views.docpreview, name='docpreview'),
+    path('custom_parameters_preview', views.custom_parameters_preview, name='custom_parameters_preview'),
     path('progress', views.get_progress, name='progress'),
     path('request', views.data_request, name='request'),
     path('media/<int:id>/<str:t>/<str:flag>', views.media_request, name='media'),

@@ -149,6 +149,7 @@
             <div class="input-field col s12">
               <textarea name="custom" id="param" class="materialize-textarea"></textarea>
               <label for="param">Lista parametri personalizzati, uno per riga</label>
+              <a onclick="preview()" class="waves-effect waves-light btn {{color}}">Visualizza anteprima</a>
             </div>
           </div>
           <div class="row">
@@ -196,4 +197,10 @@ $(document).ready(function(){
   {% endif %}
   $('.modal').modal();
 });
+
+function preview() {
+  var param = document.getElementById("param").value;
+  var param_base64 = btoa(param);
+  window.open("{%url 'custom_parameters_preview' %}?param=" + param_base64);
+}
 {% endblock %}
