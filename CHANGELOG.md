@@ -1,3 +1,13 @@
+# 0.6 (7 aug 2022)
+- Merge the two pages for approving documents (bulk and uploading signature)
+- Add QR code and barcodes to printed pdf approval document
+- QR code/barcode scanner to approve documents faster
+- Fix Chrome bug showing white pages
+- Multiple user/user switcher
+- New tips for enduser to approve document and go back to home page
+- Fix data export problems and add user group to CSV export
+- Quick filters for groups on document list
+
 # 0.5 (21 jan 2022)
 - Bug: users of other groups also visible in user list
 - Show warning if some account fields are empty
