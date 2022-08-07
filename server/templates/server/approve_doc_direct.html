@@ -36,6 +36,10 @@
               </div>
             </div>
           </div>
+          <br>
+          <div class="row" style="margin-bottom: 0;">
+            <a class="col s12 waves-effect waves-light btn {{color}}" href="{% url 'approve_direct' %}">Scansiona un nuovo documento</a>
+          </div>
         </div>
       {% elif not error%}
       <form id="form" action="{% url 'approve_direct'%}" method="post" enctype="multipart/form-data">
@@ -51,7 +55,7 @@
             <div class="row">
               <a id="send_button_small" class="col s12 waves-effect waves-light btn {{color}}" href="#" onclick="confirm()">Approva</a>
             </div>
-            <div class="row" style="margin-bottom: 0">
+            <div class="row" style="margin-bottom: 0;">
               <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send()">Anteprima</a>
             </div>
           </div>
@@ -63,7 +67,7 @@
       </form>
       {% else %}
       <div class="card-content">
-        {{error}}
+        <div id="reader"></div>
       </div>
       {% endif %}
     </div>
@@ -72,7 +76,17 @@
 
 {% endblock %}
 
+{% block script_import %}
+<script type="text/javascript" src="https://unpkg.com/html5-qrcode"></script>
+{% endblock %}
+
 {% block script %}
+document.addEventListener('DOMContentLoaded', function() {
+  {% if error and error != -1 %}
+    M.toast({html: '{{ error }}', classes: 'orange'})
+  {% endif %}
+});
+
 function confirm() {
   var button = document.getElementById('send_button')
   var button_small = document.getElementById('send_button_small')
@@ -90,4 +104,53 @@ function send() {
   action.setAttribute('value', {{doc.code}});
   form.submit()
 }
+
+{% if error %}
+function loadCode(code) {
+  if (code.substring(0, 4) == 'http') {
+    window.location.replace(code);
+    return;
+  }
+
+  var currentUrl = window.location.href;
+  var currentUrl = currentUrl.split('?')[0];
+  if (currentUrl[currentUrl.length - 1] == '/') {
+    currentUrl = currentUrl.substring(0, currentUrl.length - 1);
+  }
+  var newUrl = currentUrl + "?code=" + code;
+  window.location.replace(newUrl);
+  return;
+}
+
+let qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+    let minEdgePercentage = 0.7; // 70%
+    let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+    let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+    let size = viewfinderWidth * minEdgePercentage;
+    return {
+        width: size,
+        height: size*0.25,
+    };
+}
+
+const html5QrCode = new Html5Qrcode("reader");
+html5QrCode.start(
+  { facingMode: "environment" },
+  {
+    fps: 10,
+    qrbox: qrboxFunction,
+  },
+  (decodedText, decodedResult) => {
+    loadCode(decodedText);
+    html5QrCode.stop();
+  },
+  (errorMessage) => {}
+  )
+.catch((err) => {
+  // start failed
+  console.log(`Error starting. Reason: ${err}`)
+  M.toast({html: 'Collegamento alla telecamera non riuscito. Riprovare.', classes: 'orange'})
+});
+{% endif %}
+
 {% endblock %}

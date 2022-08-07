@@ -337,6 +337,8 @@ def approve_direct(request):
             doc_code = int(doc_code)
         else:
             doc_code = -1
+    else:
+        return render(request, 'server/approve_doc_direct.html', {"error": -1})
 
     document = Document.objects.filter(code=doc_code)
 
