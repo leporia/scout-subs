@@ -1,5 +1,6 @@
 from django.db.models.expressions import OuterRef, Subquery
 from django.template.loader import get_template
+from django.urls import reverse
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
@@ -57,7 +58,7 @@ def index(request):
         if request.POST["action"][0] == 'f':
             # generate approve pdf
             template = get_template('client/approve_doc_pdf.html')
-            context = {'doc': document}
+            context = {'doc': document, 'uri': request.build_absolute_uri(reverse('approve_direct')) + "?code=" + str(document.code)}
             html = template.render(context)
             pdf = pdfkit.from_string(html, False)
             result = BytesIO(pdf)

@@ -8,7 +8,12 @@
 </head>
 <body style="background: white;">
   <main style="margin-left: 10px;margin-right: 10px;margin-top: 10px; background: white;">
-    <br><br><br><br>
+    <div style="position: absolute; top: 10px; left: 10px;">
+      <div id="qrcode"></div>
+    </div>
+    <div class="row center">
+      <svg id="barcode"></svg>
+    </div>
     <br><br>
     <div class="row">
       <p class="center">{{doc.user.first_name}} {{doc.user.last_name}} ({{doc.user.username}})</p>
@@ -55,4 +60,17 @@
   </main>
 </body>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/barcodes/JsBarcode.code128.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="text/javascript">
+  JsBarcode("#barcode", {{doc.code}}, {width: 3, height: 40, displayValue: false});
+  var qrcode = new QRCode(document.getElementById("qrcode"), {
+    text: "{{ uri }}",
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  });
+</script>
 </html>

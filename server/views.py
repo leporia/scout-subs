@@ -214,6 +214,13 @@ def docapprove(request):
                     messages.append(data[i] + " - Invalido")
                 else:
                     document = Document.objects.filter(code=data[i])[0]
+
+                    if document.group.name not in groups:
+                        return
+
+                    if document.status != 'wait' and document.status != 'ok':
+                        return
+
                     if document.status == 'ok':
                         # do nothing document already approved
                         messages.append(data[i] + " - Già approvato")
@@ -240,6 +247,12 @@ def docapprove(request):
             else:
                 # get document
                 document = Document.objects.filter(code=data)[0]
+
+                if document.group.name not in groups:
+                    return
+
+                if document.status != 'wait' and document.status != 'ok':
+                    return
 
                 # prepare success message
                 if document.status == 'ok':
@@ -279,6 +292,67 @@ def docapprove(request):
 
     return render(request, 'server/approve_doc.html', context)
 
+@staff_member_required
+def approve_direct(request):
+    # get groups that the user is manager of
+    if request.user.is_staff:
+        groups = request.user.groups.values_list('name', flat=True)
+    else:
+        groups = request.user.groups.values_list('name', flat=True)[1:]
+
+    doc_code = -1
+
+    if request.method == "POST" and "doc_code" in request.POST:
+        # if user submitted the form to approve a document
+        doc_code = request.POST["doc_code"]
+        if doc_code.isdigit():
+            doc_code = int(doc_code)
+        else:
+            doc_code = -1
+
+        document = Document.objects.filter(code=doc_code)
+
+        # user modified manually the code
+        if len(document) != 1:
+            return
+
+        document = document[0]
+
+        # user modified the code to an invalid document
+        if document.status != "wait":
+            return
+
+        # check if user has permission to approve document
+        if document.group.name not in groups:
+            return
+
+        document.status = "ok"
+        document.save()
+        return render(request, 'server/approve_doc_direct.html', {"doc": document, "success": True})
+
+    # if the user just opened the page
+    if "code" in request.GET:
+        doc_code = request.GET["code"]
+        if doc_code.isdigit():
+            doc_code = int(doc_code)
+        else:
+            doc_code = -1
+
+    document = Document.objects.filter(code=doc_code)
+
+    if len(document) != 1:
+        return render(request, 'server/approve_doc_direct.html', {"error": "Codice del documento invalido, riscansionare il codice"})
+
+    document = document[0]
+
+    if document.status != "wait":
+        return render(request, 'server/approve_doc_direct.html', {"error": "Questo documento non è in attesa di approvazione"})
+
+    # check if user has permission to approve document
+    if document.group.name not in groups:
+        return render(request, 'server/approve_doc_direct.html', {"error": "Non hai il permesso di approvare questo documento"})
+
+    return render(request, 'server/approve_doc_direct.html', {"doc": document})
 
 @staff_member_required
 def ulist(request):

@@ -1,0 +1,93 @@
+{% extends 'registration/base_simple.html' %}
+
+{% block title %}Admin - Approva documento diretto{% endblock %}
+
+{% block style %}
+*{padding:0;margin:0}.wrapper{display:flex;justify-content:center;align-items:center;background-color:#fff}.checkmark__circle{stroke-dasharray: 166;stroke-dashoffset: 166;stroke-width: 2;stroke-miterlimit: 10;stroke: #7ac142;fill: none;animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards}.checkmark{width: 56px;height: 56px;border-radius: 50%;display: block;stroke-width: 2;stroke: #fff;stroke-miterlimit: 10;margin: 0;box-shadow: inset 0px 0px 0px #7ac142;animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both}.checkmark__check{transform-origin: 50% 50%;stroke-dasharray: 48;stroke-dashoffset: 48;animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards}@keyframes stroke{100%{stroke-dashoffset: 0}}@keyframes scale{0%, 100%{transform: none}50%{transform: scale3d(1.1, 1.1, 1)}}@keyframes fill{100%{box-shadow: inset 0px 0px 0px 30px #7ac142}}
+{% endblock %}
+
+{% block content %}
+<form target="_blank" action="{% url 'docpreview' %}" method="post" id="preview_form">
+  {% csrf_token %}
+  <input type="hidden" name="preview" id="code_submit">
+</form>
+
+<div class="row">
+  <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="card">
+      {% if success %}
+        <div class="card-content">
+          <h5>{{doc.document_type.name}}</h5>
+          <h6>{{doc.user.first_name}} {{doc.user.last_name}} ({{doc.user.username}})</h6>
+          <h6>{{doc.code}}</h6>
+          <br>
+          <div class="row">
+            <div class="col s12">
+              <h6 class="center">Documento approvato</h6>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col s12">
+              <div class="center wrapper">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                  <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                  <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% elif not error%}
+      <form id="form" action="{% url 'approve_direct'%}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="doc_code" value="{{doc.code}}">
+        <div class="card-content">
+          <div class="row">
+            <h5>{{doc.document_type.name}}</h5>
+            <h6>{{doc.user.first_name}} {{doc.user.last_name}} ({{doc.user.username}})</h6>
+            <h6>{{doc.code}}</h6>
+          </div>
+          <div class="hide-on-large-only">
+            <div class="row">
+              <a id="send_button_small" class="col s12 waves-effect waves-light btn {{color}}" href="#" onclick="confirm()">Approva</a>
+            </div>
+            <div class="row" style="margin-bottom: 0">
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send()">Anteprima</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-action hide-on-med-and-down">
+          <a id="send_button" class="waves-effect waves-light btn {{color}}" href="#" onclick="confirm()">Approva</a>
+          <a class="right waves-effect waves-light btn {{color}}" onclick="send()">Anteprima</a>
+        </div>
+      </form>
+      {% else %}
+      <div class="card-content">
+        {{error}}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+function confirm() {
+  var button = document.getElementById('send_button')
+  var button_small = document.getElementById('send_button_small')
+  button.innerHTML = "Sicuro?"
+  button.setAttribute('onclick', "document.getElementById('form').submit()")
+  button.setAttribute('class', "waves-effect waves-light btn green")
+  button_small.innerHTML = "Sicuro?"
+  button_small.setAttribute('onclick', "document.getElementById('form').submit()")
+  button_small.setAttribute('class', "col s12 waves-effect waves-light btn green")
+}
+
+function send() {
+  var form = document.getElementById('preview_form')
+  var action = document.getElementById('code_submit')
+  action.setAttribute('value', {{doc.code}});
+  form.submit()
+}
+{% endblock %}
