@@ -108,8 +108,8 @@ function send() {
 {% if error %}
 function loadCode(code) {
   if (code.substring(0, 4) == 'http') {
-    window.location.replace(code);
-    return;
+    code = code.substring(code.length - 6);
+    console.log(code);
   }
 
   var currentUrl = window.location.href;

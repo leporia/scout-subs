@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from accounts.views import copy_from_midata
-from django.conf import settings
+from django.conf import Settings, settings
 
 from io import BytesIO
 import pdfkit
@@ -58,7 +58,7 @@ def index(request):
         if request.POST["action"][0] == 'f':
             # generate approve pdf
             template = get_template('client/approve_doc_pdf.html')
-            context = {'doc': document, 'uri': request.build_absolute_uri(reverse('approve_direct')) + "?code=" + str(document.code)}
+            context = {'doc': document, 'uri': settings.FQD_BASE_URL + reverse('approve_direct') + "?code=" + str(document.code)}
             html = template.render(context)
             pdf = pdfkit.from_string(html, False)
             result = BytesIO(pdf)
