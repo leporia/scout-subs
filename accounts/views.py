@@ -354,22 +354,9 @@ def signup(request):
         else:
             # get errors from form and add toasts
             errors = form.errors.as_data()
-            for field in errors.keys():
-                if field == "username":
-                    out_errors.append("Il nome utente può contenere solo lettere e numeri")
-                else:
-                    password_errors = errors["password2"]
-                    for err in password_errors:
-                        if err.code == "password_mismatch":
-                            out_errors.append("Le due password non sono uguali")
-                        elif err.code == "password_too_similar":
-                            out_errors.append("La password è troppo simile all'username")
-                        elif err.code == "password_too_short":
-                            out_errors.append("La password è troppo corta")
-                        elif err.code == "password_too_common":
-                            out_errors.append("La password è troppo comune")
-                        elif err.code == "password_entirely_numeric":
-                            out_errors.append("La password deve contenere lettere")
+            errors_list = [x for xs in errors.values() for x in xs]
+            errors_text = list(map(lambda x: x.message, errors_list))
+            out_errors += errors_text
 
     else:
         # create empty form to be filled
