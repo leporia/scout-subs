@@ -1,17 +1,16 @@
 from django.db.models.expressions import OuterRef, Subquery
 from django.template.loader import get_template
 from django.urls import reverse
-from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
+from client.models import UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, FileResponse
+from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from accounts.views import copy_from_midata
-from django.conf import Settings, settings
+from django.conf import settings
 
 from io import BytesIO
 import pdfkit
-from subprocess import check_output
 from datetime import datetime
 import pytz
 from random import randint

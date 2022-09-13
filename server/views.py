@@ -300,8 +300,6 @@ def approve_direct(request):
     else:
         groups = request.user.groups.values_list('name', flat=True)[1:]
 
-    doc_code = -1
-
     if request.method == "POST" and "doc_code" in request.POST:
         # if user submitted the form to approve a document
         doc_code = request.POST["doc_code"]
@@ -761,10 +759,9 @@ def custom_parameters_preview(request):
         dic = {}
         val = params[i]
         if val.startswith("!"):
-            if len(val) < 3:
-                val = val
+            if len(val) >= 3:
+                val = val[3:].split(",")[0]
 
-            val = val[3:].split(",")[0]
         dic["key"] = val
         dic["key_extra"] = params[i]
         dic["id"] = i
@@ -888,10 +885,8 @@ def doccreate(request):
             for i in custom:
                 val = i
                 if val.startswith("!"):
-                    if len(val) < 3:
-                        val = val
-
-                    val = val[3:].split(",")[0]
+                    if len(val) >= 3:
+                        val = val[3:].split(",")[0]
 
                 key = Keys(key=val, key_extra=i, container=doctype)
                 key.save()

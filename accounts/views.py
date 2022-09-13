@@ -44,7 +44,7 @@ MIDATA_ENABLED = settings.OAUTH_ENABLED
 # override to remove help text
 class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
-        super(RegisterForm, self).__init__(*args, **kwargs)
+        super(UserCreationForm, self).__init__(*args, **kwargs)
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
@@ -119,7 +119,6 @@ class CustomLoginView(LoginView):
         # check if user has a cookie saved
         response = HttpResponseRedirect("/")
 
-        sessions = dict()
         # no cookie
         if "user_switcher" not in request.COOKIES:
             return super(CustomLoginView, self).get(request, *args, **kwargs)

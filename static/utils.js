@@ -13,6 +13,7 @@ function initMaterializeHelper(customOptions) {
 
   if (options.selectOptions)
     fixSelectOptions(options.debug)
+  if (options.selectOptions)
     fixNavbarDropdown(options.debug)
   if (options.selectTriggers)
     fixSelectTriggers(options.debug)
