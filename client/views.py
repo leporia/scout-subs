@@ -130,7 +130,7 @@ def create(request):
         filter = filter & Q(staff_only=False)
 
     # remove from the list documents from already used types
-    doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(user=request.user).select_related("document_type").values_list("document_type", flat=True))
+    doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(Q(user=request.user) & ~Q(status="archive")).select_related("document_type").values_list("document_type", flat=True))
 
     context['docs'] = DocumentType.objects.filter(id__in=doctypes)
     if request.method == "POST":
@@ -183,7 +183,7 @@ def create(request):
                 return HttpResponseRedirect("/")
 
             # get list of docs with that type
-            current_docs = Document.objects.filter(user=request.user).filter(document_type=document_type)
+            current_docs = Document.objects.filter(user=request.user).filter(Q(document_type=document_type) & ~Q(status="archive"))
             if len(current_docs) > 0:
                 # if there is already a document with that type abort (user is cheating)
                 return HttpResponseRedirect("/")
