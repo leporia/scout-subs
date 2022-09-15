@@ -377,6 +377,7 @@ def personal_wrapper(request, errors):
     context = {}
     ok_message = ""
     personal_active = "active"
+    medic_active = ""
     settings_active = ""
     # additional user information
     usercode = UserCode.objects.filter(user=request.user)[0]
@@ -394,6 +395,8 @@ def personal_wrapper(request, errors):
     # variables for validation
     validation_dic = {}
     required_fields = ["first_name", "last_name", "email", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
+    personal_fields = ["first_name", "last_name", "email", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number"]
+    medic_fields = ["emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
 
     if request.method == "POST":
         # requested download
@@ -505,21 +508,29 @@ def personal_wrapper(request, errors):
             medic.save()
 
             missing_fields = False
+            missing_personal_field = False
+
             if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
                 validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
+                missing_personal_field = True
             else:
                 validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
 
             for i in required_fields:
                 if request.POST[i] == "":
                     missing_fields = True
+                    if i in personal_fields:
+                        missing_personal_field = True
                     validation_dic[i] = 'class="validate invalid" required="" aria-required="true"'
                 else:
                     validation_dic[i] = 'class="validate" required="" aria-required="true"'
 
             if missing_fields:
                 errors.append("Alcuni campi richiesti non sono stati compilati")
+                if not missing_personal_field:
+                    personal_active = ""
+                    medic_active = "active"
 
             # if "branca" in request.POST:
             #    if request.POST["branca"] != "":
@@ -735,8 +746,9 @@ def personal_wrapper(request, errors):
         'midata_user': midata_user,
         'midata_disable': midata_disable,
         'usable_password': usable_password,
-        'settings_active': settings_active,
         'personal_active': personal_active,
+        'medic_active': medic_active,
+        'settings_active': settings_active,
         'midata_enabled': MIDATA_ENABLED,
         'home_tooltip': home_tooltip,
     }
