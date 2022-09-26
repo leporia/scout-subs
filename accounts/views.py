@@ -641,7 +641,7 @@ def personal_wrapper(request, errors):
         branca_default = "selected"
     else:
         parent_group = request.user.groups.values_list('name', flat=True)[0]
-        if parent_group == "colonia":
+        if parent_group == "diga":
             branca_castorini = "selected"
         elif parent_group == "muta":
             branca_lupetti = "selected"

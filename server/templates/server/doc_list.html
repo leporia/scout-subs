@@ -136,8 +136,8 @@
   <a href="#!"><div class="chip" onClick="showAll()">
     {{total_count}} Tutti
   </div></a>
-  <a href="#!"><div id="colonia_filter" class="chip {{color}} white-text" onClick="filterResults('colonia')">
-    {{colonia_count}} Colonia
+  <a href="#!"><div id="diga_filter" class="chip {{color}} white-text" onClick="filterResults('diga')">
+    {{diga_count}} Diga
   </div></a>
   <a href="#!"><div id="muta_filter" class="chip {{color}} white-text" onClick="filterResults('muta')">
     {{muta_count}} Muta
@@ -676,7 +676,7 @@ function filterResults(group_name) {
 
 function showAll() {
   var items = document.getElementsByClassName("item");
-  document.getElementById("colonia_filter").className = "chip {{color}} white-text";
+  document.getElementById("diga_filter").className = "chip {{color}} white-text";
   document.getElementById("muta_filter").className = "chip {{color}} white-text";
   document.getElementById("reparto_filter").className = "chip {{color}} white-text";
   document.getElementById("posto_filter").className = "chip {{color}} white-text";
