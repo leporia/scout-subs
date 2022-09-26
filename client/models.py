@@ -21,6 +21,11 @@ class DocumentType(models.Model):
     name = models.CharField(default="", max_length=250)
 
 
+class HideGroup(models.Model):
+    group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
+    doc_type = models.ForeignKey(DocumentType, default=None, on_delete=models.CASCADE)
+
+
 class PersonalData(models.Model):
     parent_name = models.CharField(default="", max_length=250)
     via = models.CharField(default="", max_length=250)

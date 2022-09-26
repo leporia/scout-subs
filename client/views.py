@@ -1,7 +1,7 @@
 from django.db.models.expressions import OuterRef, Subquery
 from django.template.loader import get_template
 from django.urls import reverse
-from client.models import UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
+from client.models import HideGroup, UserCode, Keys, DocumentType, Document, PersonalData, KeyVal, MedicalData
 from django.db.models import Q
 from django.http import HttpResponseRedirect, FileResponse
 from django.contrib.auth.decorators import login_required
@@ -130,6 +130,7 @@ def create(request):
 
     # remove from the list documents from already used types
     doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(Q(user=request.user) & ~Q(status="archive")).select_related("document_type").values_list("document_type", flat=True))
+    doctypes = doctypes.difference(HideGroup.objects.filter(group__name__in=parent_groups).select_related("doc_type").values_list("doc_type", flat=True))
 
     context['docs'] = DocumentType.objects.filter(id__in=doctypes)
     if request.method == "POST":
