@@ -45,15 +45,20 @@ def isCapi_enabled(user):
     else:
         return False
 
+# function to get group list based on permissions of user
+def getGroups(user):
+    if user.is_staff:
+        groups = user.groups.all()
+    else:
+        groups = user.groups.all()[1:]
+    
+    return groups
+
 @user_passes_test(isStaff)
 def index(request):
     context = {}
 
-    # if user is staff of not primary show only public types
-    if request.user.is_staff:
-        groups = request.user.groups.all()
-    else:
-        groups = request.user.groups.all()[1:]
+    groups = getGroups(request.user)
 
     q_obj = Q(group__in=groups)
 
@@ -180,11 +185,7 @@ def docapprove(request):
     context = {}
     data = []
 
-    # if user not staff of primary has only control of non primary groups
-    if request.user.is_staff:
-        groups = request.user.groups.values_list('name', flat=True)
-    else:
-        groups = request.user.groups.values_list('name', flat=True)[1:]
+    groups = getGroups(request.user)
 
     # setup variables for error text and success text
     error = False
@@ -295,10 +296,7 @@ def docapprove(request):
 @staff_member_required
 def approve_direct(request):
     # get groups that the user is manager of
-    if request.user.is_staff:
-        groups = request.user.groups.values_list('name', flat=True)
-    else:
-        groups = request.user.groups.values_list('name', flat=True)[1:]
+    groups = getGroups(request.user)
 
     if request.method == "POST" and "doc_code" in request.POST:
         # if user submitted the form to approve a document
@@ -358,8 +356,7 @@ def approve_direct(request):
 def ulist(request):
     context = {}
     # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[0]
-    group = Group.objects.get(name=parent_group)
+    group = getGroups(request.user)[0]
 
     if request.method == "POST":
         # request to download document
@@ -426,7 +423,7 @@ def ulist(request):
     # list users with their documents
     permission = Permission.objects.get(codename="approved")
 
-    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__name__contains=parent_group).select_related("user", "medic").order_by("user__last_name")
+    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__contains=group).select_related("user", "medic").order_by("user__last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/usercode"]
     health_file = ["/server/media/", "/health_care_certificate/usercode"]
@@ -466,11 +463,7 @@ def doctype(request):
     group_check = 'checked="checked"'
 
     # if user not staff of primary get only non primary groups
-    if request.user.is_staff:
-        parent_groups = request.user.groups.values_list('name', flat=True)
-    else:
-        parent_groups = request.user.groups.values_list('name', flat=True)[
-            1:]
+    groups = getGroups(request.user)
 
     if request.method == "POST":
         # check if request to edit
@@ -478,7 +471,7 @@ def doctype(request):
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
 
             # check if user has permission on the document
-            if document_type.group.name not in parent_groups:
+            if document_type.group not in groups:
                 return
 
             enabled_check = 'checked="checked"' if document_type.enabled else ""
@@ -504,7 +497,7 @@ def doctype(request):
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
 
             # check if user has permission on the document
-            if document_type.group.name not in parent_groups:
+            if document_type.group not in groups:
                 return
 
             docs = Document.objects.filter(document_type=document_type).select_related("personal_data", "medical_data", "user")
@@ -578,7 +571,7 @@ def doctype(request):
             document_type = DocumentType.objects.get(id=request.POST["action"][1:])
 
             # check if user has permission on the document
-            if document_type.group.name not in parent_groups:
+            if document_type.group not in groups:
                 return
 
             docs = Document.objects.filter(document_type=document_type)
@@ -660,7 +653,7 @@ def doctype(request):
             if i.isdigit():
                 docc = DocumentType.objects.get(id=i)
                 # check if user has permission
-                if docc.group.name in parent_groups:
+                if docc.group in groups:
                     # execute action
                     if request.POST["action"] == 'delete':
                         try:
@@ -700,7 +693,7 @@ def doctype(request):
             group_bool = True
 
     # get documents from the list
-    q_obj = Q(group__name__in=parent_groups)
+    q_obj = Q(group__in=groups)
 
     public_types = DocumentType.objects.filter(q_obj)
 
@@ -774,22 +767,17 @@ def custom_parameters_preview(request):
 def doccreate(request):
     context = {}
 
+    groups = getGroups(request.user).values_list('name', flat=True)
     # if user is not staff of primary set default group to secondary and default public type
     if request.user.is_staff:
-        groups = request.user.groups.values_list('name', flat=True)
-        parent_group = request.user.groups.values_list('name', flat=True)[
-            0]
         group_private = False
         private_check = 'checked="checked"'
     else:
-        groups = request.user.groups.values_list('name', flat=True)[1:]
-        parent_group = request.user.groups.values_list('name', flat=True)[
-            1]
         group_private = True
         private_check = ''
 
     # get group obj
-    group = Group.objects.get(name=parent_group)
+    group = groups[0]
 
     # init checkboxes
     enabled = False
@@ -914,22 +902,15 @@ def docedit(request):
 
 @user_passes_test(isStaff)
 def docedit_wrapper(request, context):
+    groups = getGroups(request.user).values_list('name', flat=True)
+    group = Group.objects.get(name=groups[0])
 
     if request.user.is_staff and "group" in context.keys():
-        base_group = request.user.groups.values_list('name', flat=True)[0]
-        if context["group"] == base_group:
+        if context["group"] == groups[0]:
             context["group"] = ""
 
     if request.method == "POST":
         if "action" not in request.POST.keys():
-            # get groups on which the user has control
-            if request.user.is_staff:
-                groups = request.user.groups.values_list('name', flat=True)
-            else:
-                groups = request.user.groups.values_list('name', flat=True)[1:]
-
-            group = Group.objects.get(name=groups[0])
-
             # get document
             doc = DocumentType.objects.get(id=request.POST["doc"])
 
@@ -1022,15 +1003,7 @@ def doclist(request):
     context = {}
 
     # group name and obj
-    parent_group = request.user.groups.values_list('name', flat=True)[
-        0]
-    group = Group.objects.get(name=parent_group)
-
-    # if user not staff of primary get secondary groups
-    if request.user.is_staff:
-        parent_groups = request.user.groups.values_list('name', flat=True)
-    else:
-        parent_groups = request.user.groups.values_list('name', flat=True)[1:]
+    parent_groups = getGroups(request.user).values_list('name', flat=True)
 
     # create typezone
     zurich = pytz.timezone('Europe/Zurich')
@@ -1211,7 +1184,7 @@ def doclist(request):
     # get types and users for chips autocompletation
     if request.user.is_staff:
         auto_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=group))
+            Q(group_private=False) | Q(group=getGroups(request.user)[0]))
     else:
         auto_types = DocumentType.objects.filter(Q(group_private=False))
 
@@ -1560,10 +1533,7 @@ def zip_documents(docs, session_key):
 @user_passes_test(isStaff)
 def upload_doc(request):
     # setup group based on staff primary or not
-    if request.user.is_staff:
-        groups = request.user.groups.values_list('name', flat=True)
-    else:
-        groups = request.user.groups.values_list('name', flat=True)[1:]
+    groups = getGroups(request.user).values_list('name', flat=True)
 
     # setup variables for error text and success text
     error = False
@@ -1632,10 +1602,7 @@ def upload_doc(request):
 def docpreview(request):
     context = {}
     # check for permissions
-    if request.user.is_staff:
-        groups = request.user.groups.values_list('name', flat=True)
-    else:
-        groups = request.user.groups.values_list('name', flat=True)[1:]
+    groups = getGroups(request.user).values_list('name', flat=True)
 
     if request.method == "POST":
         # get document code
@@ -1685,7 +1652,7 @@ def docpreview(request):
 @user_passes_test(isStaff)
 def data_request(request):
     context = {}
-    parent_group = request.user.groups.values_list('name', flat=True)[0]
+    parent_group = getGroups(request.user).values_list('name', flat=True)[0]
 
     if request.method == "POST":
         if "request" not in request.POST.keys():
@@ -1798,8 +1765,8 @@ def media_request(request, id=0, t="", flag=""):
     if flag == "usercode":
         usercode = UserCode.objects.get(id=id)
         if request.user.is_staff:
-            groups = request.user.groups.values_list('name', flat=True)
-            usercode_group = usercode.user.groups.values_list('name', flat=True)[0]
+            groups = getGroups(request.user)
+            usercode_group = usercode.user.groups[0]
             if usercode_group not in groups:
                 return
         else:
@@ -1815,7 +1782,7 @@ def media_request(request, id=0, t="", flag=""):
         doc = Document.objects.get(id=id)
         doc_group = doc.group.name
 
-        groups = request.user.groups.values_list('name', flat=True)
+        groups = getGroups(request.user).values_list('name', flat=True)
         group_view = "capi" in groups and GroupSettings.objects.filter(group__name=doc_group).filter(view_documents=True).count() != 0
 
         # check if user can view media
