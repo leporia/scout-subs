@@ -1651,10 +1651,11 @@ def docpreview(request):
 
         # get document
         document = Document.objects.filter(code=code)[0]
+        doc_group = document.group.name
         parent_group = document.user.groups.values_list('name', flat=True)[0]
 
         # user has not permission to view document
-        if parent_group not in groups:
+        if doc_group not in groups:
             return
 
         # prepare images in base64
