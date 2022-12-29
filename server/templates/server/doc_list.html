@@ -619,7 +619,9 @@ $('#select-all').click(function(event) {
     if(this.checked) {
         // Iterate each checkbox
         $('.allselect').each(function() {
-            this.checked = true;                        
+            if (!this.hidden) {
+              this.checked = true;                        
+            }
         });
     } else {
         $('.allselect').each(function() {
@@ -667,9 +669,11 @@ function filterResults(group_name) {
 
   for (i = 0; i < items.length; i++) {
     var a = items[i].children[0];
+    var checkBox = items[i].children[1].children[0].children[0];
     var txtValue = a.value;
     if (txtValue == group_name) {
       items[i].style.display = action;
+      checkBox.hidden = (action == "none");
     }
   }
 }
