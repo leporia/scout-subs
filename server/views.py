@@ -61,8 +61,6 @@ def getGroups(request):
                 groups.remove(su_group)
             groups = [su_group] + groups
 
-    print(groups)
-    
     return groups
 
 @user_passes_test(isStaff)
