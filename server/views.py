@@ -46,14 +46,21 @@ def isCapi_enabled(user):
         return False
 
 # function to get group list based on permissions of user
-def getGroups(user):
+def getGroups(request):
+    user = request.user
     if user.is_staff:
         groups = list(user.groups.all())
     else:
         groups = list(user.groups.all())[1:]
 
-    if user.is_superuser:
+    if user.is_superuser and request.session.get("superuser"):
         groups = list(Group.objects.all())
+        if "superuser_group" in request.session:
+            su_group = Group.objects.get(name=request.session["superuser_group"])
+            if su_group in groups:
+                groups.remove(su_group)
+            groups = [su_group] + groups
+
     print(groups)
     
     return groups
@@ -62,7 +69,7 @@ def getGroups(user):
 def index(request):
     context = {}
 
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     q_obj = Q(group__in=groups)
 
@@ -90,6 +97,21 @@ def index(request):
 
     # check if changing settings
     if request.method == "POST" and request.user.is_staff:
+        if request.user.is_superuser and "su_status" in request.POST:
+            action = request.POST["su_status"]
+            if action == "change":
+                if "superuser" not in request.session:
+                    request.session["superuser"] = True
+                else:
+                    request.session["superuser"] = not request.session["superuser"]
+
+                if "superuser_group" not in request.session:
+                    request.session["superuser_group"] = "reparto"
+            elif action in ["diga", "muta", "reparto", "posto", "clan"]:
+                request.session["superuser_group"] = action
+
+            return HttpResponseRedirect("/server")
+
         for i in groups:
             settings = GroupSettings.objects.filter(group=i)
 
@@ -123,7 +145,7 @@ def uapprove(request):
     data = []
     if request.method == "POST":
         # get group name and obj
-        group = getGroups(request.user)[0]
+        group = getGroups(request)[0]
         parent_group = group.name
 
         # get permission object
@@ -188,7 +210,7 @@ def docapprove(request):
     context = {}
     data = []
 
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     # setup variables for error text and success text
     error = False
@@ -299,7 +321,7 @@ def docapprove(request):
 @staff_member_required
 def approve_direct(request):
     # get groups that the user is manager of
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     if request.method == "POST" and "doc_code" in request.POST:
         # if user submitted the form to approve a document
@@ -359,7 +381,7 @@ def approve_direct(request):
 def ulist(request):
     context = {}
     # group name and obj
-    group = getGroups(request.user)[0]
+    group = getGroups(request)[0]
 
     if request.method == "POST":
         # request to download document
@@ -466,7 +488,7 @@ def doctype(request):
     group_check = 'checked="checked"'
 
     # if user not staff of primary get only non primary groups
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     if request.method == "POST":
         # check if request to edit
@@ -770,7 +792,7 @@ def custom_parameters_preview(request):
 def doccreate(request):
     context = {}
 
-    groups = getGroups(request.user)
+    groups = getGroups(request)
     # if user is not staff of primary set default group to secondary and default public type
     if request.user.is_staff:
         group_private = False
@@ -905,7 +927,7 @@ def docedit(request):
 
 @user_passes_test(isStaff)
 def docedit_wrapper(request, context):
-    groups = getGroups(request.user)
+    groups = getGroups(request)
     group = groups[0]
 
     if request.user.is_staff and "group" in context.keys():
@@ -1006,7 +1028,7 @@ def doclist(request):
     context = {}
 
     # group name and obj
-    parent_groups = getGroups(request.user)
+    parent_groups = getGroups(request)
 
     # create typezone
     zurich = pytz.timezone('Europe/Zurich')
@@ -1183,7 +1205,7 @@ def doclist(request):
     # get types and users for chips autocompletation
     if request.user.is_staff:
         auto_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=getGroups(request.user)[0]))
+            Q(group_private=False) | Q(group=getGroups(request)[0]))
     else:
         auto_types = DocumentType.objects.filter(Q(group_private=False))
 
@@ -1532,7 +1554,7 @@ def zip_documents(docs, session_key):
 @user_passes_test(isStaff)
 def upload_doc(request):
     # setup group based on staff primary or not
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     # setup variables for error text and success text
     error = False
@@ -1601,7 +1623,7 @@ def upload_doc(request):
 def docpreview(request):
     context = {}
     # check for permissions
-    groups = getGroups(request.user)
+    groups = getGroups(request)
 
     if request.method == "POST":
         # get document code
@@ -1652,7 +1674,7 @@ def docpreview(request):
 @user_passes_test(isStaff)
 def data_request(request):
     context = {}
-    parent_group = getGroups(request.user)[0]
+    parent_group = getGroups(request)[0]
 
     if request.method == "POST":
         if "request" not in request.POST.keys():
@@ -1788,7 +1810,7 @@ def media_request(request, id=0, t="", flag=""):
     if flag == "usercode":
         usercode = UserCode.objects.get(id=id)
         if request.user.is_staff:
-            groups = getGroups(request.user)
+            groups = getGroups(request)
             usercode_group = usercode.user.groups[0]
             if usercode_group not in groups:
                 return
@@ -1805,7 +1827,7 @@ def media_request(request, id=0, t="", flag=""):
         doc = Document.objects.get(id=id)
         doc_group = doc.group
 
-        groups = getGroups(request.user)
+        groups = getGroups(request)
         group_view = Group.objects.filter(name="capi") in groups and GroupSettings.objects.filter(group__name=doc_group).filter(view_documents=True).count() != 0
 
         # check if user can view media

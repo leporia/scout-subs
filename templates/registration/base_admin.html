@@ -1,11 +1,11 @@
-{% with color="red lighten-1" %}
+{% load app_filter %}
+{% with color=request.session.superuser|su_color %}
 {% with hexcolor="#ef5350" %}
 {% with hexlightcolor="#ef9a9a" %}
 <!DOCTYPE html>
 <html>
 <head>
   {% load static %}
-  {% load app_filter %}
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
   <style>
@@ -85,6 +85,10 @@
 </head>
 <body>
   <nav class="nav-extended">
+    <form id="su_change" method="post" action="{% url 'server'%}">
+      {% csrf_token %}
+      <input type="hidden" name="su_status" id="su_status">
+    </form>
     <form id="user_form" method="post" action="{% url 'user_switcher'%}">
     {% csrf_token %}
     <input type="hidden" name="metadata" id="metadata">
@@ -129,6 +133,23 @@
           <li><a href="{% url 'about' %}">Informazioni sul prodotto</a></li>
         </ul>
       </ul>
+      {% if user.is_superuser %}
+      <ul class="right">
+        {% if request.session.superuser %}
+          <li class="dropdown-trigger" data-target='su_opts'><a href="#">{{request.session.superuser_group}}<i class="material-icons right">security</i></a></li>
+          <ul id="su_opts" class='dropdown-content'>
+            <li><a href="#!" onclick="su_change('diga')">diga</a></li>
+            <li><a href="#!" onclick="su_change('muta')">muta</a></li>
+            <li><a href="#!" onclick="su_change('reparto')">reparto</a></li>
+            <li><a href="#!" onclick="su_change('posto')">posto</a></li>
+            <li><a href="#!" onclick="su_change('clan')">clan</a></li>
+            <li><a id="su_btn" href="#!" onclick="su_change('change')">Esci superuser<i class="material-icons">security</i></a></li>
+          </ul>
+        {% else %}
+          <li><a id="su_btn" href="#!" onclick="su_change('change')"><i class="material-icons">security</i></a></li>
+        {% endif %}
+      </ul>
+      {% endif %}
     </div>
     {% block toolbar %}
     {% endblock %}
@@ -152,11 +173,20 @@
   document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('.userswitcher');
     var instances = M.Dropdown.init(elems, {"coverTrigger": false, "constrainWidth": false});
+    var elems = document.querySelectorAll('.dropdown-trigger');
+    var instances = M.Dropdown.init(elems, {"coverTrigger": false, "constrainWidth": false});
   });
   function switcher_submit(id) {
     var form = document.getElementById('user_form')
     var action = document.getElementById('metadata')
     action.setAttribute('value', id);
+    form.submit()
+  }
+
+  function su_change(parm) {
+    var form = document.getElementById('su_change')
+    var action = document.getElementById('su_status')
+    action.setAttribute('value', parm);
     form.submit()
   }
   {% block script %}
