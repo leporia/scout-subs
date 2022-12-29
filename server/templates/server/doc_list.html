@@ -17,7 +17,7 @@
         </a>
       </li>
       <li><a class="tooltipped modal-trigger" href="#modal2" data-position="top" data-tooltip="Archivia selezionati"><i class="material-icons">archive</i></a></li>
-      <li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>
+      <!--<li><a class="tooltipped" data-position="top" data-tooltip="Dearchivia selezionati" Onclick="send('unarchive')"><i class="material-icons">unarchive</i></a></li>-->
       <li><a class="tooltipped modal-trigger" href="#modal3" data-position="top" data-tooltip="Scarica selezionati" Onclick="send('download')"><i class="material-icons">file_download</i></a></li>
       {% if settings.DEBUG %}
         <li><a class="tooltipped" data-position="top" data-tooltip="Approva selezionati" Onclick="send('approve')"><i class="material-icons left">check</i>DEBUG</a></li>
@@ -38,6 +38,7 @@
   <div class="modal-content">
     <h4>Attenzione</h4>
     <p>
+      Una volta archiviato un documento non potrà più essere dearchiviato.<br>
       Se il documento contine dati medici quando archiviato tutti i dati medici verranno eliminati.
     </p>
   </div>

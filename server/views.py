@@ -1118,23 +1118,19 @@ def doclist(request):
                         docc.status = 'ok'
                         docc.save()
                     elif request.POST["action"] == 'archive':
-                        if docc.status == 'ok':
-                            docc.status = 'archive'
-                            if docc.medical_data:
-                                docc.medical_data.delete()
-                                docc.medical_data.save()
-                                docc.medical_data = None
-                            docc.save()
-                        else:
-                            error = True
-                            error_text = "Non puoi archiviare un documento non approvato"
-                    elif request.POST["action"] == 'unarchive':
-                        if docc.status == 'archive':
-                            docc.status = 'ok'
-                            docc.save()
-                        else:
-                            error = True
-                            error_text = "Non puoi dearchiviare un documento non archiviato"
+                        docc.status = 'archive'
+                        if docc.medical_data:
+                            docc.medical_data.delete()
+                            docc.medical_data.save()
+                            docc.medical_data = None
+                        docc.save()
+                    #elif request.POST["action"] == 'unarchive':
+                    #    if docc.status == 'archive':
+                    #        docc.status = 'ok'
+                    #        docc.save()
+                    #    else:
+                    #        error = True
+                    #        error_text = "Non puoi dearchiviare un documento non archiviato"
 
         # get filter values
         hidden = "filter_hidden" in request.POST
