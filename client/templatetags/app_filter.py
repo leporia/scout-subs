@@ -90,3 +90,10 @@ def user_list(user):
         gr = GroupSettings.objects.filter(group__in=groups).filter(view_documents=True)
 
     return (len(gr) != 0)
+
+@register.filter(name="su_color")
+def su_color(status):
+    if status:
+        return "green"
+    else:
+        return "red lighten-1"
