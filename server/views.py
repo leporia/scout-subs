@@ -1753,6 +1753,7 @@ def data_request(request):
             for user in users:
                 usercode = UserCode.objects.filter(user=user)[0]
                 medic = usercode.medic
+                nationality = usercode.nationality
 
                 nat_gs = ""
                 if "svizzera" in nationality.lower():
