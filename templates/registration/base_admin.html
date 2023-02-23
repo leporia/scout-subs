@@ -8,6 +8,7 @@
   {% load static %}
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="{% static 'materialize.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'tabulator/css/tabulator.min.css' %}">
   <style>
     input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
       color: {{hexcolor}} !important;
@@ -163,6 +164,7 @@
   <script type="text/javascript" src="{% static 'jquery-3.5.1.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'materialize.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'lazyload.js' %}"></script>
+  <script type="text/javascript" src="{% static 'tabulator/js/tabulator.min.js' %}"></script>
   {% block script_import %}
   {% endblock %}
   <script>

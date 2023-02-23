@@ -1,0 +1,98 @@
+{% extends 'registration/base_admin.html' %}
+
+{% block title %}Admin - Lista Utenti{% endblock %}
+
+{% block breadcrumb %}
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a class="breadcrumb hide-on-med-and-down">Lista Utenti</a>
+{% endblock %}
+{% block toolbar %}
+  <div class="nav-wrapper {{color}}">
+    <ul>
+      <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Seleziona colonne"><i class="material-icons">filter_list</i></a></li>
+    </ul>
+  </div>
+{% endblock %}
+
+{% block content %}
+<div id="modal1" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h5>Colonne</h5>
+    <div class="row" id="column-select">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" onclick="update_cols()" class="modal-close waves-effect waves-green btn-flat">Applica</a>
+  </div>
+</div>
+
+<div id="example-table"></div>
+{% endblock %}
+
+{% block script %}
+  $(document).ready(function(){
+      $('#modal1').modal();
+  });
+
+  var tabledata = [
+      {% for user in users %}
+        {
+          username: "{{user.user.username}}",
+          name: "{{user.user.first_name}}",
+          last_name: "{{user.user.last_name}}",
+          email: "{{user.user.email}}",
+        },
+      {% endfor %}
+  ];
+
+  var columns = [];
+
+  var col_categories = [
+    {field: "base", name: "Informazioni base", cols: 
+      [
+        {title: "Username", field: "username"},
+        {title: "Nome", field: "name"},
+        {title: "Cognome", field: "last_name"},
+        {title: "Email", field: "email", visible: false},
+      ]
+    },
+  ]
+
+  var col_select = document.getElementById("column-select");
+  for (var j = 0; j < col_categories.length; j++) {
+    col_select.innerHTML += '<div class="input-field col s12"><label><input id="category_'+col_categories[j].field+'" type="checkbox" class="filled-in"/><span style="color:black"><b>'+col_categories[j].name+'</b></span></label></div>';
+    var all_visible = true;
+    for (var i = 0; i < col_categories[j].cols.length; i++) {
+      columns.push(col_categories[j].cols[i]);
+      if (columns[i].visible == false) {
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+        all_visible = false;
+      } else {
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in" checked="checked"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+      }
+    }
+
+    var cat_elem = document.getElementById("category_"+col_categories[j].field);
+
+    if (all_visible) {
+      cat_elem.checked = true;
+    }
+  }
+
+  //initialize table
+  var table = new Tabulator("#example-table", {
+      responsiveLayout:true,
+      data:tabledata,
+      columns:columns,
+  });
+
+  function update_cols() {
+    for (var i = 0; i < columns.length; i++) {
+      if (document.getElementById("filter_"+columns[i].field).checked) {
+        table.showColumn(columns[i].field);
+      } else {
+        table.hideColumn(columns[i].field);
+      }
+    }
+  }
+{% endblock %}

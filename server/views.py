@@ -458,6 +458,27 @@ def ulist(request):
     }
     return render(request, 'server/user_list.html', context)
 
+@staff_member_required
+def ulist_table(request):
+    context = {}
+    # group name and obj
+    group = getGroups(request)[0]
+
+    # list users with their documents
+    permission = Permission.objects.get(codename="approved")
+
+    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__name__contains=group.name).select_related("user", "medic").order_by("user__last_name")
+
+    vac_file = ["/server/media/", "/vac_certificate/usercode"]
+    health_file = ["/server/media/", "/health_care_certificate/usercode"]
+
+    context = {
+        'users': usercodes,
+        'vac_file': vac_file,
+        'health_file': health_file,
+    }
+    return render(request, 'server/user_list_table.html', context)
+
 
 @user_passes_test(isStaff)
 def doctype(request):

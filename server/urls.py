@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.index, name='server'),
     path('uapprove', views.uapprove, name='uapprove'),
     path('ulist', views.ulist, name='ulist'),
+    path('ulist-table', views.ulist_table, name='ulist-table'),
     path('doctype', views.doctype, name='doctype'),
     path('doccreate', views.doccreate, name='doccreate'),
     path('docedit', views.docedit, name='docedit'),
