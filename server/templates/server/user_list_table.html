@@ -9,12 +9,13 @@
 {% block toolbar %}
   <div class="nav-wrapper {{color}}">
     <ul>
-      <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Seleziona colonne"><i class="material-icons">filter_list</i></a></li>
+      <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Seleziona colonne"><i class="material-icons">view_column</i></a></li>
     </ul>
   </div>
 {% endblock %}
 
 {% block content %}
+{% load app_filter %}
 <div id="modal1" class="modal modal-fixed-footer">
   <div class="modal-content">
     <h5>Colonne</h5>
@@ -37,10 +38,41 @@
   var tabledata = [
       {% for user in users %}
         {
+          capo: {% if "capi" in user.user|user_groups %}true{% else %}false{% endif %},
           username: "{{user.user.username}}",
           name: "{{user.user.first_name}}",
           last_name: "{{user.user.last_name}}",
           email: "{{user.user.email}}",
+          birth_date: "{{user.born_date}}",
+          branca: "{{ user.user|user_primary_group }}",
+          parent_name: "{{user.parent_name}}",
+          avs_number: "{{user.avs_number}}",
+          via: "{{user.via}}",
+          cap: "{{user.cap}}",
+          country: "{{user.country}}",
+          nationality: "{{user.nationality}}",
+          phone: "{{user.phone}}",
+          home_phone: "{{user.home_phone}}",
+          school: "{{user.school}}",
+          year: "{{user.year}}",
+          emer_name: "{{user.medic.emer_name}}",
+          emer_relative: "{{user.medic.emer_relative}}",
+          cell_phone: "{{user.medic.cell_phone}}",
+          emer_phone: "{{user.medic.emer_phone}}",
+          emer_address: "{{user.medic.address}}",
+          health_care: "{{user.medic.health_care}}",
+          injuries: "{{user.medic.injuries}}",
+          rc: "{{user.medic.rc}}",
+          rega: "{{user.medic.rega}}",
+          medic_name: "{{user.medic.medic_name}}",
+          medic_phone: "{{user.medic.medic_phone}}",
+          medic_address: "{{user.medic.medic_address}}",
+          sickness: "{{user.medic.sickness}}",
+          vaccine: "{{user.medic.vaccine}}",
+          tetanus_date: "{{user.medic.tetanus_date}}",
+          allergy: "{{user.medic.allergy}}",
+          drugs: "{{user.medic.drugs}}",
+          misc: "{{user.medic.misc}}",
         },
       {% endfor %}
   ];
@@ -50,38 +82,77 @@
   var col_categories = [
     {field: "base", name: "Informazioni base", cols: 
       [
-        {title: "Username", field: "username"},
+        {title: "Capo", field: "capo", formatter:"tickCross", frozen: true},
+        {title: "Username", field: "username", frozen: true},
         {title: "Nome", field: "name"},
         {title: "Cognome", field: "last_name"},
-        {title: "Email", field: "email", visible: false},
+        {title: "Email", field: "email"},
+        {title: "Data di nascita", field: "birth_date"},
+        {title: "Branca", field: "branca"},
+      ]
+    },
+    {field: "personal", name: "Informazioni personali", cols: 
+      [
+        {title: "Nome genitore", field: "parent_name"},
+        {title: "Numero AVS", field: "avs_number"},
+        {title: "Via", field: "via"},
+        {title: "CAP", field: "cap"},
+        {title: "Paese", field: "country"},
+        {title: "Nazionalita", field: "nationality"},
+        {title: "Telefono", field: "phone"},
+        {title: "Telefono casa", field: "home_phone"},
+        {title: "Scuola", field: "school"},
+        {title: "Anno", field: "year"},
+      ]
+    },
+    {field: "medical", name: "Informazioni mediche", cols: 
+      [
+        {title: "Nome emergenza", field: "emer_name", visible: false},
+        {title: "Parentela emergenza", field: "emer_relative", visible: false},
+        {title: "Cellulare emergenza", field: "cell_phone", visible: false},
+        {title: "Telefono emergenza", field: "emer_phone", visible: false},
+        {title: "Indirizzo emergenza", field: "emer_address", visible: false},
+        {title: "Assicurazione sanitaria", field: "health_care", visible: false},
+        {title: "Infortuni", field: "injuries", visible: false},
+        {title: "RC", field: "rc", visible: false},
+        {title: "REGA", field: "rega", visible: false},
+        {title: "Nome medico", field: "medic_name", visible: false},
+        {title: "Telefono medico", field: "medic_phone", visible: false},
+        {title: "Indirizzo medico", field: "medic_address", visible: false},
+        {title: "Malattie avute", field: "sickness", visible: false},
+        {title: "Vaccinazioni", field: "vaccine", visible: false},
+        {title: "Data vaccino tetano", field: "tetanus_date", visible: false},
+        {title: "Allergie", field: "allergy", visible: false},
+        {title: "Farmaci da assumere", field: "drugs", visible: false},
+        {title: "Info particolari", field: "misc", visible: false},
       ]
     },
   ]
 
   var col_select = document.getElementById("column-select");
   for (var j = 0; j < col_categories.length; j++) {
-    col_select.innerHTML += '<div class="input-field col s12"><label><input id="category_'+col_categories[j].field+'" type="checkbox" class="filled-in"/><span style="color:black"><b>'+col_categories[j].name+'</b></span></label></div>';
+    col_select.innerHTML += '<div class="input-field col s12"><label><input onclick="check_all(\''+col_categories[j].field+'\')" id="category_'+col_categories[j].field+'" type="checkbox" class="filled-in"/><span style="color:black"><b>'+col_categories[j].name+'</b></span></label></div>';
     var all_visible = true;
     for (var i = 0; i < col_categories[j].cols.length; i++) {
       columns.push(col_categories[j].cols[i]);
-      if (columns[i].visible == false) {
-        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+      if (columns[columns.length-1].visible == false) {
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input onclick="verify_check(\''+col_categories[j].field+'\')" id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in ctr_'+col_categories[j].field+'"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
         all_visible = false;
       } else {
-        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in" checked="checked"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input onclick="verify_check(\''+col_categories[j].field+'\')" id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in ctr_'+col_categories[j].field+'" checked="checked"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
       }
     }
+  }
 
-    var cat_elem = document.getElementById("category_"+col_categories[j].field);
-
-    if (all_visible) {
-      cat_elem.checked = true;
-    }
+  for (var i = 0; i < col_categories.length; i++) {
+    verify_check(col_categories[i].field);
   }
 
   //initialize table
   var table = new Tabulator("#example-table", {
-      responsiveLayout:true,
+      movableColumns: true,
+      layout:"fitDataFill",
+      responsiveLayout: "hide",
       data:tabledata,
       columns:columns,
   });
@@ -93,6 +164,30 @@
       } else {
         table.hideColumn(columns[i].field);
       }
+    }
+  }
+
+  function check_all(cat) {
+    var ctr_elem = document.getElementById("category_"+cat);
+    if (ctr_elem.checked) {
+      $('.ctr_'+cat).prop('checked', 'checked');
+    } else {
+      $('.ctr_'+cat).prop('checked', false);
+    }
+  }
+
+  function verify_check(cat) {
+    var ctr_elem = document.getElementById("category_"+cat);
+    var all_checked = true;
+    $('.ctr_'+cat).each(function() {
+      if (!this.checked) {
+        all_checked = false;
+      }
+    });
+    if (all_checked) {
+      ctr_elem.checked = true;
+    } else {
+      ctr_elem.checked = false;
     }
   }
 {% endblock %}
