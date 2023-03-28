@@ -1274,6 +1274,143 @@ def doclist(request):
 
     return render(request, 'server/doc_list.html', context)
 
+@user_passes_test(isStaff)
+def doclist_table(request):
+    context = {}
+
+    # group name and obj
+    parent_groups = getGroups(request)
+
+    # create typezone
+    zurich = pytz.timezone('Europe/Zurich')
+
+    # init error variables for users
+    error = False
+    error_text = ""
+
+    # init checkboxes for filter
+    hidden = False
+    wait = True
+    selfsign = True
+    ok = True
+    signdoc = False
+
+    hidden_check = 'checked="checked"'
+    wait_check = 'checked="checked"'
+    selfsign_check = 'checked="checked"'
+    ok_check = 'checked="checked"'
+    signdoc_check = 'checked="checked"'
+
+    # set default dates for filters
+    newer = zurich.localize(dateparser.parse("1970-01-01"))
+    older = zurich.localize(datetime.now())
+
+    # init chips values
+    owner = []
+    types = []
+    groups = []
+    chips_owner = []
+    chips_types = []
+    chips_groups = []
+
+    if request.method == "POST":
+        # get filter values
+        hidden = "filter_hidden" in request.POST
+        wait = "filter_wait" in request.POST
+        selfsign = "filter_selfsign" in request.POST
+        ok = "filter_ok" in request.POST
+        signdoc = "filter_signdoc" in request.POST
+        newer = zurich.localize(dateparser.parse(request.POST["newer"]))
+        older = zurich.localize(dateparser.parse(
+            request.POST["older"]) + timedelta(days=1))
+        owner = request.POST["owner"].split("^|")
+        types = request.POST["type"].split("^|")
+        groups = request.POST["groups"].split("^|")
+
+        # clear filters
+        if request.POST["action"] == 'clear':
+            hidden = False
+            wait = True
+            selfsign = True
+            ok = True
+            signdoc = False
+            newer = zurich.localize(dateparser.parse("1970-01-01"))
+            older = zurich.localize(datetime.now())
+            owner = []
+            types = []
+            groups = []
+
+    # filter documents based on group of staff and date range
+    q_obj = Q(group__in=parent_groups) & Q(compilation_date__range=[newer, older])
+
+    # filter documents
+    if not hidden:
+        q_obj &= ~Q(status="archive")
+        hidden_check = ""
+    if not wait:
+        q_obj &= ~Q(status="wait")
+        wait_check = ""
+    if not selfsign:
+        q_obj &= ~Q(status="autosign")
+        selfsign_check = ""
+    if not ok:
+        q_obj &= ~Q(status="ok")
+        ok_check = ""
+    if signdoc:
+        q_obj &= ~Q(signed_doc="")
+    else:
+        signdoc_check = ""
+
+    # filter types, owner, groups using chips
+    if len(types) > 0:
+        if types[0] != "":
+            q_obj &= Q(document_type__name__in=types)
+            chips_types += types
+
+    if len(owner) > 0:
+        if owner[0] != "":
+            q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
+            chips_owner += owner
+
+    if len(groups) > 0:
+        if groups[0] != "":
+            q_obj &= Q(user__groups__name__in=groups)
+            chips_groups += groups
+
+    # run query
+    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
+
+    users = documents.values("user__username", "user__first_name", "user__last_name")
+
+    # get types and users for chips autocompletation
+    if request.user.is_staff:
+        auto_types = DocumentType.objects.filter(
+            Q(group_private=False) | Q(group=getGroups(request)[0]))
+    else:
+        auto_types = DocumentType.objects.filter(Q(group_private=False))
+
+    context = {
+        "types": auto_types,
+        "users": users,
+        "groups": Group.objects.all(),
+        "docs": documents,
+        "hidden_check": hidden_check,
+        "wait_check": wait_check,
+        "selfsign_check": selfsign_check,
+        "ok_check": ok_check,
+        "signdoc_check": signdoc_check,
+        "newer": newer,
+        "older": older,
+        "chips_owner": chips_owner,
+        "chips_type": chips_types,
+        "chips_groups": chips_groups,
+        'error': error,
+        'error_text': error_text,
+        'settings': settings,
+    }
+
+    return render(request, 'server/doc_list_table.html', context)
+
 @user_passes_test(isCapi_enabled)
 def doclist_readonly(request):
     context = {}

@@ -12,6 +12,7 @@ urlpatterns = [
     path('doccreate', views.doccreate, name='doccreate'),
     path('docedit', views.docedit, name='docedit'),
     path('doclist', views.doclist, name='doclist'),
+    path('doclist-table', views.doclist_table, name='doclist-table'),
     path('doclistro', views.doclist_readonly, name='doclistro'),
     path('docapprove', views.docapprove, name='docapprove'),
     path('docupload', views.upload_doc, name='docupload'),

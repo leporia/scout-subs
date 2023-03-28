@@ -1,0 +1,424 @@
+{% extends 'registration/base_admin.html' %}
+
+{% block title %}Admin - Lista Utenti{% endblock %}
+
+{% block breadcrumb %}
+  <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a class="breadcrumb hide-on-med-and-down">Documenti</a>
+{% endblock %}
+{% block toolbar %}
+  <div class="nav-wrapper {{color}}">
+    <ul>
+      <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Seleziona colonne"><i class="material-icons">view_column</i></a></li>
+    </ul>
+    <ul class="right">
+      <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
+      <li><a href="#modal2" data-target="modal2" class="modal-trigger tooltipped" data-position="top" data-tooltip="Filtri"><i class="material-icons">filter_list</i></a></li>
+    </ul>
+  </div>
+{% endblock %}
+
+{% block content %}
+{% load app_filter %}
+<form id="selection" action="{% url 'doclist-table' %}" method="post">
+{% csrf_token %}
+<div id="modal2" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h5>Filtri</h5>
+    <div class="row">
+      <div class="input-field col l3 s12">
+        <label>
+          <input name="filter_hidden" type="checkbox" class="filled-in" {{hidden_check}}/>
+          <span style="color:black"><i class="material-icons left">archive</i>Archiviati</span>
+        </label>
+      </div>
+      <div class="input-field col l3 s12">
+        <label>
+          <input name="filter_wait" type="checkbox" class="filled-in" {{wait_check}}/>
+          <span style="color:black"><i class="material-icons left">timelapse</i>In Attesa</span>
+        </label>
+      </div>
+      <div class="input-field col l3 s12">
+        <label>
+          <input name="filter_selfsign" type="checkbox" class="filled-in" {{selfsign_check}}/>
+          <span style="color:black"><i class="material-icons left">assignment_turned_in</i>No firma</span>
+        </label>
+      </div>
+      <div class="input-field col l3 s12">
+        <label>
+          <input name="filter_ok" type="checkbox" class="filled-in" {{ok_check}}/>
+          <span style="color:black"><i class="material-icons left">check</i>Approvati</span>
+        </label>
+      </div>
+    </div>
+    <br>
+    <br>
+    <div class = "row">
+      <div class="input-field col l6 s12">
+        <label for="newer">Pi&ugrave; recenti di</label>
+        <input value="{{newer}}" name="newer" id="newer" type="text" class="datepicker">
+      </div>
+      <div class="input-field col l6 s12">
+        <label for="older">Pi&ugrave; vecchi di</label>
+        <input value="{{older}}" name="older" id="older" type="text" class="datepicker">
+      </div>
+    </div>
+    <div class = "row">
+      <div class="col s12">
+        <div id="chips_type" class="chips chips-placeholder chips-autocomplete"></div>
+      </div>
+      <div class="col s12">
+        <div id="chips_owner" class="chips chips-placeholder chips-autocomplete "></div>
+      </div>
+      <div class="col s12">
+        <div id="chips_groups" class="chips chips-placeholder chips-autocomplete "></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <label>
+          <input name="filter_signdoc" type="checkbox" class="filled-in" {{signdoc_check}}/>
+          <span style="color:black"><i class="material-icons left">check_circle</i>Visualizza solo approvati con firma allegata</span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" onclick="send('filter')" class="modal-close waves-effect waves-green btn-flat">Applica</a>
+  </div>
+</div>
+<input type="hidden" name="action" id="action">
+<input type="hidden" name="owner" id="owner">
+<input type="hidden" name="type" id="type">
+<input type="hidden" name="groups" id="groups">
+<div id="modal1" class="modal modal-fixed-footer">
+  <div class="modal-content">
+    <h5>Colonne</h5>
+    <div class="row" id="column-select">
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" onclick="update_cols()" class="modal-close waves-effect waves-green btn-flat">Applica</a>
+  </div>
+</div>
+</form>
+
+<div id="example-table"></div>
+{% endblock %}
+
+{% block script %}
+  $(document).ready(function(){
+      $('#modal1').modal();
+      $('#modal2').modal();
+      var elemsMapping = {};
+      var rows = table.getRows();
+      for (var i = 0; i < rows.length; i++) {
+        var cell = rows[i].getCell("username");
+        if (cell.getValue() == "col_row") {
+          var group = rows[i].getCell("type").getValue();
+          elemsMapping[group] = rows[i].getElement();
+        }
+      }
+
+      $(".tabulator-group").each(function() {
+        for (var i = 0; i < this.childNodes.length; i++) {
+          if (this.childNodes[i].nodeType === 3) {
+            this.appendChild(elemsMapping[this.childNodes[i].textContent]);
+            elemsMapping[this.childNodes[i].textContent].style = "background-color: #ccc; margin-left: -10px;";
+            elemsMapping[this.childNodes[i].textContent].classList.add("embedded-row");
+          }
+        }
+      })
+
+      $(".tabulator-col-resize-handle").css("margin-left", "-3px");
+  });
+
+  var iconFormatter = function(cell) {
+    return '<i class="material-icons">' + cell.getValue() + '</i>';
+  }
+
+  var tabledata = [
+      {% for doc in docs %}
+        {
+          {% if doc.status == "wait" %}
+            status: 'timelapse',
+          {% elif doc.status == "ok" %}
+            {% if doc.signed_doc %}
+            status: 'check_circle',
+            {% else %}
+            status: 'check',
+            {% endif %}
+          {% elif doc.status == "archive" %}
+            status: 'archive',
+          {% elif doc.status == "autosign" %}
+            status: 'assignment_turned_in',
+          {% endif %}
+          type: "{{doc.document_type.name}}",
+          code: {% if doc.status == "ok" or doc.status == "archive" %} "{{doc.code}}" {% else %} "???" {% endif %},
+          compilation_date: "{{doc.compilation_date}}",
+          capo: {% if "capi" in doc.user|user_groups %}true{% else %}false{% endif %},
+          username: "{{doc.user.username}}",
+          name: "{{doc.user.first_name}}",
+          last_name: "{{doc.user.last_name}}",
+          email: "{{doc.personal_data.email}}",
+          birth_date: "{{doc.personal_data.born_date}}",
+          branca: "{{ doc.user|user_primary_group }}",
+          parent_name: "{{doc.personal_data.parent_name}}",
+          avs_number: "{{doc.personal_data.avs_number}}",
+          via: "{{doc.personal_data.via}}",
+          cap: "{{doc.personal_data.cap}}",
+          country: "{{doc.personal_data.country}}",
+          nationality: "{{doc.personal_data.nationality}}",
+          phone: "{{doc.personal_data.phone}}",
+          home_phone: "{{doc.personal_data.home_phone}}",
+          school: "{{doc.personal_data.school}}",
+          year: "{{doc.personal_data.year}}",
+          emer_name: "{{doc.medical_data.emer_name}}",
+          emer_relative: "{{doc.medical_data.emer_relative}}",
+          cell_phone: "{{doc.medical_data.cell_phone}}",
+          emer_phone: "{{doc.medical_data.emer_phone}}",
+          emer_address: "{{doc.medical_data.address}}",
+          health_care: "{{doc.medical_data.health_care}}",
+          injuries: "{{doc.medical_data.injuries}}",
+          rc: "{{doc.medical_data.rc}}",
+          rega: "{{doc.medical_data.rega}}",
+          medic_name: "{{doc.medical_data.medic_name}}",
+          medic_phone: "{{doc.medical_data.medic_phone}}",
+          medic_address: "{{doc.medical_data.medic_address}}",
+          sickness: "{{doc.medical_data.sickness}}",
+          vaccine: "{{doc.medical_data.vaccine}}",
+          tetanus_date: "{{doc.medical_data.tetanus_date}}",
+          allergy: "{{doc.medical_data.allergy}}",
+          drugs: "{{doc.medical_data.drugs}}",
+          misc: "{{doc.medical_data.misc}}",
+        },
+      {% endfor %}
+  ];
+
+  var columns = [];
+
+  var col_categories = [
+    {field: "base", name: "Informazioni base", cols: 
+      [
+        {title: "Username", field: "username"},
+        {title: "Stato", field: "status", formatter: iconFormatter},
+        {title: "Tipo", field: "type"},
+        {title: "Codice", field: "code"},
+        {title: "Nome", field: "name"},
+        {title: "Cognome", field: "last_name"},
+        {title: "Capo", field: "capo", formatter:"tickCross"},
+        {title: "Data compilazione", field: "compilation_date"},
+        {title: "Branca", field: "branca"},
+        {title: "Email", field: "email", visible: false},
+        {title: "Data di nascita", field: "birth_date", visible: false},
+      ]
+    },
+    {field: "personal", name: "Informazioni personali", cols: 
+      [
+        {title: "Nome genitore", field: "parent_name", visible: false},
+        {title: "Numero AVS", field: "avs_number", visible: false},
+        {title: "Via", field: "via", visible: false},
+        {title: "CAP", field: "cap", visible: false},
+        {title: "Paese", field: "country", visible: false},
+        {title: "Nazionalita", field: "nationality", visible: false},
+        {title: "Telefono", field: "phone", visible: false},
+        {title: "Telefono casa", field: "home_phone", visible: false},
+        {title: "Scuola", field: "school", visible: false},
+        {title: "Anno", field: "year", visible: false},
+      ]
+    },
+    {field: "medical", name: "Informazioni mediche", cols: 
+      [
+        {title: "Nome emergenza", field: "emer_name", visible: false},
+        {title: "Parentela emergenza", field: "emer_relative", visible: false},
+        {title: "Cellulare emergenza", field: "cell_phone", visible: false},
+        {title: "Telefono emergenza", field: "emer_phone", visible: false},
+        {title: "Indirizzo emergenza", field: "emer_address", visible: false},
+        {title: "Assicurazione sanitaria", field: "health_care", visible: false},
+        {title: "Infortuni", field: "injuries", visible: false},
+        {title: "RC", field: "rc", visible: false},
+        {title: "REGA", field: "rega", visible: false},
+        {title: "Nome medico", field: "medic_name", visible: false},
+        {title: "Telefono medico", field: "medic_phone", visible: false},
+        {title: "Indirizzo medico", field: "medic_address", visible: false},
+        {title: "Malattie avute", field: "sickness", visible: false},
+        {title: "Vaccinazioni", field: "vaccine", visible: false},
+        {title: "Data vaccino tetano", field: "tetanus_date", visible: false},
+        {title: "Allergie", field: "allergy", visible: false},
+        {title: "Farmaci da assumere", field: "drugs", visible: false},
+        {title: "Info particolari", field: "misc", visible: false},
+      ]
+    },
+  ]
+
+  var docTypes = {};
+  for (var i=0; i < tabledata.length; i++) {
+    if (!(tabledata[i].type in docTypes)) {
+      docTypes[tabledata[i].type] = true;
+    }
+  }
+
+  for (var key in docTypes) {
+    tabledata.push({
+      type: key,
+      username: "col_row",
+    });
+  }
+
+  var col_select = document.getElementById("column-select");
+  for (var j = 0; j < col_categories.length; j++) {
+    col_select.innerHTML += '<div class="input-field col s12"><label><input onclick="check_all(\''+col_categories[j].field+'\')" id="category_'+col_categories[j].field+'" type="checkbox" class="filled-in"/><span style="color:black"><b>'+col_categories[j].name+'</b></span></label></div>';
+    var all_visible = true;
+    for (var i = 0; i < col_categories[j].cols.length; i++) {
+      columns.push(col_categories[j].cols[i]);
+      if (columns[columns.length-1].visible == false) {
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input onclick="verify_check(\''+col_categories[j].field+'\')" id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in ctr_'+col_categories[j].field+'"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+        all_visible = false;
+      } else {
+        col_select.innerHTML += '<div class="input-field col s12"><label>&emsp;<input onclick="verify_check(\''+col_categories[j].field+'\')" id="filter_'+col_categories[j].cols[i].field+'" type="checkbox" class="filled-in ctr_'+col_categories[j].field+'" checked="checked"/><span style="color:black">'+col_categories[j].cols[i].title+'</span></label></div>';
+      }
+    }
+  }
+
+  for (var i = 0; i < col_categories.length; i++) {
+    verify_check(col_categories[i].field);
+  }
+
+  var hasGroupSummary = {};
+
+  //initialize table
+  var table = new Tabulator("#example-table", {
+      movableColumns: true,
+      layout:"fitDataFill",
+      responsiveLayout: "hide",
+      groupBy: "type",
+      data:tabledata,
+      columns:columns,
+      groupHeader:function(value, count, data, group){
+        return value + "<span style='color:#d00; margin-left:10px;'>(" + count + ")</span>";
+      },
+  });
+
+  function update_cols() {
+    for (var i = 0; i < columns.length; i++) {
+      if (document.getElementById("filter_"+columns[i].field).checked) {
+        table.showColumn(columns[i].field);
+      } else {
+        table.hideColumn(columns[i].field);
+      }
+    }
+  }
+
+  function check_all(cat) {
+    var ctr_elem = document.getElementById("category_"+cat);
+    if (ctr_elem.checked) {
+      $('.ctr_'+cat).prop('checked', 'checked');
+    } else {
+      $('.ctr_'+cat).prop('checked', false);
+    }
+  }
+
+  function verify_check(cat) {
+    var ctr_elem = document.getElementById("category_"+cat);
+    var all_checked = true;
+    $('.ctr_'+cat).each(function() {
+      if (!this.checked) {
+        all_checked = false;
+      }
+    });
+    if (all_checked) {
+      ctr_elem.checked = true;
+    } else {
+      ctr_elem.checked = false;
+    }
+  }
+
+$('.chips').chips();
+$('#chips_type').chips({
+  placeholder: 'Tipo',
+  secondaryPlaceholder: '+Altro tipo',
+  autocompleteOptions: {
+    data: {
+      {% for t in types %}
+        '{{t.name}}': null,
+      {% endfor %}
+    },
+    limit: Infinity,
+    minLength: 0
+  },
+  data: [
+    {% for d in chips_type %}
+      {tag: '{{d}}'},
+    {% endfor %}
+  ]
+});
+$('#chips_owner').chips({
+  placeholder: 'Utente',
+  secondaryPlaceholder: '+Altro utente',
+  autocompleteOptions: {
+    data: {
+      {% for user in users %}
+        '{{user.user__username}} ({{user.user__first_name}} {{user.user__last_name}})': null,
+      {% endfor %}
+    },
+    limit: Infinity,
+    minLength: 0
+  },
+  data: [
+    {% for d in chips_owner %}
+      {tag: '{{d}}'},
+    {% endfor %}
+  ]
+});
+$('#chips_groups').chips({
+  placeholder: 'Gruppo',
+  secondaryPlaceholder: '+Altro gruppo',
+  autocompleteOptions: {
+    data: {
+      {% for g in groups %}
+        '{{g}}': null,
+      {% endfor %}
+    },
+    limit: Infinity,
+    minLength: 0
+  },
+  data: [
+    {% for g in chips_groups %}
+      {tag: '{{g}}'},
+    {% endfor %}
+  ]
+});
+
+function send(id) {
+  var form = document.getElementById('selection')
+  var action = document.getElementById('action')
+  var owner = document.getElementById('owner')
+  var type = document.getElementById('type')
+  var groups = document.getElementById('groups')
+  var chips_owner = M.Chips.getInstance(document.getElementById('chips_owner'));
+  var chips_type = M.Chips.getInstance(document.getElementById('chips_type'));
+  var chips_groups = M.Chips.getInstance(document.getElementById('chips_groups'));
+  var type_array = []
+  var owner_array = []
+  var groups_array = []
+
+  for (i=0; i < chips_owner.chipsData.length; i++) {
+    owner_array.push(chips_owner.chipsData[i].tag)
+  }
+
+  for (i=0; i < chips_type.chipsData.length; i++) {
+    type_array.push(chips_type.chipsData[i].tag)
+  }
+
+  for (i=0; i < chips_groups.chipsData.length; i++) {
+    groups_array.push(chips_groups.chipsData[i].tag)
+  }
+
+  action.setAttribute('value', id);
+  owner.setAttribute('value', owner_array.join("^|"))
+  type.setAttribute('value', type_array.join("^|"))
+  groups.setAttribute('value', groups_array.join("^|"))
+  form.submit()
+}
+
+{% endblock %}
