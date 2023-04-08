@@ -233,13 +233,13 @@ def docapprove(request):
                     messages.append(data[i] + " - Formato errato")
                 elif Document.objects.filter(code=data[i]).count() == 0:
                     messages.append(data[i] + " - Invalido")
-                elif Document.objects.filter(code=data[i])[0].group.name not in groups:
+                elif Document.objects.filter(code=data[i])[0].group not in groups:
                     # check if user has permission to approve document
                     messages.append(data[i] + " - Invalido")
                 else:
                     document = Document.objects.filter(code=data[i])[0]
 
-                    if document.group.name not in groups:
+                    if document.group not in groups:
                         return
 
                     if document.status != 'wait' and document.status != 'ok':
@@ -265,14 +265,14 @@ def docapprove(request):
             elif Document.objects.filter(code=data).count() == 0:
                 error_text = "Codice invalido"
                 error = True
-            elif Document.objects.filter(code=data)[0].group.name not in groups:
+            elif Document.objects.filter(code=data)[0].group not in groups:
                 error_text = "Codice invalido"
                 error = True
             else:
                 # get document
                 document = Document.objects.filter(code=data)[0]
 
-                if document.group.name not in groups:
+                if document.group not in groups:
                     return
 
                 if document.status != 'wait' and document.status != 'ok':
@@ -342,7 +342,7 @@ def approve_direct(request):
             return
 
         # check if user has permission to approve document
-        if document.group.name not in groups:
+        if document.group not in groups:
             return
 
         document.status = "ok"
@@ -370,7 +370,7 @@ def approve_direct(request):
         return render(request, 'server/approve_doc_direct.html', {"error": "Questo documento non è in attesa di approvazione"})
 
     # check if user has permission to approve document
-    if document.group.name not in groups:
+    if document.group not in groups:
         return render(request, 'server/approve_doc_direct.html', {"error": "Non hai il permesso di approvare questo documento"})
 
     return render(request, 'server/approve_doc_direct.html', {"doc": document})
@@ -1637,7 +1637,7 @@ def docpreview(request):
 
         # get document
         document = Document.objects.filter(code=code)[0]
-        doc_group = document.group.name
+        doc_group = document.group
         parent_group = document.user.groups.values_list('name', flat=True)[0]
 
         # user has not permission to view document
@@ -1689,7 +1689,7 @@ def data_request(request):
             context["data"] = data
         elif request.POST["request"] == "data_user":
             perm = Permission.objects.get(codename="approved")
-            users = User.objects.filter(groups__name=parent_group, user_permissions=perm)
+            users = User.objects.filter(groups=parent_group, user_permissions=perm)
 
             # get time for filename
             current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
@@ -1737,7 +1737,7 @@ def data_request(request):
 
         elif request.POST["request"] == "data_user_medic":
             perm = Permission.objects.get(codename="approved")
-            users = User.objects.filter(groups__name=parent_group, user_permissions=perm)
+            users = User.objects.filter(groups=parent_group, user_permissions=perm)
 
             # get time for filename
             current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
