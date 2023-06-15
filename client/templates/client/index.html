@@ -366,7 +366,11 @@
                     <div class="col s12">
                       <div class="card">
                         <div class="card-image">
-                          {% if doc.signed_doc %} <img class="lazyload" data-src="{{ sign_doc_file.0 }}{{ doc.id }}{{ sign_doc_file.1 }}"> {% endif %}
+                          {% if doc.signed_doc %}
+                            <img class="lazy" data-src="{{ sign_doc_file.0 }}{{ doc.id }}{{ sign_doc_file.1 }}">
+                          {% else %}
+                            <p>Foto della conferma firmata non caricata</p>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -376,7 +380,11 @@
                     <div class="col s12">
                       <div class="card">
                         <div class="card-image">
-                          {% if doc.medical_data.health_care_certificate %}<img class="lazyload" data-src="{{ health_file.0 }}{{ doc.id }}{{ health_file.1}}">{% endif %}
+                          {% if doc.medical_data.health_care_certificate %}
+                            <img class="lazy" data-src="{{ health_file.0 }}{{ doc.id }}{{ health_file.1}}">
+                          {% else %}
+                            <p>Foto della tessera della cassa malati non caricata</p>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -385,7 +393,11 @@
                     <div class="col s12">
                       <div class="card">
                         <div class="card-image">
-                          {% if doc.medical_data.vac_certificate %}<img class="lazyload" data-src="{{ vac_file.0 }}{{ doc.id }}{{ vac_file.1}}">{% endif %}
+                          {% if doc.medical_data.vac_certificate %}
+                            <img class="lazy" data-src="{{ vac_file.0 }}{{ doc.id }}{{ vac_file.1}}">
+                          {% else %}
+                            <p>Foto del certificato di vacinazione non caricato</p>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -444,7 +456,9 @@ $(document).ready(function(){
         $('#modal_approve'+docid).modal('open');
       }
     {% endif %}
-    lazyload();
+    var lazyLoadInstance = new LazyLoad({
+      // Your custom settings go here
+    });
 });
 {% if user.is_staff or perms.client.approved %}
   $('*').click(function(event) {
