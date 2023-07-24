@@ -120,16 +120,6 @@
         }
       }
 
-      $(".tabulator-group").each(function() {
-        for (var i = 0; i < this.childNodes.length; i++) {
-          if (this.childNodes[i].nodeType === 3) {
-            this.appendChild(elemsMapping[this.childNodes[i].textContent]);
-            elemsMapping[this.childNodes[i].textContent].style = "background-color: #ccc; margin-left: -10px;";
-            elemsMapping[this.childNodes[i].textContent].classList.add("embedded-row");
-          }
-        }
-      })
-
       $(".tabulator-col-resize-handle").css("margin-left", "-3px");
   });
 
@@ -256,13 +246,6 @@
     if (!(tabledata[i].type in docTypes)) {
       docTypes[tabledata[i].type] = true;
     }
-  }
-
-  for (var key in docTypes) {
-    tabledata.push({
-      type: key,
-      username: "col_row",
-    });
   }
 
   var col_select = document.getElementById("column-select");
