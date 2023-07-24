@@ -25,29 +25,20 @@ def migration_usercode(void):
         uc.branca = user.groups.all()[0]
         uc.save()
 
+    # also iterate all docs and set usercode
+    for d in Document.objects.all():
+        uc = UserCode.objects.filter(user=d.user)[0]
+        d.usercode = uc
+        d.save()
+
 @login_required()
 def index(request):
     context = {}
-    if not (request.user.is_staff or request.user.has_perm("client.approved")):
-        # generate code if user has no code
-        users = UserCode.objects.filter(user=request.user)
-        code = None
-        if (len(users) == 0):
-            while (True):
-                code = randint(100000, 999999)
-                if len(UserCode.objects.filter(code=code)) == 0:
-                    break
-            medic = MedicalData()
-            medic.save()
-            userCode = UserCode(user=request.user, code=code, medic=medic)
-            userCode.save()
+    ucs = UserCode.objects.filter(user=request.user)
 
-        user_code = None
-        usercode = UserCode.objects.filter(user=request.user)[0]
-        if request.user.first_name != "" and request.user.last_name != "" and request.user.email != "" and usercode.phone != "":
-            user_code = "U" + str(usercode.code)
-        context = {"user_code": user_code}
-        return render(request, 'client/index.html', context)
+    if (len(ucs) == 0):
+        # the user has no person
+        return render(request, 'client/index.html', {})
 
     groups = request.user.groups.all()
 
@@ -101,18 +92,24 @@ def index(request):
             context['custom_message_text'] = document_type.custom_message_text
             return edit_wrapper(request, context)
 
+    # divide the docs for each uc
+    docs = []
+    for uc in ucs:
+        documents = Document.objects.filter(
+            Q(usercode=uc) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
+        docs.append([uc, documents])
     # show only docs of the user and non archived
-    documents = Document.objects.filter(
-        Q(user=request.user) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
     health_file = ["/server/media/", "/health_care_certificate/doc"]
     sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
+    print(docs)
+
     context = {
-        "docs": documents,
+        "docs": docs,
         "base_group": groups[0].name,
-        "empty": len(documents) == 0,
+        "empty": len(docs) == 0,
         "vac_file": vac_file,
         "health_file": health_file,
         "sign_doc_file": sign_doc_file

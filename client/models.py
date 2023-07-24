@@ -66,7 +66,38 @@ class MedicalData(models.Model):
     health_care_certificate = models.FileField(default=None, upload_to='documents/', null=True)
 
 
+class Keys(models.Model):
+    container = models.ForeignKey(
+        DocumentType, db_index=True, on_delete=models.CASCADE)
+    key = models.CharField(max_length=2048, db_index=True)
+    key_extra = models.CharField(max_length=2048, default="")
+
+
+class UserCode(models.Model):
+    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
+    medic = models.ForeignKey(MedicalData, default=None, on_delete=models.PROTECT)
+    code = models.IntegerField(default=0)
+    branca = models.ForeignKey(Group, default=1, on_delete=models.PROTECT)
+    first_name = models.CharField(default="", max_length=250)
+    last_name = models.CharField(default="", max_length=250)
+    email = models.CharField(default="", max_length=250)
+    parent_name = models.CharField(default="", max_length=250)
+    via = models.CharField(default="", max_length=250)
+    cap = models.CharField(default="", max_length=250)
+    country = models.CharField(default="", max_length=250)
+    nationality = models.CharField(default="", max_length=250)
+    born_date = models.DateField(null=True, default=datetime.fromtimestamp(0))
+    home_phone = models.CharField(default="", max_length=250)
+    phone = models.CharField(default="", max_length=250)
+    school = models.CharField(default="", max_length=250)
+    year = models.IntegerField(default=0)
+    avs_number = models.CharField(default="", max_length=250)
+    midata_id = models.IntegerField(default=0)
+    midata_token = models.CharField(default="", max_length=1024)
+
+
 class Document(models.Model):
+    usercode = models.ForeignKey(UserCode, default=1, on_delete=models.CASCADE)
     user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
     code = models.IntegerField(default=0)
@@ -96,35 +127,6 @@ class KeyVal(models.Model):
     key = models.CharField(max_length=2048, db_index=True)
     value = models.CharField(max_length=2048, db_index=True)
 
-
-class Keys(models.Model):
-    container = models.ForeignKey(
-        DocumentType, db_index=True, on_delete=models.CASCADE)
-    key = models.CharField(max_length=2048, db_index=True)
-    key_extra = models.CharField(max_length=2048, default="")
-
-
-class UserCode(models.Model):
-    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
-    medic = models.ForeignKey(MedicalData, default=None, on_delete=models.PROTECT)
-    code = models.IntegerField(default=0)
-    branca = models.ForeignKey(Group, default=0, on_delete=models.PROTECT)
-    first_name = models.CharField(default="", max_length=250)
-    last_name = models.CharField(default="", max_length=250)
-    email = models.CharField(default="", max_length=250)
-    parent_name = models.CharField(default="", max_length=250)
-    via = models.CharField(default="", max_length=250)
-    cap = models.CharField(default="", max_length=250)
-    country = models.CharField(default="", max_length=250)
-    nationality = models.CharField(default="", max_length=250)
-    born_date = models.DateField(null=True, default=datetime.fromtimestamp(0))
-    home_phone = models.CharField(default="", max_length=250)
-    phone = models.CharField(default="", max_length=250)
-    school = models.CharField(default="", max_length=250)
-    year = models.IntegerField(default=0)
-    avs_number = models.CharField(default="", max_length=250)
-    midata_id = models.IntegerField(default=0)
-    midata_token = models.CharField(default="", max_length=1024)
 
 class GroupSettings(models.Model):
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)

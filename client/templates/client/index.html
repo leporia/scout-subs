@@ -30,8 +30,11 @@
     </div>
   </div>
   {% if not empty %}
+  {% for data in docs %}
+  {% if data.1|length > 0 %}
+  <h6>{{data.0.first_name}} {{data.0.last_name}} ({{data.0.born_date}})</h6>
   <ul class="collapsible">
-      {% for doc in docs %}
+      {% for doc in data.1 %}
           {% if doc.status == "autosign" %}
             <div id="modal{{doc.id}}" class="modal">
               <div class="modal-content">
@@ -411,6 +414,8 @@
       {% endfor %}
   </ul>
   {% endif %}
+  {% endfor %}
+  {% endif %}
   <div class="fixed-action-btn">
     <a id="add" class="btn-floating btn-large {{color}}" href="{% url 'create'%}">
       <i class="large material-icons">add</i>
@@ -421,14 +426,10 @@
     <div class="col l4 offset-l4 m8 offset-m2 s12">
       <div class="card">
         <div class="card-content">
-          <p>Il tuo utente non &egrave; ancora stato approvato.</p>
-          <br>
-          {% if user_code %}
-            <p>Per approvare l'utente invia il seguente codice al capo branca:</p>
-            <h3 class="center-align">{{user_code}}<h3>
-          {% else %}
-            <p>Per approvare l'utente inserire prima i propri dati personali e medici selezionando il proprio nome in alto a destra e in seguito "Gestione account". Torna in seguito su questa pagina per i prossimi passaggi.</p>
-          {% endif %}
+          <p>Il tuo utente non contiene nessuna persona fisica. Per creare una nuova persona aggiungerla
+            dal profilo utente. Seleziona il proprio nome in alto a destra e in seguito "Gestione account".
+            Torna in seguito su questa pagina per creare una nuova iscrizione.
+          </p>
         </div>
       </div>
     </div>
