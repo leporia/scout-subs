@@ -21,5 +21,6 @@ urlpatterns = [
     path('approve', views.approve_direct, name='approve_direct'),
     path('progress', views.get_progress, name='progress'),
     path('request', views.data_request, name='request'),
+    path('debug-uc', views.debug_uc, name='debug-uc'),
     path('media/<int:id>/<str:t>/<str:flag>', views.media_request, name='media'),
 ]

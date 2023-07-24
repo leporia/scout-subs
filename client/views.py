@@ -15,6 +15,16 @@ from datetime import datetime
 import pytz
 from random import randint
 
+def migration_usercode(void):
+    usercodes = UserCode.objects.all()
+    for uc in usercodes:
+        user = uc.user
+        uc.first_name = user.first_name
+        uc.last_name = user.last_name
+        uc.email = user.email
+        uc.branca = user.groups.all()[0]
+        uc.save()
+
 @login_required()
 def index(request):
     context = {}

@@ -1826,6 +1826,18 @@ def docpreview(request):
 
     return render(request, 'server/download_doc.html', context)
 
+@staff_member_required
+@user_passes_test(lambda u: u.is_superuser)
+def debug_uc(request):
+    data = []
+    users = User.objects.all()
+    for u in users:
+        data.append([u, UserCode.objects.filter(user=u)])
+
+    context = {
+        "data": data,
+    }
+    return render(request, 'server/debug_usercode.html', context)
 
 @user_passes_test(isStaff)
 def data_request(request):
