@@ -110,7 +110,7 @@
           <li class="userswitcher" data-target='userswitcher'><a href="#">{{ user.username }}</a></li>
         {% endif %}
         <ul id='userswitcher' class='dropdown-content'>
-          <li><a href="{% url 'personal' %}"><i class="material-icons">person</i>Gestione account</a></li>
+          <li><a href="{% url 'personal' %}"><i class="material-icons">person</i>Impostazioni</a></li>
           {% if user.is_staff or perms.client.staff %}
             <li><a href="{% url 'server' %}"><i class="material-icons">build</i>Pannello Admin</a></li>
           {% endif %}
@@ -119,6 +119,7 @@
           {% endif %}
 
           <li><a onclick="switcher_submit('logout')"><i class="material-icons">exit_to_app</i>Logout</a></li>
+          <!--
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
@@ -133,6 +134,7 @@
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
+          -->
           <li><a href="{% url 'about' %}">Informazioni sul prodotto</a></li>
         </ul>
       </ul>

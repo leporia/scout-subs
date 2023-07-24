@@ -36,6 +36,8 @@
         <div class="card-content">
       <span class="card-title">
         {{data.0.first_name}} {{data.0.last_name}}
+        <a href="{% url "edit_user" code=data.0.code %}" class="btn-flat"><i class="material-icons">edit</i></a>
+        <a href="" class="btn-flat"><i class="material-icons">delete</i></a>
         <div style="font-size: 0.5em; line-height: normal;">{{data.0.born_date}}</div>
       </span>
       <a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create'%}"><i class="material-icons">add</i></a>
@@ -434,18 +436,22 @@
 {% endfor %}
 {% else %}
   <div class="row">
-    <div class="col l4 offset-l4 m8 offset-m2 s12">
+    <div class="col s12">
       <div class="card">
         <div class="card-content">
-          <p>Il tuo utente non contiene nessuna persona fisica. Per creare una nuova persona aggiungerla
-            dal profilo utente. Seleziona il proprio nome in alto a destra e in seguito "Gestione account".
-            Torna in seguito su questa pagina per creare una nuova iscrizione.
+          <p>Il tuo utente non contiene nessuna persona fisica. Per creare una nuova persona utilizzare
+            il pulsante qua sotto. Una volta creata tornare in seguito su questa pagina per creare una nuova iscrizione. 
           </p>
         </div>
       </div>
     </div>
   </div>
 {% endif %}
+<div class="row">
+  <div class="col s12">
+    <a href="{% url "edit_user" code=0 %}" class="btn waves-effect waves-light {{color}}">Crea una nuova persona <i class="material-icons right">add</i></a>
+  </div>
+</div>
 {% endblock %}
 
 {% block script %}
