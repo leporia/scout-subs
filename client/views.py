@@ -40,8 +40,6 @@ def index(request):
         # the user has no person
         return render(request, 'client/index.html', {})
 
-    groups = request.user.groups.all()
-
     # user action
     if request.method == "POST":
         # get document id
@@ -104,12 +102,8 @@ def index(request):
     health_file = ["/server/media/", "/health_care_certificate/doc"]
     sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
-    print(docs)
-
     context = {
         "docs": docs,
-        "base_group": groups[0].name,
-        "empty": len(docs) == 0,
         "vac_file": vac_file,
         "health_file": health_file,
         "sign_doc_file": sign_doc_file

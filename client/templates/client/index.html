@@ -16,411 +16,422 @@
   <input type="hidden" name="action" id="action">
 </form>
 
-{% if user.is_staff or perms.client.approved %}
-  <div id="modal_capi" class="modal">
-    <div class="modal-content">
-      <h4>Attenzione</h4>
-      <p>I capi gruppo interessati verranno notificati dell'accesso alla pagina dei documenti.<br>
-        Sei sicuro di voler continuare?
-      </p>
-    </div>
-    <div class="modal-footer">
-      <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
-      <a href="{% url 'doclistro' %}" class="modal-close waves-effect waves-green btn-flat">Continua</a>
-    </div>
+<div id="modal_capi" class="modal">
+  <div class="modal-content">
+    <h4>Attenzione</h4>
+    <p>I capi gruppo interessati verranno notificati dell'accesso alla pagina dei documenti.<br>
+      Sei sicuro di voler continuare?
+    </p>
   </div>
-  {% if not empty %}
-  {% for data in docs %}
-  {% if data.1|length > 0 %}
-  <h6>{{data.0.first_name}} {{data.0.last_name}} ({{data.0.born_date}})</h6>
-  <ul class="collapsible">
-      {% for doc in data.1 %}
-          {% if doc.status == "autosign" %}
-            <div id="modal{{doc.id}}" class="modal">
-              <div class="modal-content">
-                <h4>Attenzione</h4>
-                <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
-                Comprovo come veritieri e completi tutti i dati apposti sul documento.
-                {% if doc.document_type.medical_data %}
-                  <br>
-                  Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
-                {% endif %}
-                {% if doc.document_type.custom_message %}
-                  <br>
-                  <br>
-                  Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
-                  {{doc.document_type.custom_message_text | linebreaksbr}}
-                {% endif %}
+  <div class="modal-footer">
+    <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+    <a href="{% url 'doclistro' %}" class="modal-close waves-effect waves-green btn-flat">Continua</a>
+  </div>
+</div>
+{% if docs|length > 0 %}
+{% for data in docs %}
+  <div class="row">
+    <div class="col s12">
+      <div class="card">
+        <div class="card-content">
+      <span class="card-title">
+        {{data.0.first_name}} {{data.0.last_name}}
+        <div style="font-size: 0.5em; line-height: normal;">{{data.0.born_date}}</div>
+      </span>
+      <a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create'%}"><i class="material-icons">add</i></a>
+{% if data.1|length > 0 %}
+<ul class="collapsible">
+    {% for doc in data.1 %}
+        {% if doc.status == "autosign" %}
+          <div id="modal{{doc.id}}" class="modal">
+            <div class="modal-content">
+              <h4>Attenzione</h4>
+              <p>Approvo il documento accettando tutte le clausole apposte su di esso. <br>
+              Comprovo come veritieri e completi tutti i dati apposti sul documento.
+              {% if doc.document_type.medical_data %}
                 <br>
-                <br>
-                <b>Una volta approvata l'iscrizione non potrà più essere modificata o annullata.<br>
-                Sei sicuro di volerla approvare?</b>
-                </p>
-              </div>
-              <div class="modal-footer">
-                <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
-                <a onclick="send('a{{doc.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
-              </div>
-            </div>
-          {% endif %}
-          {% if doc.status == "autosign" or doc.status == "wait" %}
-            <div id="modal_approve{{doc.id}}" class="modal">
-              <div class="modal-content">
-                <h4>Approva documento</h4>
-                <p>Vuoi approvare ora il documento appena creato?<br>
-                  In alternativa puoi farlo in qualsiasi momento selezionando il documento desiderato dalla pagina principale.
-                </p>
-              </div>
-              <div class="modal-footer">
-                <a href="/" class="modal-close waves-effect waves-green btn-flat">In seguito</a>
-                {% if doc.status == "autosign" %}
-                  <a style="color:green" class="modal-close waves-effect waves-light btn-flat modal-trigger" href="#modal{{doc.id}}">Approva iscrizione</a>
-                {% else %}
-                  <a style="color:green" class="modal-close waves-effect waves-light btn-flat" onclick="send('f{{doc.id}}')">Scarica documento per approvazione</a>
-                {% endif %}
-              </div>
-            </div>
-          {% endif %}
-          <li>
-          <div class="collapsible-header">
-              {% if doc.status == "wait" %}
-                <i class="material-icons">timelapse</i>
-              {% elif doc.status == "ok" %}
-                <i class="material-icons">check</i>
-              {% elif doc.status == "autosign" %}
-                <i class="material-icons">assignment_turned_in</i>
+                Autorizzo i capi ad usare i dati medici, in caso d'emergenza, ed intraprendere i passi necessari per dare avvio a cure mediche d’urgenza anche senza essere ulteriormente consultato/a.
               {% endif %}
-              {{doc.document_type.name}}
-            <span class="badge" data-badge-caption="">{{doc.compilation_date}}</span>
+              {% if doc.document_type.custom_message %}
+                <br>
+                <br>
+                Inoltre accetto e prendo nota della seguente clausula aggiuntiva: <br>
+                {{doc.document_type.custom_message_text | linebreaksbr}}
+              {% endif %}
+              <br>
+              <br>
+              <b>Una volta approvata l'iscrizione non potrà più essere modificata o annullata.<br>
+              Sei sicuro di volerla approvare?</b>
+              </p>
+            </div>
+            <div class="modal-footer">
+              <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+              <a onclick="send('a{{doc.id}}')" class="modal-close waves-effect waves-green btn-flat">Approva</a>
+            </div>
           </div>
-          <div class="collapsible-body"><span>
+        {% endif %}
+        {% if doc.status == "autosign" or doc.status == "wait" %}
+          <div id="modal_approve{{doc.id}}" class="modal">
+            <div class="modal-content">
+              <h4>Approva documento</h4>
+              <p>Vuoi approvare ora il documento appena creato?<br>
+                In alternativa puoi farlo in qualsiasi momento selezionando il documento desiderato dalla pagina principale.
+              </p>
+            </div>
+            <div class="modal-footer">
+              <a href="/" class="modal-close waves-effect waves-green btn-flat">In seguito</a>
+              {% if doc.status == "autosign" %}
+                <a style="color:green" class="modal-close waves-effect waves-light btn-flat modal-trigger" href="#modal{{doc.id}}">Approva iscrizione</a>
+              {% else %}
+                <a style="color:green" class="modal-close waves-effect waves-light btn-flat" onclick="send('f{{doc.id}}')">Scarica documento per approvazione</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+        <li>
+        <div class="collapsible-header">
             {% if doc.status == "wait" %}
-              <div class="hide-on-med-and-down">
-                <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
-                <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
-              </div>
-              <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
-                <br>
-                <br>
-                <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
-                <br>
-                <br>
-                <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
-              </div>
-              <br>
-              <br>
+              <i class="material-icons">timelapse</i>
+            {% elif doc.status == "ok" %}
+              <i class="material-icons">check</i>
             {% elif doc.status == "autosign" %}
-              <div class="hide-on-med-and-down">
-                <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
-                <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
-                <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
-              </div>
-              <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-                <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
-                <br>
-                <br>
-                <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
-                <br>
-                <br>
-                <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
-              </div>
-              <br>
-              <br>
+              <i class="material-icons">assignment_turned_in</i>
             {% endif %}
-            <ul class="collection">
-              <li class="collection-item">
-                <i class="material-icons left">confirmation_number</i>{{doc.code}}
-              </li>
-            </ul>
-            <ul class="collapsible">
-            {% if doc.document_type.personal_data %}
-              <li>
-                <div class="collapsible-header">
-                  <i class="material-icons">person</i>Dati personali
+            {{doc.document_type.name}}
+          <span class="badge" data-badge-caption="">{{doc.compilation_date|date:"SHORT_DATETIME_FORMAT"}}</span>
+        </div>
+        <div class="collapsible-body"><span>
+          {% if doc.status == "wait" %}
+            <div class="hide-on-med-and-down">
+              <a class="waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+              <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
+              <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
+            </div>
+            <div style="margin-bottom: 0px;" class="hide-on-large-only row">
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('f{{doc.id}}')"><i class="material-icons left">file_download</i> Scarica documento per approvazione</a>
+              <br>
+              <br>
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i> Elimina iscrizione</a>
+              <br>
+              <br>
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i> Modifica iscrizione</a>
+            </div>
+            <br>
+            <br>
+          {% elif doc.status == "autosign" %}
+            <div class="hide-on-med-and-down">
+              <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
+              <a class="waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
+              <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
+            </div>
+            <div style="margin-bottom: 0px;" class="hide-on-large-only row">
+              <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{doc.id}}"><i class="material-icons left">check</i>Approva iscrizione</a>
+              <br>
+              <br>
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('d{{doc.id}}')"><i class="material-icons left">delete</i>Elimina iscrizione</a>
+              <br>
+              <br>
+              <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doc.id}}')"><i class="material-icons left">edit</i>Modifica iscrizione</a>
+            </div>
+            <br>
+            <br>
+          {% endif %}
+          <ul class="collection">
+            <li class="collection-item">
+              <i class="material-icons left">confirmation_number</i>{{doc.code}}
+            </li>
+          </ul>
+          <ul class="collapsible">
+          {% if doc.document_type.personal_data %}
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">person</i>Dati personali
+              </div>
+              <div class="collapsible-body"><span>
+                <div class="row">
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.user.first_name}}" id="first_name" type="text" >
+                    <label for="first_name">Nome</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.user.last_name}}" id="last_name" type="text" >
+                    <label for="last_name">Cognome</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.born_date}}" id="birth_date" type="text">
+                    <label for="birth_date">Data di nascita</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{base_group}}" id="branca" type="text">
+                    <label for="branca">Branca</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.parent_name}}" id="parent_name" type="text" >
+                    <label for="parent_name">Nome dei genitori</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.avs_number}}" id="avs_number" type="text">
+                    <label for="avs_number">Numero AVS</label>
+                  </div>
+                  <div class="input-field col l12 s12">
+                    <input value="{{doc.personal_data.via}}" disabled id="via" type="text" >
+                    <label for="via">Via e numero</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.cap}}" name="cap" id="cap" type="text" >
+                    <label for="cap">CAP</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.country}}" name="country" id="country" type="text" >
+                    <label for="country">Comune</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.nationality}}" name="nationality" id="nationality" type="text" >
+                    <label for="nationality">Nazionalit&agrave;</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.phone}}" name="phone" id="phone" type="text" >
+                    <label for="phone">Cellulare</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.home_phone}}" name="home_phone" id="home_phone" type="text" >
+                    <label for="home_phone">Telefono di casa</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.email}}" name="email" id="email" type="text" >
+                    <label for="email">Email</label>
+                  </div>
+                  <div class="input-field col l8 s12">
+                    <input disabled value="{{doc.personal_data.school}}" name="school" id="school" type="text" >
+                    <label for="school">Scuola frequentata</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.personal_data.year}}" name="year" id="year" type="text" >
+                    <label for="year">Classe</label>
+                  </div>
                 </div>
-                <div class="collapsible-body"><span>
-                  <div class="row">
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.user.first_name}}" id="first_name" type="text" >
-                      <label for="first_name">Nome</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.user.last_name}}" id="last_name" type="text" >
-                      <label for="last_name">Cognome</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.born_date}}" id="birth_date" type="text">
-                      <label for="birth_date">Data di nascita</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{base_group}}" id="branca" type="text">
-                      <label for="branca">Branca</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.parent_name}}" id="parent_name" type="text" >
-                      <label for="parent_name">Nome dei genitori</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.avs_number}}" id="avs_number" type="text">
-                      <label for="avs_number">Numero AVS</label>
-                    </div>
-                    <div class="input-field col l12 s12">
-                      <input value="{{doc.personal_data.via}}" disabled id="via" type="text" >
-                      <label for="via">Via e numero</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.cap}}" name="cap" id="cap" type="text" >
-                      <label for="cap">CAP</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.country}}" name="country" id="country" type="text" >
-                      <label for="country">Comune</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.nationality}}" name="nationality" id="nationality" type="text" >
-                      <label for="nationality">Nazionalit&agrave;</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.phone}}" name="phone" id="phone" type="text" >
-                      <label for="phone">Cellulare</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.home_phone}}" name="home_phone" id="home_phone" type="text" >
-                      <label for="home_phone">Telefono di casa</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.email}}" name="email" id="email" type="text" >
-                      <label for="email">Email</label>
-                    </div>
-                    <div class="input-field col l8 s12">
-                      <input disabled value="{{doc.personal_data.school}}" name="school" id="school" type="text" >
-                      <label for="school">Scuola frequentata</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.personal_data.year}}" name="year" id="year" type="text" >
-                      <label for="year">Classe</label>
+              </span></div>
+            </li>
+          {% endif %}
+          {% if doc.document_type.medical_data %}
+            <li>
+              <div class="collapsible-header">
+                {% if doc.medical_data %}
+                  <i class="material-icons">healing</i>Dati medici
+                {% else %}
+                  <i class="material-icons">healing</i><del>Dati medici</del>
+                {% endif %}
+              </div>
+              {% if doc.medical_data %}
+              <div class="collapsible-body"><span>
+                <div class="row">
+                  <div class="col s12">
+                    <h6>Persona di contatto in caso di necessit&agrave;</h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="input-field col l6 s12">
+                    <input disabled name="emer_name" value="{{doc.medical_data.emer_name}}" id="emer_name" type="text" >
+                    <label for="emer_name">Nome e cognome</label>
+                  </div>
+                  <div class="input-field col l3 s12">
+                    <input disabled name="emer_relative" value="{{doc.medical_data.emer_relative}}" id="emer_relative" type="text" >
+                    <label for="emer_releative">Parentela</label>
+                  </div>
+                  <div class="input-field col l3 s12">
+                    <input disabled name="cell_phone" value="{{doc.medical_data.cell_phone}}" id="cellphone" type="text" >
+                    <label for="cell_phone">Cellulare</label>
+                  </div>
+                  <div class="input-field col l9 s12">
+                    <input disabled value="{{doc.medical_data.address}}" name="address" id="address" type="text" >
+                    <label for="address">Indirizzo completo</label>
+                  </div>
+                  <div class="input-field col l3 s12">
+                    <input disabled value="{{doc.medical_data.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
+                    <label for="emer_phone">Telefono di casa</label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col s12">
+                    <h6>Assicurazione</h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.medical_data.health_care}}" name="health_care" id="health_care" type="text" >
+                    <label for="health_care">Cassa Malati</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.medical_data.injuries}}" name="injuries" id="injuries" type="text" >
+                    <label for="injuries">Infortuni</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <input disabled value="{{doc.medical_data.rc}}" name="rc" id="rc" type="text" >
+                    <label for="rc">Responsabilit&agrave; civile</label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="switch col s12">
+                    &Egrave; sostenitore REGA&nbsp;&nbsp;
+                    <label>
+                      No
+                      <input disabled name="rega" type="checkbox" {% if doc.medical_data.rega %}checked="checked"{%endif%}>
+                      <span class="lever"></span>
+                      Si
+                    </label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col s12">
+                    <h6>Medico di famiglia</h6>
+                  </div>
+                  <div class="input-field col l6 s12">
+                    <input disabled value="{{doc.medical_data.medic_name}}" name="medic_name" id="medic_name" type="text" >
+                    <label for="medic_name">Nome e cognome</label>
+                  </div>
+                  <div class="input-field col l6 s12">
+                    <input disabled value="{{doc.medical_data.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
+                    <label for="medic_phone">Telefono studio</label>
+                  </div>
+                  <div class="input-field col l12 s12">
+                    <input disabled value="{{doc.medical_data.medic_address}}" name="medic_address" id="medic_address" type="text" >
+                    <label for="medic_address">Indirizzo completo</label>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col s12">
+                    <h6>Scheda medica personale</h6>
+                  </div>
+                  <div class="input-field col s12">
+                    <input disabled value="{{doc.medical_data.sickness}}" name="sickness" id="sickness" type="text">
+                    <label for="sickness">Principali malattie avute</label>
+                  </div>
+                  <div class="input-field col l8 s12">
+                    <input disabled value="{{doc.medical_data.vaccine}}" name="vaccine" id="vaccine" type="text">
+                    <label for="vaccine">Vacinazioni fatte</label>
+                  </div>
+                  <div class="input-field col l4 s12">
+                    <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
+                    <input disabled value="{{doc.medical_data.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
+                  </div>
+                  <div class="input-field col s12">
+                    <input disabled value="{{doc.medical_data.allergy}}" name="allergy" id="allergy" type="text">
+                    <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
+                  </div>
+                  <div class="switch col s12">
+                    Deve assumere regolarmente medicamenti&nbsp;&nbsp;
+                    <label>
+                      No
+                      <input disabled name="drugs_bool" type="checkbox" {% if doc.medical_data.drugs_bool %}checked="checked"{%endif%}>
+                      <span class="lever"></span>
+                      Si
+                    </label>
+                  </div>
+                  <div class="input-field col s12">
+                    <input disabled value="{{doc.medical_data.drugs}}" name="drugs" id="drugs" type="text">
+                    <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
+                  </div>
+                  <div class="switch col s12">
+                    Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
+                    <label>
+                      No
+                      <input disabled name="misc_bool" type="checkbox" {% if doc.medical_data.misc_bool %}checked="checked"{%endif%}>
+                      <span class="lever"></span>
+                      Si
+                    </label>
+                  </div>
+                  <div class="input-field col s12">
+                    <input disabled value="{{doc.medical_data.misc}}" name="misc" id="misc" type="text">
+                    <label for="misc">Se s&igrave; quali</label>
+                  </div>
+              </span></div>
+              {% endif %}
+            </li>
+          {% endif %}
+          {% if doc.document_type.custom_data %}
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
+              </div>
+              <div class="collapsible-body"><span>
+                <table class="striped">
+                <tbody>
+                {% for key in doc|doc_key %}
+                  <tr>
+                  <td>{{key.key}}</td>
+                  <td>{{key.value}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+              </span></div>
+            </li>
+          {% endif %}
+            <li>
+              <div class="collapsible-header">
+                <i class="material-icons">attach_file</i>Allegati
+              </div>
+              <div class="collapsible-body"><span>
+                <div class="row">
+                  <div class="col s12">
+                    <div class="card">
+                      <div class="card-image">
+                        {% if doc.signed_doc %}
+                          <img class="lazy" data-src="{{ sign_doc_file.0 }}{{ doc.id }}{{ sign_doc_file.1 }}">
+                        {% else %}
+                          <p>Foto della conferma firmata non caricata</p>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
-                </span></div>
-              </li>
-            {% endif %}
-            {% if doc.document_type.medical_data %}
-              <li>
-                <div class="collapsible-header">
-                  {% if doc.medical_data %}
-                    <i class="material-icons">healing</i>Dati medici
-                  {% else %}
-                    <i class="material-icons">healing</i><del>Dati medici</del>
-                  {% endif %}
                 </div>
                 {% if doc.medical_data %}
-                <div class="collapsible-body"><span>
-                  <div class="row">
-                    <div class="col s12">
-                      <h6>Persona di contatto in caso di necessit&agrave;</h6>
+                <div class="row">
+                  <div class="col s12">
+                    <div class="card">
+                      <div class="card-image">
+                        {% if doc.medical_data.health_care_certificate %}
+                          <img class="lazy" data-src="{{ health_file.0 }}{{ doc.id }}{{ health_file.1}}">
+                        {% else %}
+                          <p>Foto della tessera della cassa malati non caricata</p>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="input-field col l6 s12">
-                      <input disabled name="emer_name" value="{{doc.medical_data.emer_name}}" id="emer_name" type="text" >
-                      <label for="emer_name">Nome e cognome</label>
-                    </div>
-                    <div class="input-field col l3 s12">
-                      <input disabled name="emer_relative" value="{{doc.medical_data.emer_relative}}" id="emer_relative" type="text" >
-                      <label for="emer_releative">Parentela</label>
-                    </div>
-                    <div class="input-field col l3 s12">
-                      <input disabled name="cell_phone" value="{{doc.medical_data.cell_phone}}" id="cellphone" type="text" >
-                      <label for="cell_phone">Cellulare</label>
-                    </div>
-                    <div class="input-field col l9 s12">
-                      <input disabled value="{{doc.medical_data.address}}" name="address" id="address" type="text" >
-                      <label for="address">Indirizzo completo</label>
-                    </div>
-                    <div class="input-field col l3 s12">
-                      <input disabled value="{{doc.medical_data.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
-                      <label for="emer_phone">Telefono di casa</label>
+                </div>
+                <div class="row">
+                  <div class="col s12">
+                    <div class="card">
+                      <div class="card-image">
+                        {% if doc.medical_data.vac_certificate %}
+                          <img class="lazy" data-src="{{ vac_file.0 }}{{ doc.id }}{{ vac_file.1}}">
+                        {% else %}
+                          <p>Foto del certificato di vacinazione non caricato</p>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col s12">
-                      <h6>Assicurazione</h6>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.medical_data.health_care}}" name="health_care" id="health_care" type="text" >
-                      <label for="health_care">Cassa Malati</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.medical_data.injuries}}" name="injuries" id="injuries" type="text" >
-                      <label for="injuries">Infortuni</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <input disabled value="{{doc.medical_data.rc}}" name="rc" id="rc" type="text" >
-                      <label for="rc">Responsabilit&agrave; civile</label>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="switch col s12">
-                      &Egrave; sostenitore REGA&nbsp;&nbsp;
-                      <label>
-                        No
-                        <input disabled name="rega" type="checkbox" {% if doc.medical_data.rega %}checked="checked"{%endif%}>
-                        <span class="lever"></span>
-                        Si
-                      </label>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col s12">
-                      <h6>Medico di famiglia</h6>
-                    </div>
-                    <div class="input-field col l6 s12">
-                      <input disabled value="{{doc.medical_data.medic_name}}" name="medic_name" id="medic_name" type="text" >
-                      <label for="medic_name">Nome e cognome</label>
-                    </div>
-                    <div class="input-field col l6 s12">
-                      <input disabled value="{{doc.medical_data.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
-                      <label for="medic_phone">Telefono studio</label>
-                    </div>
-                    <div class="input-field col l12 s12">
-                      <input disabled value="{{doc.medical_data.medic_address}}" name="medic_address" id="medic_address" type="text" >
-                      <label for="medic_address">Indirizzo completo</label>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col s12">
-                      <h6>Scheda medica personale</h6>
-                    </div>
-                    <div class="input-field col s12">
-                      <input disabled value="{{doc.medical_data.sickness}}" name="sickness" id="sickness" type="text">
-                      <label for="sickness">Principali malattie avute</label>
-                    </div>
-                    <div class="input-field col l8 s12">
-                      <input disabled value="{{doc.medical_data.vaccine}}" name="vaccine" id="vaccine" type="text">
-                      <label for="vaccine">Vacinazioni fatte</label>
-                    </div>
-                    <div class="input-field col l4 s12">
-                      <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-                      <input disabled value="{{doc.medical_data.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
-                    </div>
-                    <div class="input-field col s12">
-                      <input disabled value="{{doc.medical_data.allergy}}" name="allergy" id="allergy" type="text">
-                      <label for="allergy">Allergie particolari/Intolleraze alimentari</label>
-                    </div>
-                    <div class="switch col s12">
-                      Deve assumere regolarmente medicamenti&nbsp;&nbsp;
-                      <label>
-                        No
-                        <input disabled name="drugs_bool" type="checkbox" {% if doc.medical_data.drugs_bool %}checked="checked"{%endif%}>
-                        <span class="lever"></span>
-                        Si
-                      </label>
-                    </div>
-                    <div class="input-field col s12">
-                      <input disabled value="{{doc.medical_data.drugs}}" name="drugs" id="drugs" type="text">
-                      <label for="drugs">Se s&igrave; quali, in che dosi e prescrizioni</label>
-                    </div>
-                    <div class="switch col s12">
-                      Informazioni particolari sullo stato di salute: (postumi di operazioni, incidenti, malattie, disturbi fisici)&nbsp;&nbsp;
-                      <label>
-                        No
-                        <input disabled name="misc_bool" type="checkbox" {% if doc.medical_data.misc_bool %}checked="checked"{%endif%}>
-                        <span class="lever"></span>
-                        Si
-                      </label>
-                    </div>
-                    <div class="input-field col s12">
-                      <input disabled value="{{doc.medical_data.misc}}" name="misc" id="misc" type="text">
-                      <label for="misc">Se s&igrave; quali</label>
-                    </div>
-                </span></div>
+                </div>
                 {% endif %}
-              </li>
-            {% endif %}
-            {% if doc.document_type.custom_data %}
-              <li>
-                <div class="collapsible-header">
-                  <i class="material-icons">add_circle_outline</i>Dati aggiuntivi
-                </div>
-                <div class="collapsible-body"><span>
-                  <table class="striped">
-                  <tbody>
-                  {% for key in doc|doc_key %}
-                    <tr>
-                    <td>{{key.key}}</td>
-                    <td>{{key.value}}</td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                  </table>
-                </span></div>
-              </li>
-            {% endif %}
-              <li>
-                <div class="collapsible-header">
-                  <i class="material-icons">attach_file</i>Allegati
-                </div>
-                <div class="collapsible-body"><span>
-                  <div class="row">
-                    <div class="col s12">
-                      <div class="card">
-                        <div class="card-image">
-                          {% if doc.signed_doc %}
-                            <img class="lazy" data-src="{{ sign_doc_file.0 }}{{ doc.id }}{{ sign_doc_file.1 }}">
-                          {% else %}
-                            <p>Foto della conferma firmata non caricata</p>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {% if doc.medical_data %}
-                  <div class="row">
-                    <div class="col s12">
-                      <div class="card">
-                        <div class="card-image">
-                          {% if doc.medical_data.health_care_certificate %}
-                            <img class="lazy" data-src="{{ health_file.0 }}{{ doc.id }}{{ health_file.1}}">
-                          {% else %}
-                            <p>Foto della tessera della cassa malati non caricata</p>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col s12">
-                      <div class="card">
-                        <div class="card-image">
-                          {% if doc.medical_data.vac_certificate %}
-                            <img class="lazy" data-src="{{ vac_file.0 }}{{ doc.id }}{{ vac_file.1}}">
-                          {% else %}
-                            <p>Foto del certificato di vacinazione non caricato</p>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {% endif %}
-                </span></div>
-              </li>
-            </ul>
-          </span></div>
-          </li>
-      {% endfor %}
-  </ul>
-  {% endif %}
-  {% endfor %}
-  {% endif %}
-  <div class="fixed-action-btn">
-    <a id="add" class="btn-floating btn-large {{color}}" href="{% url 'create'%}">
-      <i class="large material-icons">add</i>
-    </a>
+              </span></div>
+            </li>
+          </ul>
+        </span></div>
+        </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="row">
+  <div class="col s12">
+    Nessun documento per questa persona
   </div>
+</div>
+{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
 {% else %}
   <div class="row">
     <div class="col l4 offset-l4 m8 offset-m2 s12">
@@ -443,7 +454,7 @@ $(document).ready(function(){
       $('.collapsible').collapsible();
       $('.tap-target').tapTarget();
       $('.modal').modal();
-      {% if empty %}
+      {% if docs|length == 0 %}
         $('.tap-target').tapTarget('open');
       {% endif %}
       var params = {};
