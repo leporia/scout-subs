@@ -7,8 +7,8 @@
 <pre>
 {% for user in data %}
 [{{user.0.id}}] {{user.0.username}} {{user.0.first_name}} {{user.0.last_name}}
-  {% for uc in user.1 %} [{{uc.id}}] {{uc.code}} {{uc.first_name}} {{uc.last_name}} ({{uc.branca}}) {% endfor %}
-{% endfor %}
+{% for uc in user.1 %}  [{{uc.id}}] {{uc.code}} {{uc.first_name}} {{uc.last_name}} ({{uc.branca}})
+{% endfor %} {% endfor %}
 </pre>
 
 {% endblock %}
