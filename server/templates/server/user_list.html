@@ -271,7 +271,11 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      {% if user.medic.health_care_certificate %}<img class="lazyload" data-src="{{ health_file.0 }}{{ user.id }}{{ health_file.1}}">{% endif %}
+                      {% if user.medic.health_care_certificate %}
+                        <img class="lazy" data-src="{{ health_file.0 }}{{ user.id }}{{ health_file.1}}">
+                      {% else %}
+                        <p>Foto della tessera della cassa malati non caricata</p>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -280,7 +284,11 @@
                 <div class="col s12">
                   <div class="card">
                     <div class="card-image">
-                      {% if user.medic.vac_certificate %}<img class="lazyload" data-src="{{ vac_file.0 }}{{ user.id }}{{ vac_file.1 }}">{% endif %}
+                      {% if user.medic.vac_certificate %}
+                        <img class="lazy" data-src="{{ vac_file.0 }}{{ user.id }}{{ vac_file.1 }}">
+                      {% else %}
+                        <p>Foto del certificato di vacinazione non caricato</p>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -313,7 +321,9 @@
 $(document).ready(function(){
     $('.modal').modal();
     $('.collapsible').collapsible();
-    lazyload();
+    var lazyLoadInstance = new LazyLoad({
+      // Your custom settings go here
+    });
 });
 
 function send(id) {
