@@ -307,6 +307,41 @@
     </div>
   </div>
 </div>
+
+<div id="modal_del" class="modal">
+  <div class="modal-content">
+    <h4>Sei sicuro di voler eliminare la persona?</h4>
+    <p>Questa azione non è reversibile.</p>
+    <p>Scrivere nome e cognome della persona che si vuole eliminare per confermare</p>
+    <div class="row">
+      <div class="input-field col s6">
+        <input id="del_name" name="del_name" type="text">
+        <label for="del_name">Conferma nome</label>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+    <a href="#!" onclick="send('delete_uc')" class="modal-close waves-effect waves-green btn-flat">Continua</a>
+  </div>
+</div>
+
+<div id="delete" class="row">
+  <div class="col l8 offset-l2 s12">
+    <div class="row">
+    <div class="col s12">
+      <div class="card orange">
+        <div class="card-content">
+          <span class="card-title">Zona di pericolo</span>
+          <p>Attenzione l'eliminazione non è reversibile. Eliminando la persona
+          tutti i documenti collegata ad essa verranno eliminati.</p><br>
+          <a href="#modal_del" class="modal-trigger btn red waves-effect waves-light">Elimina persona</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
 </form>
 {% endblock %}
 
@@ -364,6 +399,7 @@ $(document).ready(function() {
   $('.datepicker').datepicker(options);
   $('select').formSelect();
   $('.tap-target').tapTarget();
+  $('.modal').modal();
   {% for error in errors %}
     M.toast({html: '{{ error }}', classes: 'orange'})
   {% endfor %}

@@ -863,6 +863,16 @@ def edit(request, code):
                         elif err.code == "password_incorrect":
                             errors.append("La password attuale è incorretta")
 
+        elif request.POST['action'] == "delete_uc":
+            confirm_name = request.POST['del_name']
+            correct_name = usercode.first_name + " " + usercode.last_name
+            if (confirm_name == correct_name):
+                usercode.delete()
+                medic.delete()
+                return HttpResponseRedirect("/")
+
+            errors.append("Il nome inserito non corrisponde al nome salvato")
+
         else:
             # set all attributes
             usercode.first_name = request.POST["first_name"]
