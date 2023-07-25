@@ -9,24 +9,12 @@
 {% block toolbar %}
   <div class="nav-content {{color}}">
     <ul class="tabs tabs-transparent">
-      <!--
-      <li class="tab"><a class="{{personal_active}}" href="#personal">Info Personali</a></li>
-      <li class="tab"><a class="{{medic_active}}" href="#medic">Info Mediche</a></li>
-      -->
       <li class="tab"><a class="{{settings_active}}" href="#settings">Impostazioni</a></li>
     </ul>
   </div>
 {% endblock%}
 
 {% block content %}
-<div class="tap-target {{color}}" data-target="home_btn">
-  <div class="tap-target-content">
-    <h5 style="color:white">Continua l'attivazione</h5>
-    <p style="color:white">Usa questo pulsante per tornare alla home e continuare il processo d'attivazione</p>
-  </div>
-</div>
-
-<form action="{% url 'personal'%}?saved=true" method="post" id="form1" enctype="multipart/form-data">
 <div id="settings" class="row">
   <div class="col l8 offset-l2 s12">
     <div class="card-panel">
@@ -76,89 +64,17 @@
 {% endblock %}
 
 {% block script %}
-function send(id) {
-  $('#form1').trigger('reinitialize.areYouSure');
-  var form = document.getElementById('form1');
-  var action = document.getElementById('action');
-  action.setAttribute('value', id);
-  $(':disabled').each(function(e) {
-        $(this).removeAttr('disabled');
-  })
-  form.submit();
-}
-
-function delete_vac() {
-  var action = document.getElementById('delete_vac');
-  var text = document.getElementById('vac_file');
-  action.setAttribute('value', 'vac');
-  text.setAttribute('value', '');
-}
-
-function delete_health() {
-  var action = document.getElementById('delete_health');
-  var text = document.getElementById('health_care_file');
-  action.setAttribute('value', 'health');
-  text.setAttribute('value', '');
-}
 
 var elem = $('.tabs')
-var options = {
-  yearRange:100,
-  format:'dd mmmm yyyy',
-  i18n: {
-    months: [ 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre' ],
-    monthsShort: [ 'gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic' ],
-    weekdays: [ 'domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato' ],
-    weekdaysShort: [ 'dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab' ],
-    weekdaysAbbrev: [ 'D', 'L', 'M', 'M', 'G', 'V', 'S' ],
-    today: 'Oggi',
-    clear: 'Cancella',
-    close: 'Chiudi',
-    firstDay: 1,
-    format: 'dddd d mmmm yyyy',
-    formatSubmit: 'yyyy/mm/dd',
-    labelMonthNext: 'Mese successivo',
-    labelMonthPrev: 'Mese precedente',
-    labelMonthSelect: 'Seleziona un mese',
-    labelYearSelect: 'Seleziona un anno'
-  }
-}
 
 $(document).ready(function() {
-  $('input#sickness, input#vaccine, input#allergy, input#drugs, input#misc').characterCounter();
-  $('.datepicker').datepicker(options);
   $('.tabs').tabs();
-  $('select').formSelect();
-  $('.tap-target').tapTarget();
   {% for error in errors %}
     M.toast({html: '{{ error }}', classes: 'orange'})
   {% endfor %}
   {% if ok_message %}
     M.toast({html: '{{ ok_message }}', classes: 'green'})
   {% endif %}
-  {% if home_tooltip %}
-    $('.tap-target').tapTarget('open');
-  {% endif %}
-  document.getElementById("vac_certificate").onchange = function() {
-    for (i=0; i < this.files.length; i++) {
-      if(this.files[i].size > 1048576*10) {
-        M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
-        this.value = "";
-        break;
-      }
-    }
-  };
-
-  document.getElementById("health_care_certificate").onchange = function() {
-    for (i=0; i < this.files.length; i++) {
-      if(this.files[i].size > 1048576*10) {
-        M.toast({html: 'Il file è troppo grande. Grandezza massima 10MB', classes: 'orange'});
-        this.value = "";
-        break;
-      }
-    }
-  };
-
 });
 
 /*!
