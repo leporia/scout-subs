@@ -10,8 +10,8 @@
 {% block content %}
 <div class="tap-target {{color}}" data-target="home_btn">
   <div class="tap-target-content">
-    <h5 style="color:white">Continua l'attivazione</h5>
-    <p style="color:white">Usa questo pulsante per tornare alla home e continuare il processo d'attivazione</p>
+    <h5 style="color:white">Continua l'iscrizione</h5>
+    <p style="color:white">Usa questo pulsante per tornare alla home e continuare il processo d'iscrizione</p>
   </div>
 </div>
 
@@ -44,7 +44,7 @@
           </div>
           <div class="row">
             <div class="input-field col l4 s12">
-              <select name="branca" disabled>
+              <select name="branca">
                 <option value="" disabled {{branca_default}}>Nessuna</option>
                 <option value="diga" {{branca_castorini}}>Castorini</option>
                 <option value="muta" {{branca_lupetti}}>Lupetti</option>
@@ -52,7 +52,7 @@
                 <option value="posto" {{branca_pionieri}}>Pionieri</option>
                 <option value="clan" {{branca_rover}}>Rover</option>
               </select>
-              <label>Branca (campo non modificabile)</label>
+              <label>Branca</label>
             </div>
             <div class="input-field col l4 s12">
               <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" {{validation_dic.parent_name|safe}}>

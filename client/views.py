@@ -95,7 +95,18 @@ def index(request):
     for uc in ucs:
         documents = Document.objects.filter(
             Q(usercode=uc) & ~Q(status='archive')).select_related("personal_data", "medical_data", "document_type", "user")
-        docs.append([uc, documents])
+        color_mapping = {
+            "diga": "#ffeb3b",
+            "muta": "#03a9f4",
+            "reparto": "#795548",
+            "posto": "#f44336",
+            "clan": "#4caf50"
+        }
+        if uc.branca == None:
+            color = "black"
+        else:
+            color = color_mapping[uc.branca.name]
+        docs.append([uc, documents, color])
     # show only docs of the user and non archived
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]

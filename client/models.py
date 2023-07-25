@@ -77,7 +77,7 @@ class UserCode(models.Model):
     user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
     medic = models.ForeignKey(MedicalData, default=None, on_delete=models.PROTECT)
     code = models.IntegerField(default=0)
-    branca = models.ForeignKey(Group, default=1, on_delete=models.PROTECT)
+    branca = models.ForeignKey(Group, default=None, on_delete=models.PROTECT, null=True)
     first_name = models.CharField(default="", max_length=250)
     last_name = models.CharField(default="", max_length=250)
     email = models.CharField(default="", max_length=250)
@@ -97,7 +97,7 @@ class UserCode(models.Model):
 
 
 class Document(models.Model):
-    usercode = models.ForeignKey(UserCode, default=1, on_delete=models.CASCADE)
+    usercode = models.ForeignKey(UserCode, default=None, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
     code = models.IntegerField(default=0)

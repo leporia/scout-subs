@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, SetPasswordForm, UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.views import LoginView
 from django.http import FileResponse
@@ -422,9 +422,6 @@ def edit(request, code):
     errors = []
     context = {}
     ok_message = ""
-    personal_active = "active"
-    medic_active = ""
-    settings_active = ""
     # additional user information
     if (code == 0):
         # generate code
@@ -434,7 +431,7 @@ def edit(request, code):
                 break
         medic = MedicalData()
         medic.save()
-        userCode = UserCode(user=request.user, code=code, medic=medic)
+        userCode = UserCode(user=request.user, code=code, medic=medic, branca=None)
         userCode.save()
 
     usercode = UserCode.objects.filter(user=request.user, code=code)
@@ -458,9 +455,7 @@ def edit(request, code):
 
     # variables for validation
     validation_dic = {}
-    required_fields = ["first_name", "last_name", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
-    personal_fields = ["first_name", "last_name", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number"]
-    medic_fields = ["emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address"]
+    required_fields = ["first_name", "last_name", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address", "sickness", "vaccine"]
 
     if request.method == "POST":
         # requested download
@@ -524,6 +519,10 @@ def edit(request, code):
             else:
                 errors.append("L'anno scolastico deve essere un numero")
 
+            if "branca" in request.POST:
+                if request.POST["branca"] != "" and request.POST["branca"] in ["diga", "muta", "reparto", "posto", "clan"]:
+                    usercode.branca = Group.objects.get(name=request.POST["branca"])
+
             usercode.save()
 
             medic.emer_name = request.POST["emer_name"]
@@ -549,35 +548,28 @@ def edit(request, code):
             medic.save()
 
             missing_fields = False
-            missing_personal_field = False
 
             if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
                 validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
-                missing_personal_field = True
             else:
                 validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
+
+            if request.POST["tetanus_date"] == "" or request.POST["tetanus_date"] == "01 Gennaio 1970" or request.POST["tetanus_date"] == "None":
+                validation_dic["tetanus_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
+                missing_fields = True
+            else:
+                validation_dic["tetanus_date"] = 'class="datepicker validate" required="" aria-required="true"'
 
             for i in required_fields:
                 if request.POST[i] == "":
                     missing_fields = True
-                    if i in personal_fields:
-                        missing_personal_field = True
                     validation_dic[i] = 'class="validate invalid" required="" aria-required="true"'
                 else:
                     validation_dic[i] = 'class="validate" required="" aria-required="true"'
 
             if missing_fields:
                 errors.append("Alcuni campi richiesti non sono stati compilati")
-                if not missing_personal_field:
-                    personal_active = ""
-                    medic_active = "active"
-
-            # if "branca" in request.POST:
-            #    if request.POST["branca"] != "":
-            #        request.user.groups.clear()
-            #        request.user.groups.add(
-            #            Group.objects.get(name=request.POST["branca"]))
 
             # check if user uploaded a file
             if "vac_certificate" in request.FILES:
@@ -678,19 +670,19 @@ def edit(request, code):
             validation_dic[i] = 'class="validate" required="" aria-required="true"'
 
     # check if user is in a group and set multiple choice to that
-    if len(request.user.groups.values_list('name', flat=True)) == 0:
+    if usercode.branca == None:
         branca_default = "selected"
     else:
-        parent_group = request.user.groups.values_list('name', flat=True)[0]
-        if parent_group == "diga":
+        branca = usercode.branca.name
+        if branca == "diga":
             branca_castorini = "selected"
-        elif parent_group == "muta":
+        elif branca == "muta":
             branca_lupetti = "selected"
-        elif parent_group == "reparto":
+        elif branca == "reparto":
             branca_esploratori = "selected"
-        elif parent_group == "posto":
+        elif branca == "posto":
             branca_pionieri = "selected"
-        elif parent_group == "clan":
+        elif branca == "clan":
             branca_rover = "selected"
         else:
             branca_default = "selected"
@@ -719,23 +711,11 @@ def edit(request, code):
     else:
         card_name = ''
 
-    # check if user is connected with midata
-    midata_user = (usercode.midata_id > 0)
-    midata_disable = ""
-
-    # get user info from midata
-    if midata_user:
-        midata_disable = " readonly disabled"
-        if not copy_from_midata(request, usercode):
-            return HttpResponseRedirect(request.get_full_path())
-
-    usable_password = request.user.has_usable_password()
-
     # check if user has saved the form
     home_tooltip = False
     if "saved" in request.GET:
         # show tooltip only if user is not approved and there are no errors
-        home_tooltip = (not request.user.has_perm("client.approved")) and (len(errors) == 0)
+        home_tooltip = (len(errors) == 0)
 
     # fill context
     context = {
@@ -784,13 +764,6 @@ def edit(request, code):
         'vac_certificate': vac_name,
         'errors': errors,
         'ok_message': ok_message,
-        'midata_user': midata_user,
-        'midata_disable': midata_disable,
-        'usable_password': usable_password,
-        'personal_active': personal_active,
-        'medic_active': medic_active,
-        'settings_active': settings_active,
-        'midata_enabled': MIDATA_ENABLED,
         'home_tooltip': home_tooltip,
     }
 
