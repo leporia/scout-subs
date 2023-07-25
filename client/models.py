@@ -97,8 +97,8 @@ class UserCode(models.Model):
 
 
 class Document(models.Model):
-    usercode = models.ForeignKey(UserCode, default=None, on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE)
+    usercode = models.ForeignKey(UserCode, default=None, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE, null=True)
     group = models.ForeignKey(Group, default=None, on_delete=models.CASCADE)
     code = models.IntegerField(default=0)
     compilation_date = models.DateTimeField(auto_now_add=True)

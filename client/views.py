@@ -46,7 +46,7 @@ def index(request):
         document = Document.objects.get(id=request.POST["action"][1:])
 
         # check if document is valid to modify
-        if document.user != request.user:
+        if document.usercode not in ucs:
             return HttpResponseRedirect("/")
 
         if document.status == "ok" or document.status == "archive":
@@ -124,26 +124,28 @@ def index(request):
 
 
 @login_required
-def create(request):
+def create(request, code):
     context = {}
-    usercode = UserCode.objects.filter(user=request.user)[0]
-
-    if usercode.midata_id > 0:
-        if not copy_from_midata(request, usercode):
-            return HttpResponseRedirect(request.path_info)
+    usercode = UserCode.objects.filter(user=request.user, code=code)
+    if (len(usercode) == 0):
+        # the user has no person
+        return HttpResponseRedirect("/")
     
-    # group name and obj
-    parent_groups = request.user.groups.values_list('name', flat=True)
+    usercode = usercode[0]
+
+    if usercode.branca == None:
+        return HttpResponseRedirect("/")
 
     # get available types for user
-    filter = (Q(group_private=False) | Q(group__name__in=parent_groups)) & Q(enabled=True)
+    filter = (Q(group_private=False) | Q(group__name=usercode.branca.name)) & Q(enabled=True)
     if not request.user.is_staff and "capi" not in request.user.groups.values_list('name',flat = True):
         filter = filter & Q(staff_only=False)
 
     # remove from the list documents from already used types
-    doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(Q(user=request.user) & ~Q(status="archive")).select_related("document_type").values_list("document_type", flat=True))
-    doctypes = doctypes.difference(HideGroup.objects.filter(group__name__in=parent_groups).select_related("doc_type").values_list("doc_type", flat=True))
+    doctypes = DocumentType.objects.filter(filter).values_list("id", flat=True).difference(Document.objects.filter(Q(usercode=usercode) & ~Q(status="archive")).select_related("document_type").values_list("document_type", flat=True))
+    doctypes = doctypes.difference(HideGroup.objects.filter(group__name=usercode.branca.name).select_related("doc_type").values_list("doc_type", flat=True))
 
+    context["uc"] = usercode
     context['docs'] = DocumentType.objects.filter(id__in=doctypes)
     if request.method == "POST":
         if request.POST["action"] == "details":
@@ -190,12 +192,12 @@ def create(request):
                 # user is cheating abort
                 return HttpResponseRedirect("/")
 
-            if document_type.group_private and document_type.group.name not in request.user.groups.values_list('name', flat=True):
+            if document_type.group_private and document_type.group.name != usercode.branca.name:
                 # user is cheating abort
                 return HttpResponseRedirect("/")
 
             # get list of docs with that type
-            current_docs = Document.objects.filter(user=request.user).filter(Q(document_type=document_type) & ~Q(status="archive"))
+            current_docs = Document.objects.filter(usercode=usercode).filter(Q(document_type=document_type) & ~Q(status="archive"))
             if len(current_docs) > 0:
                 # if there is already a document with that type abort (user is cheating)
                 return HttpResponseRedirect("/")
@@ -224,13 +226,13 @@ def create(request):
 
             # generate document code
             while (True):
-                code = randint(100000, 999999)
-                if len(Document.objects.filter(code=code)) == 0:
+                dcode = randint(100000, 999999)
+                if len(Document.objects.filter(code=dcode)) == 0:
                     break
 
             # save document
             document = Document(
-                user=request.user, group=document_type.group, code=code, status=status, document_type=document_type, personal_data=personal_data, medical_data=medical_data)
+                usercode=usercode, group=document_type.group, code=dcode, status=status, document_type=document_type, personal_data=personal_data, medical_data=medical_data)
             document.save()
 
             # attach custom keys

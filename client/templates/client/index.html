@@ -38,7 +38,7 @@
         <p style="text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: {{data.2}};">{{data.0.first_name}} {{data.0.last_name}}<a href="{% url "edit_user" code=data.0.code %}" class="btn-flat"><i class="material-icons">edit</i></a></p>
         <div style="font-size: 0.5em; line-height: normal;">{{data.0.born_date}}</div>
       </span>
-      <a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create'%}"><i class="material-icons">add</i></a>
+      <a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create' code=data.0.code %}"><i class="material-icons">add</i></a>
 {% if data.1|length > 0 %}
 <ul class="collapsible">
     {% for doc in data.1 %}
@@ -150,11 +150,11 @@
               <div class="collapsible-body"><span>
                 <div class="row">
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{doc.user.first_name}}" id="first_name" type="text" >
+                    <input disabled value="{{doc.usercode.first_name}}" id="first_name" type="text" >
                     <label for="first_name">Nome</label>
                   </div>
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{doc.user.last_name}}" id="last_name" type="text" >
+                    <input disabled value="{{doc.usercode.last_name}}" id="last_name" type="text" >
                     <label for="last_name">Cognome</label>
                   </div>
                   <div class="input-field col l4 s12">
@@ -162,7 +162,7 @@
                     <label for="birth_date">Data di nascita</label>
                   </div>
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{base_group}}" id="branca" type="text">
+                    <input disabled value="{{doc.usercode.branca.name}}" id="branca" type="text">
                     <label for="branca">Branca</label>
                   </div>
                   <div class="input-field col l4 s12">
