@@ -12,6 +12,7 @@ from django.conf import settings
 from io import BytesIO
 import pdfkit
 from datetime import datetime
+import datetime as dt
 import pytz
 from random import randint
 
@@ -106,7 +107,12 @@ def index(request):
             color = "black"
         else:
             color = color_mapping[uc.branca.name]
-        docs.append([uc, documents, color])
+        required_fields = ["first_name", "last_name", "parent_name", "via", "cap", "country", "nationality", "phone", "avs_number", "born_date"]
+        required_medic_fields = ["emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address", "sickness", "vaccine", "tetanus_date"]
+        data = [uc.__dict__[key] for key in required_fields]
+        data += [uc.medic.__dict__[key] for key in required_medic_fields]
+        invalid_flag = ("" in data) or (None in data) or (dt.date(1970, 1, 1) in data)
+        docs.append([uc, documents, color, invalid_flag])
     # show only docs of the user and non archived
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]

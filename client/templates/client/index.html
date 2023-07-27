@@ -38,7 +38,6 @@
         <p style="text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: {{data.2}};">{{data.0.first_name}} {{data.0.last_name}}<a href="{% url "edit_user" code=data.0.code %}" class="btn-flat"><i class="material-icons">edit</i></a></p>
         <div style="font-size: 0.5em; line-height: normal;">{{data.0.born_date}}</div>
       </span>
-      <a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create' code=data.0.code %}"><i class="material-icons">add</i></a>
 {% if data.1|length > 0 %}
 <ul class="collapsible">
     {% for doc in data.1 %}
@@ -420,12 +419,21 @@
         </li>
     {% endfor %}
 </ul>
-{% else %}
+{% elif data.3 == False %}
 <div class="row">
   <div class="col s12">
     Nessun documento per questa persona
   </div>
 </div>
+{% endif %}
+{% if data.3 %}
+<div class="row">
+  <div class="col s12">
+    <p class="red lighten-1">I dati per questa persona non sono completi. Per poter creare una nuova iscrizione completare tutti i dati.</p>
+  </div>
+</div>
+{% else %}
+<a id="add" class="btn-floating halfway-fab btn-large {{color}}" href="{% url 'create' code=data.0.code %}"><i class="material-icons">add</i></a>
 {% endif %}
       </div>
     </div>

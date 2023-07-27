@@ -205,16 +205,19 @@
           <h6>Scheda medica personale</h6>
         </div>
         <div class="input-field col s12">
-          <input value="{{sickness}}" name="sickness" id="sickness" type="text" data-length="250">
+          <input value="{{sickness}}" name="sickness" id="sickness" type="text" data-length="250" {{validation_dic.sickness|safe}}>
           <label for="sickness">Principali malattie avute</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l8 s12">
-          <input value="{{vaccine}}" name="vaccine" id="vaccine" type="text" data-length="250">
+          <input value="{{vaccine}}" name="vaccine" id="vaccine" type="text" data-length="250" {{validation_dic.vaccine|safe}}>
           <label for="vaccine">Vacinazioni fatte</label>
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col l4 s12">
+          <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" {{validation_dic.tetanus_date|safe}}>
           <label for="tetanus_date">Ultima vacinazione contro il tetano</label>
-          <input value="{{tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text" class="datepicker">
+          <span class="helper-text" data-error="Campo richiesto"></span>
         </div>
         <div class="input-field col s12">
           <input value="{{allergy}}" name="allergy" id="allergy" type="text" data-length="250">

@@ -549,17 +549,19 @@ def edit(request, code):
 
             missing_fields = False
 
-            if request.POST["birth_date"] == "" or request.POST["birth_date"] == "01 Gennaio 1970" or request.POST["birth_date"] == "None":
+            if request.POST["birth_date"] == "" or request.POST["birth_date"].lower() == "01 gennaio 1970" or request.POST["birth_date"] == "None" or request.POST["birth_date"] == "Giovedì 01 Gennaio 1970 00:00":
                 validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
             else:
                 validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
 
-            if request.POST["tetanus_date"] == "" or request.POST["tetanus_date"] == "01 Gennaio 1970" or request.POST["tetanus_date"] == "None":
+            if request.POST["tetanus_date"] == "" or request.POST["tetanus_date"].lower() == "01 gennaio 1970" or request.POST["tetanus_date"] == "None" or request.POST["tetanus_date"] == "Giovedì 01 Gennaio 1970 00:00":
                 validation_dic["tetanus_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
+                print("missing!!")
             else:
                 validation_dic["tetanus_date"] = 'class="datepicker validate" required="" aria-required="true"'
+                print("not missing")
 
             for i in required_fields:
                 if request.POST[i] == "":
@@ -570,6 +572,8 @@ def edit(request, code):
 
             if missing_fields:
                 errors.append("Alcuni campi richiesti non sono stati compilati")
+
+            print(validation_dic)
 
             # check if user uploaded a file
             if "vac_certificate" in request.FILES:
