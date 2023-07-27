@@ -39,12 +39,12 @@
       {% for user in users %}
         {
           capo: {% if "capi" in user.user|user_groups %}true{% else %}false{% endif %},
-          username: "{{user.user.username}}",
-          name: "{{user.user.first_name}}",
-          last_name: "{{user.user.last_name}}",
+          ucode: "U{{user.code}}",
           email: "{{user.user.email}}",
+          name: "{{user.first_name}}",
+          last_name: "{{user.last_name}}",
           birth_date: "{{user.born_date}}",
-          branca: "{{ user.user|user_primary_group }}",
+          branca: "{{ user.branca }}",
           parent_name: "{{user.parent_name}}",
           avs_number: "{{user.avs_number}}",
           via: "{{user.via}}",
@@ -82,11 +82,11 @@
   var col_categories = [
     {field: "base", name: "Informazioni base", cols: 
       [
-        {title: "Capo", field: "capo", formatter:"tickCross", frozen: true},
-        {title: "Username", field: "username", frozen: true},
-        {title: "Nome", field: "name"},
-        {title: "Cognome", field: "last_name"},
+        {title: "Nome", field: "name", frozen: true},
+        {title: "Cognome", field: "last_name", frozen: true},
+        {title: "Capo", field: "capo", formatter:"tickCross"},
         {title: "Email", field: "email"},
+        {title: "Codice", field: "ucode"},
         {title: "Data di nascita", field: "birth_date"},
         {title: "Branca", field: "branca"},
       ]

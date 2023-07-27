@@ -144,10 +144,6 @@ def uapprove(request):
     if request.method == "POST":
         # get group name and obj
         group = getGroups(request)[0]
-        parent_group = group.name
-
-        # get permission object
-        permission = Permission.objects.get(codename='approved')
 
         # parse text to array
         data = request.POST["codes"]
@@ -163,21 +159,18 @@ def uapprove(request):
             elif UserCode.objects.filter(code=data[i][1:]).count() == 0:
                 data[i] = data[i] + " - Invalido"
             else:
-                user = UserCode.objects.filter(code=data[i][1:])[0].user
-                user.user_permissions.add(permission)
+                usercode = UserCode.objects.filter(code=data[i][1:])[0]
                 # if user not in any group add to the same group as staff
-                if user.groups.values_list('name', flat=True).count() == 0:
-                    user.groups.add(group)
+                if usercode.branca == None:
+                    usercode.branca = group
+                    usercode.save()
                     data[i] = data[i] + " - Ok"
+                elif usercode.branca == group:
+                    data[i] = data[i] + " - Già " + group.name
                 else:
-                    if user.groups.values_list('name', flat=True)[0] == parent_group:
-                        # if user already in group do nothing
-                        data[i] = data[i] + " - Già approvato"
-                    else:
-                        # if user in another group notify staff of group change
-                        user.groups.remove(Group.objects.get(name=user.groups.values_list('name', flat=True)[0]))
-                        user.groups.add(group)
-                        data[i] = data[i] + " - Ok, cambio branca"
+                    usercode.branca = group
+                    usercode.save()
+                    data[i] = data[i] + " - Ok, cambio branca"
 
     context = {
         'messages': data,
@@ -379,14 +372,14 @@ def approve_direct(request):
 def ulist(request):
     context = {}
     # group name and obj
-    group = getGroups(request)[0]
+    groups = getGroups(request)
 
     if request.method == "POST":
         # request to download document
         if request.POST["action"][0] == 'f':
             document = Document.objects.get(id=request.POST["action"][1:])
             # check if user has permission to view document
-            if document.group == group:
+            if document.group == groups[0]:
                 vac_file = ""
                 health_file = ""
                 sign_doc_file = ""
@@ -419,34 +412,10 @@ def ulist(request):
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
                 result.seek(0)
-                return FileResponse(result, filename=document.user.username+"_"+document.document_type.name+".pdf")
-
-        # deapprove user
-        elif request.POST["action"][0] == 'd':
-            user = User.objects.get(id=request.POST["action"][1:])
-            # check if user has permission to deapprove user
-            if user.groups.all()[0] == group:
-                permission = Permission.objects.get(codename="approved")
-                user.user_permissions.remove(permission)
-                return HttpResponseRedirect("ulist")
-        # make user "capo"
-        elif request.POST["action"][0] == 'c':
-            user = User.objects.get(id=request.POST["action"][1:])
-            capi = Group.objects.get(name="capi")
-            # check if user has permission to modify
-            if user.groups.all()[0] == group:
-                if "capi" in user.groups.values_list('name', flat=True):
-                    # remove group
-                    user.groups.remove(capi)
-                else:
-                    # add group
-                    user.groups.add(capi)
-            return HttpResponseRedirect("ulist")
+                return FileResponse(result, filename=document.usercode.first_name+"_"+document.usercode.last_name+"_"+document.document_type.name+".pdf")
 
     # list users with their documents
-    permission = Permission.objects.get(codename="approved")
-
-    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__name__contains=group.name).select_related("user", "medic").order_by("user__last_name")
+    usercodes = UserCode.objects.filter(branca__in=groups).select_related("user", "medic").order_by("last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/usercode"]
     health_file = ["/server/media/", "/health_care_certificate/usercode"]
@@ -462,12 +431,10 @@ def ulist(request):
 def ulist_table(request):
     context = {}
     # group name and obj
-    group = getGroups(request)[0]
+    groups = getGroups(request)
 
     # list users with their documents
-    permission = Permission.objects.get(codename="approved")
-
-    usercodes = UserCode.objects.filter(Q(user__user_permissions=permission) | Q(user__is_staff=True)).filter(user__groups__name__contains=group.name).select_related("user", "medic").order_by("user__last_name")
+    usercodes = UserCode.objects.filter(branca__in=groups).select_related("user", "medic").order_by("user__last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/usercode"]
     health_file = ["/server/media/", "/health_care_certificate/usercode"]
