@@ -468,9 +468,9 @@
 $(document).ready(function(){
     {% if user.is_staff or perms.client.approved %}
       $('.collapsible').collapsible();
-      $('.tap-target').tapTarget();
       $('.modal').modal();
-      {% if docs|length == 0 %}
+      {% if docs|length == 0 and not all_invalid %}
+        $('.tap-target').tapTarget();
         $('.tap-target').tapTarget('open');
       {% endif %}
       var params = {};
@@ -489,11 +489,13 @@ $(document).ready(function(){
     });
 });
 {% if user.is_staff or perms.client.approved %}
+  {% if not all_invalid %}
   $('*').click(function(event) {
       if (this === event.target) {
         $('.tap-target').tapTarget('close');
       }
   });
+  {% endif %}
   function send(id) {
     var form = document.getElementById('form')
     var action = document.getElementById('action')

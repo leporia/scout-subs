@@ -92,6 +92,7 @@ def index(request):
             return edit_wrapper(request, context)
 
     # divide the docs for each uc
+    all_invalid = True
     docs = []
     for uc in ucs:
         documents = Document.objects.filter(
@@ -114,6 +115,7 @@ def index(request):
         invalid_flag = ("" in data) or (None in data) or (dt.date(1970, 1, 1) in data)
         no_attachment_flag = (not uc.medic.vac_certificate) or (not uc.medic.health_care_certificate)
         invalid_flag = invalid_flag or no_attachment_flag
+        all_invalid = all_invalid and invalid_flag
         docs.append([uc, documents, color, invalid_flag, no_attachment_flag])
     # show only docs of the user and non archived
 
@@ -123,6 +125,7 @@ def index(request):
 
     context = {
         "docs": docs,
+        "all_invalid": all_invalid,
         "vac_file": vac_file,
         "health_file": health_file,
         "sign_doc_file": sign_doc_file

@@ -110,16 +110,6 @@
   $(document).ready(function(){
       $('#modal1').modal();
       $('#modal2').modal();
-      var elemsMapping = {};
-      var rows = table.getRows();
-      for (var i = 0; i < rows.length; i++) {
-        var cell = rows[i].getCell("username");
-        if (cell.getValue() == "col_row") {
-          var group = rows[i].getCell("type").getValue();
-          elemsMapping[group] = rows[i].getElement();
-        }
-      }
-
       $(".tabulator-col-resize-handle").css("margin-left", "-3px");
   });
 
@@ -146,13 +136,12 @@
           type: "{{doc.document_type.name}}",
           code: {% if doc.status == "ok" or doc.status == "archive" %} "{{doc.code}}" {% else %} "???" {% endif %},
           compilation_date: "{{doc.compilation_date}}",
-          capo: {% if "capi" in doc.user|user_groups %}true{% else %}false{% endif %},
-          username: "{{doc.user.username}}",
-          name: "{{doc.user.first_name}}",
-          last_name: "{{doc.user.last_name}}",
+          capo: {% if "capi" in doc.usercode.user|user_groups %}true{% else %}false{% endif %},
+          name: "{{doc.usercode.first_name}}",
+          last_name: "{{doc.usercode.last_name}}",
           email: "{{doc.personal_data.email}}",
           birth_date: "{{doc.personal_data.born_date}}",
-          branca: "{{ doc.user|user_primary_group }}",
+          branca: "{{ doc.usercode.branca }}",
           parent_name: "{{doc.personal_data.parent_name}}",
           avs_number: "{{doc.personal_data.avs_number}}",
           via: "{{doc.personal_data.via}}",
@@ -190,7 +179,6 @@
   var col_categories = [
     {field: "base", name: "Informazioni base", cols: 
       [
-        {title: "Username", field: "username"},
         {title: "Stato", field: "status", formatter: iconFormatter},
         {title: "Tipo", field: "type"},
         {title: "Codice", field: "code"},

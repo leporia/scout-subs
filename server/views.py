@@ -1182,7 +1182,7 @@ def doclist(request):
     # run query
     documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
 
-    users = documents.values("user__username", "user__first_name", "user__last_name")
+    users = documents.values("usercode__first_name", "usercode__last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
     health_file = ["/server/media/", "/health_care_certificate/doc"]
@@ -1347,7 +1347,7 @@ def doclist_table(request):
     # run query
     documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
 
-    users = documents.values("user__username", "user__first_name", "user__last_name")
+    users = documents.values("usercode__first_name", "usercode__last_name")
 
     # get types and users for chips autocompletation
     if request.user.is_staff:
@@ -1552,7 +1552,7 @@ def doclist_readonly(request):
     # run query
     documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
 
-    users = documents.values("user__username", "user__first_name", "user__last_name")
+    users = documents.values("usercode__first_name", "usercode__last_name")
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
     health_file = ["/server/media/", "/health_care_certificate/doc"]

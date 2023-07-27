@@ -136,7 +136,7 @@
 <ul class="collapsible">
     {% for doc in docs %}
         <li class="item">
-        <input value="{{doc.user|user_primary_group}}" type="hidden">
+        <input value="{{doc.usercode.branca}}" type="hidden">
         <div class="collapsible-header">
             <label>
               <input name={{doc.id}} type="checkbox" class="filled-in allselect"/>
@@ -159,7 +159,7 @@
               {{doc.id}}: 
             {% endif %}
             {{doc.document_type.name}}
-            <span class="badge" data-badge-caption="">{{doc.user.first_name}} {{doc.user.last_name}}</span>
+            <span class="badge" data-badge-caption="">{{doc.usercode.first_name}} {{doc.usercode.last_name}}</span>
         </div>
         <div class="collapsible-body"><span>
           {% if doc.status == "ok" or doc.status == 'archive' %}
@@ -191,11 +191,11 @@
               <div class="collapsible-body"><span>
                 <div class="row">
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{doc.user.first_name}}" id="first_name" type="text" >
+                    <input disabled value="{{doc.usercode.first_name}}" id="first_name" type="text" >
                     <label for="first_name">Nome</label>
                   </div>
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{doc.user.last_name}}" id="last_name" type="text" >
+                    <input disabled value="{{doc.usercode.last_name}}" id="last_name" type="text" >
                     <label for="last_name">Cognome</label>
                   </div>
                   <div class="input-field col l4 s12">
@@ -203,7 +203,7 @@
                     <label for="birth_date">Data di nascita</label>
                   </div>
                   <div class="input-field col l4 s12">
-                    <input disabled value="{{doc.user|user_primary_group}}" id="branca" type="text">
+                    <input disabled value="{{doc.usercode.branca}}" id="branca" type="text">
                     <label for="branca">Branca</label>
                   </div>
                   <div class="input-field col l4 s12">
@@ -516,7 +516,7 @@ $('#chips_owner').chips({
   autocompleteOptions: {
     data: {
       {% for user in users %}
-        '{{user.user__username}} ({{user.user__first_name}} {{user.user__last_name}})': null,
+        '{{user.usercode__first_name}} {{user.usercode__last_name}}': null,
       {% endfor %}
     },
     limit: Infinity,
