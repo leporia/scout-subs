@@ -429,7 +429,11 @@
 {% if data.3 %}
 <div class="row">
   <div class="col s12">
-    <p class="red lighten-1">I dati per questa persona non sono completi. Per poter creare una nuova iscrizione completare tutti i dati.</p>
+    <p class="red lighten-1">I dati per questa persona non sono completi.<br>
+    {% if data.4 %}
+    Uno o più allegati medici (certificato di vacinazione o tessera della cassa malati) non sono stati aggiunti.<br>
+    {% endif %}
+      Per poter creare una nuova iscrizione completare tutti i dati.</p>
   </div>
 </div>
 {% else %}

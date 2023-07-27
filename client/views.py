@@ -112,7 +112,9 @@ def index(request):
         data = [uc.__dict__[key] for key in required_fields]
         data += [uc.medic.__dict__[key] for key in required_medic_fields]
         invalid_flag = ("" in data) or (None in data) or (dt.date(1970, 1, 1) in data)
-        docs.append([uc, documents, color, invalid_flag])
+        no_attachment_flag = (not uc.medic.vac_certificate) or (not uc.medic.health_care_certificate)
+        invalid_flag = invalid_flag or no_attachment_flag
+        docs.append([uc, documents, color, invalid_flag, no_attachment_flag])
     # show only docs of the user and non archived
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
