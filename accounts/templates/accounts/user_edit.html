@@ -52,7 +52,8 @@
                 <option value="posto" {{branca_pionieri}}>Pionieri</option>
                 <option value="clan" {{branca_rover}}>Rover</option>
               </select>
-              <label>Branca</label>
+              <label>Branca<i style="font-size: 1rem; position: absolute; bottom: 0px;" class="material-icons right tooltipped" data-position="right" data-tooltip="<p class='left-align'>Nello scoutismo la branca è la divisione per età,<br>la quale segue le classi scolastiche.<br><br>Castorini: 1a-2a elementare<br>Lupetti: 3a-5a elementare<br>Esploratori: 1a-4a media<br>Pionieri: 1a-2a superiore<br>Rover: 3a+ superiore</p>">info_outline</i>
+            </label>
             </div>
             <div class="input-field col l4 s12">
               <input value="{{parent_name}}" name="parent_name" id="parent_name" type="text" {{validation_dic.parent_name|safe}}>
@@ -431,6 +432,8 @@ $(document).ready(function() {
       }
     }
   };
+
+  $('.tooltipped').tooltip();
 
 });
 
