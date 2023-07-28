@@ -6,7 +6,7 @@
 
 <pre>
 {% for user in data %}
-[{{user.0.id}}] {{user.0.username}} {{user.0.first_name}} {{user.0.last_name}}
+[{{user.0.id}}] {{user.0.username}} {{user.0.first_name}} {{user.0.last_name}} ({{user.2}})
 {% for uc in user.1 %}  [{{uc.id}}] {{uc.code}} {{uc.first_name}} {{uc.last_name}} ({{uc.branca}})
 {% endfor %} {% endfor %}
 </pre>

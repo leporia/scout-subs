@@ -745,8 +745,47 @@ def doctype(request):
         public_types = public_types.filter(custom_group=False)
         group_check = ""
 
+    docs = []
+    for doc in public_types:
+        doc_count = str(Document.objects.filter(document_type=doc).count())
+        ref_docs_archived = Document.objects.filter(document_type=doc, status="archive").count()
+        if ref_docs_archived > 0:
+            doc_count += "-" + str(ref_docs_archived)
+        if doc.max_instances != 0:
+            doc_count += "/" + str(doc.max_instances)
+
+        count = {
+            "diga": [
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive")).count(),
+            ],
+            "muta": [
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive")).count(),
+            ],
+            "reparto": [
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive")).count(),
+            ],
+            "posto": [
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive")).count(),
+            ],
+            "clan": [
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
+                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive")).count(),
+            ],
+            "doc_count": doc_count,
+        }
+        docs.append([doc, count])
+
     context = {
-        'docs': public_types,
+        'docs': docs,
         'public_check': public_check,
         'selfsign_check': selfsign_check,
         'hidden_check': hidden_check,
@@ -1021,11 +1060,18 @@ def docedit_wrapper(request, context):
     return render(request, 'server/doc_edit.html', context)
 
 @user_passes_test(isStaff)
-def doclist(request):
+def doclist(request, type_id):
     context = {}
 
     # group name and obj
     parent_groups = getGroups(request)
+
+    # check if type is selected
+    doc_type = None
+    if type_id != 0:
+        doc_type = DocumentType.objects.get(id=type_id)
+        if doc_type.group not in parent_groups:
+            return
 
     # create typezone
     zurich = pytz.timezone('Europe/Zurich')
@@ -1156,6 +1202,9 @@ def doclist(request):
     # filter documents based on group of staff and date range
     q_obj = Q(group__in=parent_groups) & Q(compilation_date__range=[newer, older])
 
+    if type_id != 0:
+        q_obj &= Q(document_type=doc_type)
+
     # filter documents
     if not hidden:
         q_obj &= ~Q(status="archive")
@@ -1187,7 +1236,7 @@ def doclist(request):
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj &= Q(user__groups__name__in=groups)
+            q_obj &= Q(usercode__branca__name__in=groups)
             chips_groups += groups
 
     # run query
@@ -1202,7 +1251,7 @@ def doclist(request):
     # get types and users for chips autocompletation
     if request.user.is_staff:
         auto_types = DocumentType.objects.filter(
-            Q(group_private=False) | Q(group=getGroups(request)[0]))
+            Q(group_private=False) | Q(group__in=getGroups(request)))
     else:
         auto_types = DocumentType.objects.filter(Q(group_private=False))
 
@@ -1228,11 +1277,12 @@ def doclist(request):
         'error_text': error_text,
         'settings': settings,
         'total_count': documents.count,
-        'diga_count': documents.filter(user__groups__name__contains="diga").count,
-        'muta_count': documents.filter(user__groups__name__contains="muta").count,
-        'reparto_count': documents.filter(user__groups__name__contains="reparto").count,
-        'posto_count': documents.filter(user__groups__name__contains="posto").count,
-        'clan_count': documents.filter(user__groups__name__contains="clan").count,
+        'diga_count': documents.filter(usercode__branca__name="diga").count,
+        'muta_count': documents.filter(usercode__branca__name="muta").count,
+        'reparto_count': documents.filter(usercode__branca__name="reparto").count,
+        'posto_count': documents.filter(usercode__branca__name="posto").count,
+        'clan_count': documents.filter(usercode__branca__name="clan").count,
+        'type_id': type_id,
     }
 
     # check if download multiple documents
@@ -1253,11 +1303,18 @@ def doclist(request):
     return render(request, 'server/doc_list.html', context)
 
 @user_passes_test(isStaff)
-def doclist_table(request):
+def doclist_table(request, type_id):
     context = {}
 
     # group name and obj
     parent_groups = getGroups(request)
+
+    # check if type is selected
+    doc_type = None
+    if type_id != 0:
+        doc_type = DocumentType.objects.get(id=type_id)
+        if doc_type.group not in parent_groups:
+            return
 
     # create typezone
     zurich = pytz.timezone('Europe/Zurich')
@@ -1321,6 +1378,12 @@ def doclist_table(request):
     # filter documents based on group of staff and date range
     q_obj = Q(group__in=parent_groups) & Q(compilation_date__range=[newer, older])
 
+    custom_keys = []
+    if type_id != 0:
+        q_obj &= Q(document_type=doc_type)
+        custom_keys = list(Keys.objects.filter(container=doc_type).values_list("key", flat=True))
+        custom_keys = list(enumerate(custom_keys))
+
     # filter documents
     if not hidden:
         q_obj &= ~Q(status="archive")
@@ -1352,7 +1415,7 @@ def doclist_table(request):
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj &= Q(user__groups__name__in=groups)
+            q_obj &= Q(usercode__branca__name__in=groups)
             chips_groups += groups
 
     # run query
@@ -1385,6 +1448,8 @@ def doclist_table(request):
         'error': error,
         'error_text': error_text,
         'settings': settings,
+        'type_id': type_id,
+        'custom_keys': custom_keys,
     }
 
     return render(request, 'server/doc_list_table.html', context)
@@ -1557,7 +1622,7 @@ def doclist_readonly(request):
 
     if len(groups) > 0:
         if groups[0] != "":
-            q_obj &= Q(user__groups__name__in=groups)
+            q_obj &= Q(usercode__branca__name__in=groups)
             chips_groups += groups
 
     # run query
@@ -1595,11 +1660,11 @@ def doclist_readonly(request):
         'error_text': error_text,
         'settings': settings,
         'total_count': documents.count,
-        'diga_count': documents.filter(user__groups__name__contains="diga").count,
-        'muta_count': documents.filter(user__groups__name__contains="muta").count,
-        'reparto_count': documents.filter(user__groups__name__contains="reparto").count,
-        'posto_count': documents.filter(user__groups__name__contains="posto").count,
-        'clan_count': documents.filter(user__groups__name__contains="clan").count,
+        'diga_count': documents.filter(usercode__branca__name="diga").count,
+        'muta_count': documents.filter(usercode__branca__name="muta").count,
+        'reparto_count': documents.filter(usercode__branca__name="reparto").count,
+        'posto_count': documents.filter(usercode__branca__name="posto").count,
+        'clan_count': documents.filter(usercode__branca__name="clan").count,
     }
 
     # check if download multiple documents
@@ -1810,7 +1875,7 @@ def debug_uc(request):
     data = []
     users = User.objects.all()
     for u in users:
-        data.append([u, UserCode.objects.filter(user=u)])
+        data.append([u, UserCode.objects.filter(user=u), list(u.groups.all().values_list("name", flat=True))])
 
     context = {
         "data": data,

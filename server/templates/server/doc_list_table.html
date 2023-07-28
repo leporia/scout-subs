@@ -4,6 +4,7 @@
 
 {% block breadcrumb %}
   <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a href="{% url 'doctype'%}" class="breadcrumb hide-on-med-and-down">Tipi</a>
   <a class="breadcrumb hide-on-med-and-down">Documenti</a>
 {% endblock %}
 {% block toolbar %}
@@ -20,7 +21,7 @@
 
 {% block content %}
 {% load app_filter %}
-<form id="selection" action="{% url 'doclist-table' %}" method="post">
+<form id="selection" action="{% url 'doclist-table' type_id=type_id %}" method="post">
 {% csrf_token %}
 <div id="modal2" class="modal modal-fixed-footer">
   <div class="modal-content">
@@ -64,7 +65,7 @@
       </div>
     </div>
     <div class = "row">
-      <div class="col s12">
+      <div class="col s12" {% if type_id != 0 %} hidden {% endif %}>
         <div id="chips_type" class="chips chips-placeholder chips-autocomplete"></div>
       </div>
       <div class="col s12">
@@ -170,6 +171,9 @@
           allergy: "{{doc.medical_data.allergy}}",
           drugs: "{{doc.medical_data.drugs}}",
           misc: "{{doc.medical_data.misc}}",
+          {% for key in doc|doc_key %}
+            custom_key_{{forloop.counter0}}: "{{key.value}}",
+          {% endfor %}
         },
       {% endfor %}
   ];
@@ -179,11 +183,11 @@
   var col_categories = [
     {field: "base", name: "Informazioni base", cols: 
       [
+        {title: "Nome", field: "name", frozen: true},
+        {title: "Cognome", field: "last_name", frozen: true},
         {title: "Stato", field: "status", formatter: iconFormatter},
         {title: "Tipo", field: "type"},
         {title: "Codice", field: "code"},
-        {title: "Nome", field: "name"},
-        {title: "Cognome", field: "last_name"},
         {title: "Capo", field: "capo", formatter:"tickCross"},
         {title: "Data compilazione", field: "compilation_date"},
         {title: "Branca", field: "branca"},
@@ -227,6 +231,15 @@
         {title: "Info particolari", field: "misc", visible: false},
       ]
     },
+    {% if custom_keys|length > 0 %}
+    {field: "custom", name: "Parametri personalizzati", cols: 
+      [
+        {% for key in custom_keys %}
+          {title: "{{key.1}}", field: "custom_key_{{key.0}}", visible: true, width: "7%"},
+        {% endfor %}
+      ]
+    },
+    {% endif %}
   ]
 
   var docTypes = {};
@@ -261,8 +274,9 @@
   var table = new Tabulator("#example-table", {
       movableColumns: true,
       layout:"fitDataFill",
-      responsiveLayout: "hide",
+      {% if type_id == 0 %}
       groupBy: "type",
+      {% endif %}
       data:tabledata,
       columns:columns,
       groupHeader:function(value, count, data, group){

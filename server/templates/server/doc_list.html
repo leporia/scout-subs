@@ -4,6 +4,7 @@
 
 {% block breadcrumb %}
   <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
+  <a href="{% url 'doctype'%}" class="breadcrumb hide-on-med-and-down">Tipi</a>
   <a class="breadcrumb hide-on-med-and-down">Documenti</a>
 {% endblock %}
 {% block toolbar %}
@@ -62,7 +63,7 @@
   </div>
 </div>
 
-<form id="selection" action="{% url 'doclist' %}" method="post">
+<form id="selection" action="{% url 'doclist' type_id=type_id %}" method="post">
 {% csrf_token %}
 <div id="modal1" class="modal modal-fixed-footer">
   <div class="modal-content">
@@ -106,7 +107,7 @@
       </div>
     </div>
     <div class = "row">
-      <div class="col s12">
+      <div class="col s12" {% if type_id != 0 %} hidden {% endif %}>
         <div id="chips_type" class="chips chips-placeholder chips-autocomplete"></div>
       </div>
       <div class="col s12">

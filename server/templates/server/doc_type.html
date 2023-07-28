@@ -4,7 +4,7 @@
 
 {% block breadcrumb %}
   <a href="{% url 'server'%}" class="breadcrumb hide-on-med-and-down">Admin</a>
-  <a class="breadcrumb hide-on-med-and-down">Tipo Doc</a>
+  <a class="breadcrumb hide-on-med-and-down">Tipi</a>
 {% endblock %}
 {% block toolbar %}
   <div class="nav-wrapper {{color}}">
@@ -119,7 +119,7 @@
 
 <input type="hidden" name="action" id="action">
 <ul class="collapsible">
-    {% for doctype in docs %}
+    {% for doctype, dat in docs %}
         <li>
         <div class="collapsible-header list">
             <label>
@@ -142,15 +142,17 @@
                 <i class="material-icons">lock</i>
             {% endif %}
             {{doctype.name}}
-            <span class="new badge {{color}}" data-badge-caption="">{{doctype|doc_count}}</span>
+            <span class="new badge {{color}}" data-badge-caption="">{{dat.doc_count}}</span>
         </div>
         <div class="collapsible-body"><span>
           <div class="hide-on-med-and-down">
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('p{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.id}}')"><i class="material-icons left">edit</i>Modifica tipo</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('p{{doctype.id}}')"><i class="material-icons left">file_download</i>Scarica CSV</a>
             {% if doctype.medical_data %}
-            <a class="waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
+            <a class="waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">download_for_offline</i>Scarica CSV (con dati medici)</a>
             {% endif %}
+            <a class="waves-effect waves-light btn {{color}}" href={% url "doclist" type_id=doctype.id %}><i class="material-icons left">description</i>Documenti</a>
+            <a class="waves-effect waves-light btn {{color}}" href={% url "doclist-table" type_id=doctype.id %}><i class="material-icons left">document_scanner</i>Documenti formato tabella (BETA)</a>
           </div>
           <div style="margin-bottom: 0px;" class="hide-on-large-only row">
             <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('e{{doctype.id}}')"><i class="material-icons left">edit</i> Modifica tipo</a>
@@ -160,10 +162,15 @@
             {% if doctype.medical_data %}
             <br>
             <br>
-            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">file_download</i> Scarica CSV (con dati medici)</a>
+            <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">download_for_offline</i> Scarica CSV (con dati medici)</a>
+            <br>
+            <br>
+            <a class="col s12 waves-effect waves-light btn {{color}}" href={% url "doclist" type_id=doctype.id %}><i class="material-icons left">description</i>Documenti</a>
+            <br>
+            <br>
+            <a class="col s12 waves-effect waves-light btn {{color}}" href={% url "doclist-table" type_id=doctype.id %}><i class="material-icons left">document_scanner</i>Documenti formato tabella (BETA)</a>
             {% endif %}
           </div>
-          <br>
           <br>
           <ul class="collection">
           {% if not doctype.group_private %}
@@ -187,6 +194,103 @@
             </li>
           {% endif %}
           </ul>
+          <br>
+
+          <div class="hide-on-med-and-down">
+          <div class="row">
+          <div class="col s6">
+          <table class="responsive-table striped">
+            <tbody>
+              <tr>
+                <td><b>Riassuntivo</b></td>
+                <td><b>Partecipanti</b></td>
+                <td><b>Capi</b></td>
+                <td><b>Totale</b></td>
+              </tr>
+              <tr>
+                <td><b>diga</b></td>
+                <td>{{dat.diga.0}}</td>
+                <td>{{dat.diga.1}}</td>
+                <td>{{dat.diga.2}}</td>
+              </tr>
+              <tr>
+                <td><b>muta</b></td>
+                <td>{{dat.muta.0}}</td>
+                <td>{{dat.muta.1}}</td>
+                <td>{{dat.muta.2}}</td>
+              </tr>
+              <tr>
+                <td><b>reparto</b></td>
+                <td>{{dat.reparto.0}}</td>
+                <td>{{dat.reparto.1}}</td>
+                <td>{{dat.reparto.2}}</td>
+              </tr>
+              <tr>
+                <td><b>posto</b></td>
+                <td>{{dat.posto.0}}</td>
+                <td>{{dat.posto.1}}</td>
+                <td>{{dat.posto.2}}</td>
+              </tr>
+              <tr>
+                <td><b>clan</b></td>
+                <td>{{dat.clan.0}}</td>
+                <td>{{dat.clan.1}}</td>
+                <td>{{dat.clan.2}}</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          </div>
+          </div>
+
+          <div class="hide-on-large-only row">
+          <div class="row">
+          <div class="col s12">
+          <table class="responsive-table striped">
+            <tbody>
+              <tr>
+                <td><b>Riassuntivo</b></td>
+                <td><b>Partecipanti</b></td>
+                <td><b>Capi</b></td>
+                <td><b>Totale</b></td>
+              </tr>
+              <tr>
+                <td><b>diga</b></td>
+                <td>{{dat.diga.0}}</td>
+                <td>{{dat.diga.1}}</td>
+                <td>{{dat.diga.2}}</td>
+              </tr>
+              <tr>
+                <td><b>muta</b></td>
+                <td>{{dat.muta.0}}</td>
+                <td>{{dat.muta.1}}</td>
+                <td>{{dat.muta.2}}</td>
+              </tr>
+              <tr>
+                <td><b>reparto</b></td>
+                <td>{{dat.reparto.0}}</td>
+                <td>{{dat.reparto.1}}</td>
+                <td>{{dat.reparto.2}}</td>
+              </tr>
+              <tr>
+                <td><b>posto</b></td>
+                <td>{{dat.posto.0}}</td>
+                <td>{{dat.posto.1}}</td>
+                <td>{{dat.posto.2}}</td>
+              </tr>
+              <tr>
+                <td><b>clan</b></td>
+                <td>{{dat.clan.0}}</td>
+                <td>{{dat.clan.1}}</td>
+                <td>{{dat.clan.2}}</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          </div>
+          </div>
+
+          <br>
           {% if doctype.custom_data or doctype.custom_message %}
           <ul class="collapsible">
           {% if doctype.custom_data %}
