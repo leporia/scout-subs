@@ -34,6 +34,27 @@
         {{user.first_name}} {{user.last_name}}
       </div>
       <div class="collapsible-body"><span>
+        <div id="modal{{user.id}}" class="modal">
+          <div class="modal-content">
+            <h4>Attenzione</h4>
+            <p>
+              Sei sicuro di volerlere riumuovere la persona {{user.first_name}} {{user.last_name}} dalla branca {{user.branca}}?<br>
+              Una volta rimossa dovrà essere riaggiunta dalla persona stessa o con un codice di trasferimento.
+              <br>
+              I dati dell'utente non verranno rimossi come anche i documenti.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <a style="color:red" href="#!" class="modal-close waves-effect waves-green btn-flat">Annulla</a>
+            <a onclick="send('d{{user.id}}')" class="modal-close waves-effect waves-green btn-flat">Rimuovi</a>
+          </div>
+        </div>
+        <div class="hide-on-med-and-down">
+          <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Rimuovi utente dalla branca</a>
+        </div>
+        <div style="margin-bottom: 0px;" class="hide-on-large-only row">
+          <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Riumuovi utente dalla branca</a>
+        </div>
         <ul class="collection">
           <li class="collection-item">
             <i class="material-icons left">confirmation_number</i>U{{user.code}}

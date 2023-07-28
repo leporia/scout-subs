@@ -375,8 +375,19 @@ def ulist(request):
     groups = getGroups(request)
 
     if request.method == "POST":
+        # request to remove uc from branca
+        if request.POST["action"][0] == 'd':
+            uc = UserCode.objects.get(id=request.POST["action"][1:])
+
+            # check if user has permission to remove usercode
+            if uc.branca not in groups:
+                return
+
+            uc.branca = None
+            uc.save()
+
         # request to download document
-        if request.POST["action"][0] == 'f':
+        elif request.POST["action"][0] == 'f':
             document = Document.objects.get(id=request.POST["action"][1:])
             # check if user has permission to view document
             if document.group == groups[0]:
