@@ -46,10 +46,12 @@
       {% if user.is_staff %}
       <div class="card-action">
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'ulist' %}">Utenti</a>
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'ulist-table' %}">Utenti (Tabella BETA)</a>
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'uapprove' %}">Trasferta utente</a>
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'request' %}">Richiedi dati</a>
+          <a style="width: 32.4%; margin-right: 1.4%;" class="col s4 waves-effect waves-light btn {{color}}" href="{% url 'ulist' %}">Utenti</a>
+          <a style="width: 32.4%; margin-right: 1.4%;" class="col s4 waves-effect waves-light btn {{color}}" href="{% url 'uapprove' %}">Trasferta utente</a>
+          <a style="width: 32.4%;" class="col s4 waves-effect waves-light btn {{color}}" href="{% url 'request' %}">Richiedi dati</a>
+          <br>
+          <br>
+          <a sytle="width: 32.4%;" class="col s4 waves-effect waves-light btn {{color}}" href="{% url 'ulist-table' %}">Utenti (Tabella BETA)</a>
         </div>
 
         <div class="hide-on-large-only">
@@ -87,8 +89,8 @@
       </div>
       <div class="card-action">
         <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'doctype' %}">Documenti</a>
-          <a class="waves-effect waves-light btn {{color}}" href="{% url 'docapprove' %}">Approva documento</a>
+          <a style="width: 49.5%; margin-right: 1%;" class="col s6 waves-effect waves-light btn {{color}}" href="{% url 'doctype' %}">Documenti</a>
+          <a style="width: 49.5%;" class="col s6 waves-effect waves-light btn {{color}}" href="{% url 'docapprove' %}">Approva documento</a>
         </div>
 
         <div class="hide-on-large-only">
