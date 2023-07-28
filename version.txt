@@ -1,2 +1,2 @@
 version=0.6
-rev=41
+rev=42

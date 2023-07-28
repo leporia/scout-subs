@@ -550,10 +550,10 @@ def doctype(request):
                     capo = "si"
 
                 write_data = [
-                    doc.user.first_name,
-                    doc.user.last_name,
-                    doc.user.email,
-                    doc.user.groups.values_list('name', flat=True)[0],
+                    doc.usercode.first_name,
+                    doc.usercode.last_name,
+                    doc.usercode.user.email,
+                    doc.usercode.branca.name,
                     capo,
                     doc.status,
                     doc.compilation_date,
@@ -620,10 +620,10 @@ def doctype(request):
                     capo = "si"
 
                 write_data = [
-                        doc.user.first_name,
-                        doc.user.last_name,
-                        doc.user.email,
-                        doc.user.groups.values_list('name', flat=True)[0],
+                        doc.usercode.first_name,
+                        doc.usercode.last_name,
+                        doc.usercode.user.email,
+                        doc.usercode.branca,
                         capo,
                         doc.status,
                         doc.compilation_date,
@@ -1135,14 +1135,14 @@ def doclist(request, type_id):
                 # build with template and render
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(
-                    container=document), document.personal_data, document.medical_data, document.user.groups.values_list('name', flat=True)[0]]
+                    container=document), document.personal_data, document.medical_data]
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
                 result.seek(0)
-                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+                return FileResponse(result, as_attachment=True, filename=document.usercode.first_name+"_"+document.usercode.last_name+"_"+document.document_type.name+".pdf")
 
         # get selected documents and check if user has permission to view
         selected = []
@@ -1231,6 +1231,7 @@ def doclist(request, type_id):
 
     if len(owner) > 0:
         if owner[0] != "":
+            # TODO fix me, this probably doesn't work anymore
             q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
             chips_owner += owner
 
@@ -1287,8 +1288,7 @@ def doclist(request, type_id):
 
     # check if download multiple documents
     if request.method == "POST":
-        if "status" not in request.session:
-            request.session['status'] = True
+        request.session['status'] = True
 
         if request.POST["action"] == "download" and len(selected) > 0 and request.session['status']:
             # save data in session
@@ -1410,6 +1410,7 @@ def doclist_table(request, type_id):
 
     if len(owner) > 0:
         if owner[0] != "":
+            # TODO fix me, this probably doesn't work anymore
             q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
             chips_owner += owner
 
@@ -1545,14 +1546,14 @@ def doclist_readonly(request):
                 # build with template and render
                 template = get_template('server/download_doc.html')
                 doc = [document, KeyVal.objects.filter(
-                    container=document), document.personal_data, document.medical_data, document.user.groups.values_list('name', flat=True)[0]]
+                    container=document), document.personal_data, document.medical_data]
                 context = {'doc': doc, 'vac': vac_file,
                            'health': health_file, 'sign_doc_file': sign_doc_file}
                 html = template.render(context)
                 pdf = pdfkit.from_string(html, False)
                 result = BytesIO(pdf)
                 result.seek(0)
-                return FileResponse(result, as_attachment=True, filename=document.user.username+"_"+document.document_type.name+".pdf")
+                return FileResponse(result, as_attachment=True, filename=document.usercode.first_name+"_"+document.usercode.last_name+"_"+document.document_type.name+".pdf")
 
         # get selected documents and check if user has permission to view
         selected = []
@@ -1617,6 +1618,7 @@ def doclist_readonly(request):
 
     if len(owner) > 0:
         if owner[0] != "":
+            # TODO: fixme this probably doesn't work
             q_obj &= Q(user__username__in=list(map(lambda x: x.split("(")[0][:-1], owner)))
             chips_owner += owner
 
@@ -1724,14 +1726,14 @@ def zip_documents(docs, session_key):
 
         template = get_template('server/download_doc.html')
         doc = [i, KeyVal.objects.filter(
-            container=i), i.personal_data, i.medical_data, i.user.groups.values_list('name', flat=True)[0]]
+            container=i), i.personal_data, i.medical_data]
         context = {'doc': doc, 'vac': vac_file,
                     'health': health_file, 'sign_doc_file': sign_doc_file}
         # render context
         html = template.render(context)
         # render pdf using wkhtmltopdf
         pdf = pdfkit.from_string(html, False)
-        filename = i.user.username+"_"+i.document_type.name+".pdf"
+        filename = i.usercode.first_name+"_"+i.usercode.last_name+"_"+i.document_type.name+".pdf"
         # append file
         files.append((filename, pdf))
         session['progress'] += 1
@@ -1839,7 +1841,6 @@ def docpreview(request):
         # get document
         document = Document.objects.filter(code=code)[0]
         doc_group = document.group
-        parent_group = document.user.groups.values_list('name', flat=True)[0]
 
         # user has not permission to view document
         if doc_group not in groups:
@@ -1863,7 +1864,7 @@ def docpreview(request):
 
         # prepare context
         doc = [document, KeyVal.objects.filter(
-            container=document), document.personal_data, document.medical_data, parent_group]
+            container=document), document.personal_data, document.medical_data]
         context = {'doc': doc, 'vac': vac_file,
                    'health': health_file, 'sign_doc_file': sign_doc_file}
 
@@ -2043,7 +2044,7 @@ def media_request(request, id=0, t="", flag=""):
                 return
         else:
             # is normal user
-            if doc.user != request.user and not group_view:
+            if doc.usercode.user != request.user and not group_view:
                 return
 
         if t == "health_care_certificate":
