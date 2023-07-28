@@ -1815,18 +1815,11 @@ def data_request(request):
         if "request" not in request.POST.keys():
             context["error"] = "Selezionare una richesta"
         elif request.POST["request"] == "email_all":
-            perm = Permission.objects.get(codename="approved")
-            users_email = User.objects.filter(groups=parent_group, user_permissions=perm).values_list("email", flat=True)
-            data = ", ".join(users_email)
-            context["data"] = data
-        elif request.POST["request"] == "email_non_staff":
-            perm = Permission.objects.get(codename="approved")
-            users_email = User.objects.filter(groups=parent_group, user_permissions=perm).exclude(groups__name="capi").values_list("email", flat=True)
-            data = ", ".join(users_email)
+            users_email = UserCode.objects.filter(branca=parent_group).values_list("user__email", flat=True)
+            data = "; ".join(users_email)
             context["data"] = data
         elif request.POST["request"] == "data_user":
-            perm = Permission.objects.get(codename="approved")
-            users = User.objects.filter(groups=parent_group, user_permissions=perm)
+            users = UserCode.objects.filter(branca=parent_group)
 
             # get time for filename
             current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
@@ -1839,8 +1832,7 @@ def data_request(request):
             # csv header
             writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Indirizzo", "NAP", "Luogo", "Nazionalita", "Nazionalità secondo G+S", "Data di nascita", "numero di telefono Altro", "numero di telefono Cellulare", "Scuola", "Classe scolastica", "Numero AVS"])
 
-            for user in users:
-                usercode = UserCode.objects.filter(user=user)[0]
+            for usercode in users:
                 nationality = usercode.nationality
 
                 nat_gs = ""
@@ -1853,9 +1845,9 @@ def data_request(request):
 
                 writer.writerow([
                     "U"+str(usercode.code),
-                    user.first_name,
-                    user.last_name,
-                    user.email,
+                    usercode.first_name,
+                    usercode.last_name,
+                    usercode.user.email,
                     usercode.parent_name,
                     usercode.via,
                     usercode.cap,
@@ -1873,8 +1865,7 @@ def data_request(request):
             return response
 
         elif request.POST["request"] == "data_user_medic":
-            perm = Permission.objects.get(codename="approved")
-            users = User.objects.filter(groups=parent_group, user_permissions=perm)
+            users = UserCode.objects.filter(branca=parent_group)
 
             # get time for filename
             current_time = datetime.strftime(datetime.now(), "%H_%M__%d_%m_%y")
@@ -1887,8 +1878,7 @@ def data_request(request):
             # csv header
             writer.writerow(["Codice", "Nome", "Cognome", "Email", "Nome dei genitori", "Indirizzo", "NAP", "Luogo", "Nazionalita", "Nazionalità secondo G+S", "Data di nascita", "numero di telefono Altro", "numero di telefono Cellulare", "Scuola", "Classe scolastica", "Numero AVS", "Contatto d'emergenza", "Parentela del contatto", "Telefono d'emergenza", "Cellulare emergenza", "Indirizzo completo emergenza", "Cassa malati", "Ass. Infortuni", "Ass. RC", "Socio REGA", "Nome del medico", "Telefono medico", "Indirizzo medico", "Malattie", "Vacinazioni", "Data antitetanica", "Allergie", "Assume medicamenti", "Medicamenti", "Informazioni particolari", "Informazioni"])
 
-            for user in users:
-                usercode = UserCode.objects.filter(user=user)[0]
+            for usercode in users:
                 medic = usercode.medic
                 nationality = usercode.nationality
 
@@ -1902,9 +1892,9 @@ def data_request(request):
 
                 writer.writerow([
                     "U"+str(usercode.code),
-                    user.first_name,
-                    user.last_name,
-                    user.email,
+                    usercode.first_name,
+                    usercode.last_name,
+                    usercode.user.email,
                     usercode.parent_name,
                     usercode.via,
                     usercode.cap,
