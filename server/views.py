@@ -1244,7 +1244,7 @@ def doclist(request, type_id):
             chips_groups += groups
 
     # run query
-    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
+    documents = Document.objects.filter(q_obj).select_related("usercode", "personal_data", "medical_data", "document_type", "user")
 
     users = documents.values("usercode__first_name", "usercode__last_name")
 
@@ -1423,7 +1423,7 @@ def doclist_table(request, type_id):
             chips_groups += groups
 
     # run query
-    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
+    documents = Document.objects.filter(q_obj).select_related("usercode", "personal_data", "medical_data", "document_type", "user")
 
     users = documents.values("usercode__first_name", "usercode__last_name")
 
@@ -1631,7 +1631,7 @@ def doclist_readonly(request):
             chips_groups += groups
 
     # run query
-    documents = Document.objects.filter(q_obj).select_related("personal_data", "medical_data", "document_type", "user")
+    documents = Document.objects.filter(q_obj).select_related("usercode", "personal_data", "medical_data", "document_type", "user")
 
     users = documents.values("usercode__first_name", "usercode__last_name")
 
