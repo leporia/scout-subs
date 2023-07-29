@@ -1,11 +1,13 @@
 import re
+from django.forms import IntegerField
 from django.shortcuts import render
 from client.models import UserCode, Keys, DocumentType, Document, KeyVal
 from django.conf import settings
 from django.core.mail import send_mail
 from client.models import GroupSettings, UserCode, Keys, DocumentType, Document, KeyVal
 from django.contrib.auth.models import Group, Permission, User
-from django.db.models import Q
+from django.db.models import Q, Count, Case, When, Exists, OuterRef, Subquery, Value
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.db.models.deletion import ProtectedError
 from django.template.loader import get_template
@@ -745,6 +747,7 @@ def doctype(request):
         public_types = public_types.filter(custom_group=False)
         group_check = ""
 
+    users_capi = User.objects.filter(groups__name__contains="capi")
     docs = []
     for doc in public_types:
         doc_count = str(Document.objects.filter(document_type=doc).count())
@@ -754,34 +757,34 @@ def doctype(request):
         if doc.max_instances != 0:
             doc_count += "/" + str(doc.max_instances)
 
+        doc_obj = Document.objects.filter(document_type=doc).exclude(status="archive").select_related(
+            "usercode", "usercode__branca__name", "usercode__user__groups__name"
+        )
+
+        grouping = doc_obj.values("usercode__branca__name").annotate(
+            capi=Count("usercode__branca__name", filter=Q(usercode__user__in=users_capi)),
+            total=Count("usercode__branca__name")
+        )
+
+        grouping = list(grouping)
+
         count = {
-            "diga": [
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="diga") & ~Q(status="archive")).count(),
-            ],
-            "muta": [
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="muta") & ~Q(status="archive")).count(),
-            ],
-            "reparto": [
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="reparto") & ~Q(status="archive")).count(),
-            ],
-            "posto": [
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="posto") & ~Q(status="archive")).count(),
-            ],
-            "clan": [
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive") & ~Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive") & Q(usercode__user__groups__name__contains="capi")).count(),
-                Document.objects.filter(Q(document_type=doc) & Q(usercode__branca__name="clan") & ~Q(status="archive")).count(),
-            ],
+            "diga": [0, 0, 0],
+            "muta": [0, 0, 0],
+            "reparto": [0, 0, 0],
+            "posto": [0, 0, 0],
+            "clan": [0, 0, 0],
+            "total": [0, 0, 0],
             "doc_count": doc_count,
         }
+
+
+        for branca in grouping:
+            count[branca["usercode__branca__name"]] = [branca["total"]-branca["capi"], branca["capi"], branca["total"]]
+            count["total"][0] += count[branca["usercode__branca__name"]][0]
+            count["total"][1] += count[branca["usercode__branca__name"]][1]
+            count["total"][2] += count[branca["usercode__branca__name"]][2]
+
         docs.append([doc, count])
 
     context = {
