@@ -1,4 +1,5 @@
 import datetime
+from django import forms
 from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
@@ -43,11 +44,25 @@ MIDATA_ENABLED = settings.OAUTH_ENABLED
 
 # override to remove help text
 class RegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
     def __init__(self, *args, **kwargs):
         super(UserCreationForm, self).__init__(*args, **kwargs)
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
+
+    def save(self, commit=True):
+        user = super().save()
+        user.set_password(self.cleaned_data["password1"])
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
 
 class AuthForm(AuthenticationForm):
     error_messages = {
