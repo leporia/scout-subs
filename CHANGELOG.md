@@ -1,3 +1,13 @@
+# 0.7 (30 jul 2023)
+- Fix lazyload not working in Safari (iOS)
+- Make archiving documents permanent
+- Add BETA tables view for users and documents
+- Users can manage multiple physical persons (Usercodes)
+- Document list now only shows a single type, it can be accessed from the type
+  list
+- New compact count of documents by types diveded by branca
+- Other bug fixes
+
 # 0.6 (7 aug 2022)
 - Merge the two pages for approving documents (bulk and uploading signature)
 - Add QR code and barcodes to printed pdf approval document
