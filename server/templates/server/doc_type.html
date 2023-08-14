@@ -163,13 +163,13 @@
             <br>
             <br>
             <a class="col s12 waves-effect waves-light btn {{color}}" onclick="send('m{{doctype.id}}')"><i class="material-icons left">download_for_offline</i> Scarica CSV (con dati medici)</a>
+            {% endif %}
             <br>
             <br>
             <a class="col s12 waves-effect waves-light btn {{color}}" href={% url "doclist" type_id=doctype.id %}><i class="material-icons left">description</i>Documenti</a>
             <br>
             <br>
             <a class="col s12 waves-effect waves-light btn {{color}}" href={% url "doclist-table" type_id=doctype.id %}><i class="material-icons left">document_scanner</i>Documenti formato tabella (BETA)</a>
-            {% endif %}
           </div>
           <br>
           <ul class="collection">
