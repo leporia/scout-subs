@@ -112,11 +112,11 @@ def index(request):
         required_medic_fields = ["emer_name", "emer_relative", "cell_phone", "address", "health_care", "injuries", "rc", "medic_name", "medic_phone", "medic_address", "sickness", "vaccine", "tetanus_date"]
         data = [uc.__dict__[key] for key in required_fields]
         data += [uc.medic.__dict__[key] for key in required_medic_fields]
-        invalid_flag = ("" in data) or (None in data) or (dt.date(1970, 1, 1) in data)
+        invalid_flag = ("" in data) or (None in data) or (dt.date(1970, 1, 1) in data) or uc.branca == None
         no_attachment_flag = (not uc.medic.vac_certificate) or (not uc.medic.health_care_certificate)
         invalid_flag = invalid_flag or no_attachment_flag
         all_invalid = all_invalid and invalid_flag
-        docs.append([uc, documents, color, invalid_flag, no_attachment_flag])
+        docs.append([uc, documents, color, invalid_flag, no_attachment_flag, uc.branca == None])
     # show only docs of the user and non archived
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
