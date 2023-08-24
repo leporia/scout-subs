@@ -19,6 +19,10 @@
   </div>
 {% endblock %}
 
+{% block script_import %}
+<script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.1/build/global/luxon.min.js "></script>
+{% endblock %}
+
 {% block content %}
 {% load app_filter %}
 <form id="selection" action="{% url 'doclist-table' type_id=type_id %}" method="post">
@@ -136,12 +140,12 @@
           {% endif %}
           type: "{{doc.document_type.name}}",
           code: {% if doc.status == "ok" or doc.status == "archive" %} "{{doc.code}}" {% else %} "???" {% endif %},
-          compilation_date: "{{doc.compilation_date}}",
+          compilation_date: "{{doc.compilation_date|date:"d/m/Y"}}",
           capo: {% if "capi" in doc.usercode.user|user_groups %}true{% else %}false{% endif %},
           name: "{{doc.usercode.first_name}}",
           last_name: "{{doc.usercode.last_name}}",
           email: "{{doc.personal_data.email}}",
-          birth_date: "{{doc.personal_data.born_date}}",
+          birth_date: "{{doc.personal_data.born_date|date:"d/m/Y"}}",
           branca: "{{ doc.usercode.branca }}",
           parent_name: "{{doc.personal_data.parent_name}}",
           avs_number: "{{doc.personal_data.avs_number}}",
@@ -189,10 +193,10 @@
         {title: "Tipo", field: "type"},
         {title: "Codice", field: "code"},
         {title: "Capo", field: "capo", formatter:"tickCross"},
-        {title: "Data compilazione", field: "compilation_date"},
+        {title: "Data compilazione", field: "compilation_date", sorter:"date"},
         {title: "Branca", field: "branca"},
         {title: "Email", field: "email", visible: false},
-        {title: "Data di nascita", field: "birth_date", visible: false},
+        {title: "Data di nascita", field: "birth_date", visible: false, sorter:"date"},
       ]
     },
     {field: "personal", name: "Informazioni personali", cols: 

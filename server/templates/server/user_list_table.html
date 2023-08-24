@@ -30,6 +30,10 @@
 <div id="example-table"></div>
 {% endblock %}
 
+{% block script_import %}
+<script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.1/build/global/luxon.min.js "></script>
+{% endblock %}
+
 {% block script %}
   $(document).ready(function(){
       $('#modal1').modal();
@@ -43,7 +47,7 @@
           email: "{{user.user.email}}",
           name: "{{user.first_name}}",
           last_name: "{{user.last_name}}",
-          birth_date: "{{user.born_date}}",
+          birth_date: "{{user.born_date|date:"d/m/Y"}}",
           branca: "{{ user.branca }}",
           parent_name: "{{user.parent_name}}",
           avs_number: "{{user.avs_number}}",
@@ -87,7 +91,7 @@
         {title: "Capo", field: "capo", formatter:"tickCross"},
         {title: "Email", field: "email"},
         {title: "Codice", field: "ucode"},
-        {title: "Data di nascita", field: "birth_date"},
+        {title: "Data di nascita", field: "birth_date", sorter:"date"},
         {title: "Branca", field: "branca"},
       ]
     },
