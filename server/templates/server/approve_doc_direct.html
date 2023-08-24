@@ -18,7 +18,7 @@
       {% if success %}
         <div class="card-content">
           <h5>{{doc.document_type.name}}</h5>
-          <h6>{{doc.user.first_name}} {{doc.user.last_name}} ({{doc.user.username}})</h6>
+          <h6>{{doc.usercode.first_name}} {{doc.usercode.last_name}} ({{doc.usercode.branca}})</h6>
           <h6>{{doc.code}}</h6>
           <br>
           <div class="row">
@@ -48,7 +48,7 @@
         <div class="card-content">
           <div class="row">
             <h5>{{doc.document_type.name}}</h5>
-            <h6>{{doc.user.first_name}} {{doc.user.last_name}} ({{doc.user.username}})</h6>
+            <h6>{{doc.usercode.first_name}} {{doc.usercode.last_name}} ({{doc.usercode.branca}})</h6>
             <h6>{{doc.code}}</h6>
           </div>
           <div class="hide-on-large-only">
