@@ -1,2 +1,2 @@
 version=0.7
-rev=6
+rev=7
