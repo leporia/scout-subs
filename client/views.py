@@ -93,6 +93,7 @@ def index(request):
 
     # divide the docs for each uc
     all_invalid = True
+    no_docs = True
     docs = []
     for uc in ucs:
         documents = Document.objects.filter(
@@ -117,14 +118,17 @@ def index(request):
         invalid_flag = invalid_flag or no_attachment_flag
         all_invalid = all_invalid and invalid_flag
         docs.append([uc, documents, color, invalid_flag, no_attachment_flag, uc.branca == None])
+        no_docs = no_docs and (len(documents) == 0)
     # show only docs of the user and non archived
 
     vac_file = ["/server/media/", "/vac_certificate/doc"]
     health_file = ["/server/media/", "/health_care_certificate/doc"]
     sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
+    print(docs)
     context = {
         "docs": docs,
+        "no_docs": no_docs,
         "all_invalid": all_invalid,
         "vac_file": vac_file,
         "health_file": health_file,

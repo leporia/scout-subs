@@ -469,10 +469,9 @@
 
 {% block script %}
 $(document).ready(function(){
-    {% if user.is_staff or perms.client.approved %}
       $('.collapsible').collapsible();
       $('.modal').modal();
-      {% if docs|length == 0 and not all_invalid %}
+      {% if no_docs and not all_invalid %}
         $('.tap-target').tapTarget();
         $('.tap-target').tapTarget('open');
       {% endif %}
@@ -486,12 +485,11 @@ $(document).ready(function(){
       if (docid != undefined) {
         $('#modal_approve'+docid).modal('open');
       }
-    {% endif %}
     var lazyLoadInstance = new LazyLoad({
       // Your custom settings go here
     });
 });
-{% if user.is_staff or perms.client.approved %}
+
   {% if not all_invalid %}
   $('*').click(function(event) {
       if (this === event.target) {
@@ -499,12 +497,12 @@ $(document).ready(function(){
       }
   });
   {% endif %}
-  function send(id) {
-    var form = document.getElementById('form')
-    var action = document.getElementById('action')
-    action.setAttribute('value', id);
-    history.pushState(null, null, '/');
-    form.submit()
-  }
-{% endif %}
+
+function send(id) {
+  var form = document.getElementById('form')
+  var action = document.getElementById('action')
+  action.setAttribute('value', id);
+  history.pushState(null, null, '/');
+  form.submit()
+}
 {% endblock %}
