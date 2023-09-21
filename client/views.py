@@ -125,7 +125,6 @@ def index(request):
     health_file = ["/server/media/", "/health_care_certificate/doc"]
     sign_doc_file = ["/server/media/", "/signed_doc/doc"]
 
-    print(docs)
     context = {
         "docs": docs,
         "no_docs": no_docs,

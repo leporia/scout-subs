@@ -2017,8 +2017,7 @@ def media_request(request, id=0, t="", flag=""):
         usercode = UserCode.objects.get(id=id)
         if request.user.is_staff:
             groups = getGroups(request)
-            usercode_group = list(usercode.user.groups.all())[0]
-            if usercode_group not in groups:
+            if usercode.branca not in groups:
                 return
         else:
             if usercode.user != request.user:
