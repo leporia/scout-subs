@@ -548,7 +548,7 @@ def doctype(request):
 
             for doc in docs:
                 capo = "no"
-                if "capi" in doc.user.groups.values_list('name', flat=True) or doc.user.is_staff:
+                if "capi" in doc.usercode.user.groups.values_list('name', flat=True) or doc.usercode.user.is_staff:
                     capo = "si"
 
                 write_data = [
@@ -618,7 +618,7 @@ def doctype(request):
 
             for doc in docs:
                 capo = "no"
-                if "capi" in doc.user.groups.values_list('name', flat=True) or doc.user.is_staff:
+                if "capi" in doc.usercode.user.groups.values_list('name', flat=True) or doc.usercode.user.is_staff:
                     capo = "si"
 
                 write_data = [
