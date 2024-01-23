@@ -728,9 +728,6 @@ def doctype(request):
     if not selfsign:
         public_types = public_types.filter(auto_sign=False)
         selfsign_check = ""
-    if not hidden:
-        public_types = public_types.filter(enabled=True)
-        hidden_check = ""
     if not personal:
         public_types = public_types.filter(personal_data=False)
         personal_check = ""
@@ -747,15 +744,22 @@ def doctype(request):
         public_types = public_types.filter(custom_group=False)
         group_check = ""
 
+    if not hidden:
+        hidden_check = ""
+
     users_capi = User.objects.filter(groups__name__contains="capi")
     docs = []
     for doc in public_types:
-        doc_count = str(Document.objects.filter(document_type=doc).count())
+        doc_count_int = Document.objects.filter(document_type=doc).count()
+        doc_count = str(doc_count_int)
         ref_docs_archived = Document.objects.filter(document_type=doc, status="archive").count()
         if ref_docs_archived > 0:
             doc_count += "-" + str(ref_docs_archived)
         if doc.max_instances != 0:
             doc_count += "/" + str(doc.max_instances)
+
+        if not hidden and doc.enabled == False and doc_count_int == ref_docs_archived:
+            continue
 
         doc_obj = Document.objects.filter(document_type=doc).exclude(status="archive").select_related(
             "usercode", "usercode__branca__name", "usercode__user__groups__name"
