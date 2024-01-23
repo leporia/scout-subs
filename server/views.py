@@ -1049,6 +1049,13 @@ def docedit_wrapper(request, context):
                     group = Group.objects.filter(name=custom_group)[0]
                     custom_group_bool = True
 
+            # we are changing the doc group hence update all existing docs
+            if doc.group != group:
+                existing_docs = Document.objects.filter(document_type=doc)
+                for existing_doc in existing_docs:
+                    existing_doc.group = group
+                    existing_doc.save()
+
             # edit type
             doc.custom_group = custom_group_bool
             doc.auto_sign = auto_sign
