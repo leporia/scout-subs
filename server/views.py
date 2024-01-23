@@ -1456,6 +1456,7 @@ def doclist_table(request, type_id):
         'error': error,
         'error_text': error_text,
         'settings': settings,
+        'type_name': doc_type.name,
         'type_id': type_id,
         'custom_keys': custom_keys,
     }

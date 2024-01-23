@@ -11,6 +11,8 @@
   <div class="nav-wrapper {{color}}">
     <ul>
       <li><a href="#modal1" data-target="modal1" class="modal-trigger tooltipped" data-position="top" data-tooltip="Seleziona colonne"><i class="material-icons">view_column</i></a></li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Scarica tabella come Excel" Onclick='table.download("xlsx", "{{type_name}} - tabella.xlsx")'><i class="material-icons">table_view</i></a></li>
+      <li><a class="tooltipped" data-position="top" data-tooltip="Scarica tabella come PDF" Onclick='table.downloadToTab("pdf")'><i class="material-icons">picture_as_pdf</i></a></li>
     </ul>
     <ul class="right">
       <li><a class="tooltipped" data-position="top" data-tooltip="Pulisci filtri" Onclick="send('clear')"><i class="material-icons">clear</i></a></li>
@@ -21,6 +23,10 @@
 
 {% block script_import %}
 <script src=" https://cdn.jsdelivr.net/npm/luxon@3.4.1/build/global/luxon.min.js "></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
 {% endblock %}
 
 {% block content %}
