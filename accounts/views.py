@@ -789,3 +789,8 @@ def edit(request, code):
 def terms(request):
     context = {}
     return render(request, 'accounts/terms.html', context)
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect('/')

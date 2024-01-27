@@ -134,7 +134,7 @@
             <li><a class="modal-trigger" href="#modal_capi"><i class="material-icons">list</i>Lista documenti</a></li>
           {% endif %}
 
-          <li><a onclick="switcher_submit('logout')"><i class="material-icons">exit_to_app</i>Logout</a></li>
+          <li><a href="{% url 'logout' %}"><i class="material-icons">exit_to_app</i>Logout</a></li>
           <!--
           <li class="divider" tabindex="-1"></li>
           <li class="divider" tabindex="-1"></li>
@@ -176,12 +176,14 @@
     var elems = document.querySelectorAll('.userswitcher');
     var instances = M.Dropdown.init(elems, {"coverTrigger": false, "constrainWidth": false});
   });
+  /*
   function switcher_submit(id) {
     var form = document.getElementById('user_form')
     var action = document.getElementById('metadata')
     action.setAttribute('value', id);
     form.submit()
   }
+  */
   {% block script %}
   {% endblock%}
   </script>

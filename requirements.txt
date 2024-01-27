@@ -7,3 +7,4 @@ pdf2image
 django-debug-toolbar
 requests
 authlib
+django-impersonate
