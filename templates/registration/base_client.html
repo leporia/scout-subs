@@ -107,6 +107,18 @@
   <title>{% block title %}Scout Brega{% endblock %}</title>
 </head>
 <body>
+  {% if request.user.is_impersonate %}
+    <div class="navbar-fixed" style="height: 32px; line-height: 32px;">
+      <nav style="height: 32px; line-height: 32px;">
+        <div class="nav-wrapper">
+          <p style="margin-top: 0px; margin-bottom: 0px; margin-left: 10px; margin-right: 10px;">
+            Stai impersonando l'utente {{request.user}}
+            <a href="{% url 'impersonate-stop' %}" style="text-decoration: underline;">Chiudi impersonazione</a>
+          </p>
+        </div>
+      </nav>
+    </div>
+  {% endif %}
   <nav class="nav-extended">
     <form id="user_form" method="post" action="{% url 'user_switcher'%}">
     {% csrf_token %}
