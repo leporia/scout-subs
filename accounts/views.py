@@ -571,18 +571,17 @@ def edit(request, code):
 
             missing_fields = False
 
-            if request.POST["birth_date"] == "" or request.POST["birth_date"].lower() == "01 gennaio 1970" or request.POST["birth_date"] == "None" or request.POST["birth_date"] == "Giovedì 01 Gennaio 1970 00:00":
+            if request.POST["birth_date"] == "" or request.POST["birth_date"].lower() == "01 gennaio 1970" or request.POST["birth_date"] == "None" or request.POST["birth_date"] == "Giovedì 01 Gennaio 1970 00:00" or request.POST["birth_date"] == "Giovedì 01 Gennaio 1970 01:00":
                 validation_dic["birth_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
             else:
                 validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
 
-            if request.POST["tetanus_date"] == "" or request.POST["tetanus_date"].lower() == "01 gennaio 1970" or request.POST["tetanus_date"] == "None" or request.POST["tetanus_date"] == "Giovedì 01 Gennaio 1970 00:00":
+            if request.POST["tetanus_date"] == "" or request.POST["tetanus_date"].lower() == "01 gennaio 1970" or request.POST["tetanus_date"] == "None" or request.POST["tetanus_date"] == "Giovedì 01 Gennaio 1970 00:00" or request.POST["tetanus_date"] == "Giovedì 01 Gennaio 1970 01:00":
                 validation_dic["tetanus_date"] = 'class="datepicker validate invalid" required="" aria-required="true"'
                 missing_fields = True
             else:
                 validation_dic["tetanus_date"] = 'class="datepicker validate" required="" aria-required="true"'
-                print("not missing")
 
             for i in required_fields:
                 if request.POST[i] == "":
@@ -741,6 +740,8 @@ def edit(request, code):
     if "saved" in request.GET:
         # show tooltip only if user is not approved and there are no errors
         home_tooltip = (len(errors) == 0)
+
+    print("date", usercode.born_date)
 
     # fill context
     context = {
