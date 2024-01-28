@@ -451,8 +451,9 @@ def edit(request, code):
         # if render before save this is a dummy never used
         medic = MedicalData()
         usercode = [UserCode(user=request.user, code=code, medic=medic, branca=None)]
+        code = 0
     else:
-        usercode = UserCode.objects.filter(code=code)
+        usercode = UserCode.objects.filter(id=code)
 
     if (len(usercode) == 0):
         # no avaiable code, create dummy
@@ -741,10 +742,13 @@ def edit(request, code):
         # show tooltip only if user is not approved and there are no errors
         home_tooltip = (len(errors) == 0)
 
-    print("date", usercode.born_date)
+    ucode_id = usercode.id
+    if ucode_id == None:
+        ucode_id = 0
 
     # fill context
     context = {
+        'ucode_id': ucode_id,
         'ucode': code,
         'validation_dic': validation_dic,
         'first_name': usercode.first_name,

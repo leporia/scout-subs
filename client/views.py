@@ -140,7 +140,7 @@ def index(request):
 @login_required
 def create(request, code):
     context = {}
-    usercode = UserCode.objects.filter(user=request.user, code=code)
+    usercode = UserCode.objects.filter(id=code, user=request.user)
     if (len(usercode) == 0):
         # the user has no person
         return HttpResponseRedirect("/")
@@ -217,7 +217,6 @@ def create(request, code):
                 return HttpResponseRedirect("/")
 
             # set default values
-            code = 0
             status = "wait"
             personal_data = None
             medical_data = None
@@ -271,23 +270,22 @@ def edit(request):
 @login_required
 def edit_wrapper(request, context):
     if request.method == "POST":
-        usercode = UserCode.objects.filter(user=request.user)[0]
-        if usercode.midata_id > 0:
-            if not copy_from_midata(request, usercode):
-                return HttpResponseRedirect(request.path_info)
+        usercodes = UserCode.objects.filter(user=request.user)
 
         if "action" not in request.POST.keys():
             # get document
             document = Document.objects.get(id=request.POST["doc"])
 
             # check if user has permission
-            if document.user != request.user:
+            if document.usercode not in usercodes:
                 return HttpResponseRedirect("/")
 
             # check if document is editable
             if document.status != "wait" and document.status != "autosign":
                 # user is cheating
                 return HttpResponseRedirect("/")
+
+            usercode = document.usercode
 
             # update compilation date
             document.compilation_date = pytz.timezone('Europe/Zurich').localize(datetime.now())
