@@ -437,6 +437,8 @@ def edit(request, code):
     errors = []
     context = {}
     ok_message = ""
+    usercode = None
+
     # additional user information
     if (code == 0):
         # generate code
@@ -444,18 +446,23 @@ def edit(request, code):
             code = randint(100000, 999999)
             if len(UserCode.objects.filter(code=code)) == 0:
                 break
-        medic = MedicalData()
-        medic.save()
-        userCode = UserCode(user=request.user, code=code, medic=medic, branca=None)
-        userCode.save()
 
-    usercode = UserCode.objects.filter(user=request.user, code=code)
+        # create empty usercode
+        # if render before save this is a dummy never used
+        medic = MedicalData()
+        usercode = [UserCode(user=request.user, code=code, medic=medic, branca=None)]
+    else:
+        usercode = UserCode.objects.filter(code=code)
 
     if (len(usercode) == 0):
-        # code is not authorised for this user
-        return
+        # no avaiable code, create dummy
+        medic = MedicalData()
+        usercode = [UserCode(user=request.user, code=code, medic=medic, branca=None)]
 
     usercode = usercode[0]
+    if (usercode.user != request.user):
+        # code is not authorised for this user
+        return
         
     # medical info
     medic = usercode.medic
@@ -515,6 +522,9 @@ def edit(request, code):
             errors.append("Il nome inserito non corrisponde al nome salvato")
 
         else:
+            if not request.POST["first_name"] or not request.POST["last_name"]:
+                errors.append("Nome e cognome sono obbligatori per salvare l'utente")
+
             # set all attributes
             usercode.first_name = request.POST["first_name"]
             usercode.last_name = request.POST["last_name"]
@@ -538,8 +548,6 @@ def edit(request, code):
                 if request.POST["branca"] != "" and request.POST["branca"] in ["diga", "muta", "reparto", "posto", "clan"]:
                     usercode.branca = Group.objects.get(name=request.POST["branca"])
 
-            usercode.save()
-
             medic.emer_name = request.POST["emer_name"]
             medic.emer_relative = request.POST["emer_relative"]
             medic.cell_phone = request.POST["cell_phone"]
@@ -560,7 +568,6 @@ def edit(request, code):
             medic.drugs = request.POST["drugs"]
             medic.misc_bool = "misc_bool" in request.POST
             medic.misc = request.POST["misc"]
-            medic.save()
 
             missing_fields = False
 
@@ -617,7 +624,6 @@ def edit(request, code):
                     im.save(im_io, 'WEBP', quality=50, method=4)
                     medic.vac_certificate.save(
                         request.user.username+"_"+name, im_io)
-                    medic.save()
                 except UnidentifiedImageError:
                     errors.append("Il certificato delle vaccinazioni non è un immagine valida")
                 except PDFPageCountError:
@@ -656,7 +662,6 @@ def edit(request, code):
                     im.save(im_io, 'WEBP', quality=50, method=4)
                     medic.health_care_certificate.save(
                         request.user.username+"_"+name, im_io)
-                    medic.save()
                 except UnidentifiedImageError:
                     errors.append("La tessera della cassa malati non è un immagine valida")
                 except PDFPageCountError:
@@ -669,11 +674,15 @@ def edit(request, code):
             # user requested file delete
             if request.POST["delete_vac"] == 'vac':
                 medic.vac_certificate = None
-                medic.save()
 
             if request.POST["delete_health"] == 'health':
                 medic.health_care_certificate = None
+
+            if request.POST["first_name"] and request.POST["last_name"]:
                 medic.save()
+
+            if request.POST["first_name"] and request.POST["last_name"]:
+                usercode.save()
 
             # if there wasn't any error redirect to clear POST
             if len(errors) == 0:
