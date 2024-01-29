@@ -392,7 +392,7 @@ def ulist(request):
         elif request.POST["action"][0] == 'f':
             document = Document.objects.get(id=request.POST["action"][1:])
             # check if user has permission to view document
-            if document.group == groups[0]:
+            if document.group in groups:
                 vac_file = ""
                 health_file = ""
                 sign_doc_file = ""

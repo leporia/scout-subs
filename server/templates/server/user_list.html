@@ -303,7 +303,7 @@
             </div>
             <div class="collapsible-body"><span>
               <ul class="collapsible">
-                {% for doc in request.user|user_docs:user.user %}
+                {% for doc in user|user_docs %}
                 <li>
                   <div class="collapsible-header"><a onclick="send('f{{doc.id}}')">{{doc.document_type.name}}</a></div>
                 </li>
