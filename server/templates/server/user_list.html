@@ -49,12 +49,19 @@
             <a onclick="send('d{{user.id}}')" class="modal-close waves-effect waves-green btn-flat">Rimuovi</a>
           </div>
         </div>
-        <div class="hide-on-med-and-down">
-          <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Rimuovi utente dalla branca</a>
-        </div>
-        <div style="margin-bottom: 0px;" class="hide-on-large-only row">
-          <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Riumuovi utente dalla branca</a>
-        </div>
+          <div class="hide-on-med-and-down">
+            <a class="waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Rimuovi utente dalla branca</a>
+            {% if request.user.is_superuser %}
+              <a class="waves-effect waves-light btn {{color}} modal-trigger" href="{% url 'impersonate-start' uid=user.user.id %}"><i class="material-icons left">transfer_within_a_station</i>Impersona utente</a>
+            {% endif %}
+          </div>
+          <div style="margin-bottom: 0px;" class="hide-on-large-only row">
+            <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="#modal{{user.id}}"><i class="material-icons left">remove_circle_outline</i>Riumuovi utente dalla branca</a>
+            {% if request.user.is_superuser %}
+              <br><br>
+              <a class="col s12 waves-effect waves-light btn {{color}} modal-trigger" href="{% url 'impersonate-start' uid=user.user.id %}"><i class="material-icons left">transfer_within_a_station</i>Impersona utente</a>
+            {% endif %}
+          </div>
         <ul class="collection">
           <li class="collection-item">
             <i class="material-icons left">confirmation_number</i>U{{user.code}}
