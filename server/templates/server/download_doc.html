@@ -5,9 +5,14 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <title></title>
+  <style>
+    .input-field {
+      margin-bottom: 0px;
+    }
+  </style>
 </head>
 <body>
-<main style="margin-left: 10px;margin-right: 10px;margin-top: 10px;">
+<main style="margin-left: 0px;margin-right: 0px;margin-top: 0px;">
   <ul class="collection">
     <li class="collection-item">
       {% if doc.0.status == "wait" %}
@@ -20,78 +25,82 @@
         <i class="material-icons left">assignment_turned_in</i>
       {% endif %}
       {{doc.0.document_type.name}}
-      <span class="badge" data-badge-caption="">{{doc.0.user.username}}</span>
-    </li>
-      {% if doc.0.status == 'ok' or doc.0.status == 'archive' %}
-        <li class="collection-item">
-          <i class="material-icons left">confirmation_number</i>{{doc.0.code}}
-        </li>
+      {% if doc.0.status == 'ok' or doc.0.status == 'archive' or True %}
+          <span class="badge" data-badge-caption="">
+          <i class="material-icons left">confirmation_number</i>
+          Codice documento:
+          {{doc.0.code}}
+          </span>
       {% endif %}
+    </li>
     <li class="collection-item">
-      <i class="material-icons left">send</i>{{doc.0.compilation_date}}
+          <i class="material-icons left">send</i>
+          Compilato il:
+          {{doc.0.compilation_date}}
     </li>
   {% if doc.0.document_type.personal_data %}
     <li class="collection-item">
-      <i class="material-icons left">person</i>Dati personali
-      <br><br>
-      <div class="row">
-        <div class="input-field col l4 s12">
+      <div class="row" style="margin-bottom: 0px;">
+        <i class="material-icons left">person</i>Dati personali
+      </div>
+      <div class="row" style="margin-bottom: 0px;">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.0.usercode.first_name}}" id="first_name" type="text" >
           <label class="active" for="first_name">Nome</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.0.usercode.last_name}}" id="last_name" type="text" >
           <label class="active" for="last_name">Cognome</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.2.born_date}}" id="birth_date" type="text">
           <label class="active" for="birth_date">Data di nascita</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.0.usercode.branca}}" id="branca" type="text">
           <label class="active" for="branca">Branca</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.2.parent_name}}" id="parent_name" type="text" >
           <label class="active" for="parent_name">Nome dei genitori</label>
         </div>
-        <div class="input-field col l4 s12">
-          <input placeholder=" " value="{{doc.2.avs_number}}" id="avs_number" type="text">
-          <label for="avs_number">Numero AVS</label>
-        </div>
-        <div class="input-field col l12 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.2.via}}" id="via" type="text" >
           <label class="active" for="via">Via e numero</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
+          <input placeholder=" " value="{{doc.2.avs_number}}" id="avs_number" type="text">
+          <label for="avs_number">Numero AVS</label>
+        </div>
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.2.cap}}" name="cap" id="cap" type="text" >
           <label class="active" for="cap">CAP</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.2.country}}" name="country" id="country" type="text" >
           <label class="active" for="country">Comune</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.2.nationality}}" name="nationality" id="nationality" type="text" >
           <label class="active" for="nationality">Nazionalit&agrave;</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s3">
           <input placeholder=" " value="{{doc.2.phone}}" name="phone" id="phone" type="text" >
           <label class="active" for="phone">Cellulare</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s3">
           <input placeholder=" " value="{{doc.2.home_phone}}" name="home_phone" id="home_phone" type="text" >
           <label class="active" for="home_phone">Telefono di casa</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s6">
           <input placeholder=" " value="{{doc.2.email}}" name="email" id="email" type="text" >
           <label class="active" for="email">Email</label>
         </div>
-        <div class="input-field col l8 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.2.school}}" name="school" id="school" type="text" >
           <label class="active" for="school">Scuola frequentata</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.2.year}}" name="year" id="year" type="text" >
           <label class="active" for="year">Classe</label>
         </div>
@@ -100,83 +109,77 @@
   {% endif %}
   {% if doc.0.document_type.medical_data %}
     <li class="collection-item">
-      <i class="material-icons left">healing</i>Dati medici
-      <br><br>
-      <div class="row">
+      <div class="row" style="margin-bottom: 0px;">
+        <i class="material-icons left">healing</i>Dati medici
+      </div>
+      <div class="row" style="margin-bottom: 0px;">
         <div class="col s12">
           <h6>Persona di contatto in caso di necessit&agrave;</h6>
         </div>
       </div>
-      <div class="row">
-        <div class="input-field col l6 s12">
+      <div class="row" style="margin-bottom: 0px;">
+        <div class="input-field col s5">
           <input placeholder=" " name="emer_name" value="{{doc.3.emer_name}}" id="emer_name" type="text" >
           <label class="active" for="emer_name">Nome e cognome</label>
         </div>
-        <div class="input-field col l3 s12">
+        <div class="input-field col s3">
           <input placeholder=" " name="emer_relative" value="{{doc.3.emer_relative}}" id="emer_relative" type="text" >
           <label class="active" for="emer_releative">Parentela</label>
         </div>
-        <div class="input-field col l3 s12">
+        <div class="input-field col s4">
           <input placeholder=" " name="cell_phone" value="{{doc.3.cell_phone}}" id="cellphone" type="text" >
           <label class="active" for="cell_phone">Cellulare</label>
         </div>
-        <div class="input-field col l9 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.3.address}}" name="address" id="address" type="text" >
           <label class="active" for="address">Indirizzo completo</label>
         </div>
-        <div class="input-field col l3 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.3.emer_phone}}" name="emer_phone" id="emer_phone" type="text" >
           <label class="active" for="emer_phone">Telefono di casa</label>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-bottom: 0px;">
         <div class="col s12">
           <h6>Assicurazione</h6>
         </div>
       </div>
-      <div class="row">
-        <div class="input-field col l4 s12">
+      <div class="row" style="margin-bottom: 0px;">
+        <div class="input-field col s6">
           <input placeholder=" " value="{{doc.3.health_care}}" name="health_care" id="health_care" type="text" >
           <label class="active" for="health_care">Cassa Malati</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s6">
           <input placeholder=" " value="{{doc.3.injuries}}" name="injuries" id="injuries" type="text" >
           <label class="active" for="injuries">Infortuni</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s6">
           <input placeholder=" " value="{{doc.3.rc}}" name="rc" id="rc" type="text" >
           <label class="active" for="rc">Responsabilit&agrave; civile</label>
         </div>
-      </div>
-      <div class="row">
-        <div class="switch col s12">
-          &Egrave; sostenitore REGA&nbsp;&nbsp;
-          <label>
-            No
-            <input name="rega" type="checkbox" {% if doc.3.rega %}checked="checked"{%endif%}>
-            <span class="lever"></span>
-            Si
-          </label>
+        <div class="input-field col s6">
+          <input placeholder=" " value="{% if doc.3.rega %}Si{%else%}No{%endif%}" name="rega" id="rega" type="text" >
+          <label class="active" for="rc">&Egrave; sostenitore REGA:</label>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-bottom: 0px;">
         <div class="col s12">
           <h6>Medico di famiglia</h6>
         </div>
-        <div class="input-field col l6 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.3.medic_name}}" name="medic_name" id="medic_name" type="text" >
           <label class="active" for="medic_name">Nome e cognome</label>
         </div>
-        <div class="input-field col l6 s12">
+        <div class="input-field col s4">
           <input placeholder=" " value="{{doc.3.medic_phone}}" name="medic_phone" id="medic_phone" type="text" >
           <label class="active" for="medic_phone">Telefono studio</label>
         </div>
-        <div class="input-field col l12 s12">
+        <div class="input-field col s12">
           <input placeholder=" " value="{{doc.3.medic_address}}" name="medic_address" id="medic_address" type="text" >
           <label class="active" for="medic_address">Indirizzo completo</label>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-bottom: 0px;">
         <div class="col s12">
           <h6>Scheda medica personale</h6>
         </div>
@@ -184,11 +187,11 @@
           <input placeholder=" " value="{{doc.3.sickness}}" name="sickness" id="sickness" type="text">
           <label class="active" for="sickness">Principali malattie avute</label>
         </div>
-        <div class="input-field col l8 s12">
+        <div class="input-field col s8">
           <input placeholder=" " value="{{doc.3.vaccine}}" name="vaccine" id="vaccine" type="text">
           <label class="active" for="vaccine">Vacinazioni fatte</label>
         </div>
-        <div class="input-field col l4 s12">
+        <div class="input-field col s4">
           <label class="active" for="tetanus_date">Ultima vacinazione contro il tetano</label>
           <input placeholder=" " value="{{doc.3.tetanus_date}}" name="tetanus_date" id="tetanus_date" type="text">
         </div>
