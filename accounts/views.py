@@ -691,6 +691,7 @@ def edit(request, code):
     else:
         # no post, create empty validation
         validation_dic["birth_date"] = 'class="datepicker validate" required="" aria-required="true"'
+        validation_dic["tetanus_date"] = 'class="datepicker validate" required="" aria-required="true"'
         for i in required_fields:
             validation_dic[i] = 'class="validate" required="" aria-required="true"'
 
